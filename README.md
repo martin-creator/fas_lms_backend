@@ -122,4 +122,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 
 # Generate database diagram
- python manage.py graph_models -a -o myapp_models.png
+
+  ```bash
+  python manage.py graph_models -a -o myapp_models.png
+  ```
