@@ -20,6 +20,7 @@ Django LMS is a sophisticated learning management system crafted using Django, a
 ## Features
 ![scrnli_13_06_2024_22-49-11](https://github.com/AbdullahBakir97/Django--LMS--Learning-Management-System/assets/127149804/fd107a30-91ef-435b-9ef7-fcf41ba51ec5)
 ![scrnli_13_06_2024_22-49-51](https://github.com/AbdullahBakir97/Django--LMS--Learning-Management-System/assets/127149804/5767e11a-c74e-49f6-8cfb-ae59face77d0)
+![myapp_models](https://github.com/martin-creator/fas_lms_backend/assets/127149804/2b150654-52f6-48a7-915a-39b02c218e88)
 
 
 ### User Profiles
