@@ -1,13 +1,13 @@
 from django.contrib.contenttypes.models import ContentType
 from .models import Notification, NotificationType, NotificationSettings, NotificationReadStatus
-from profiles.models import User, UserProfile
+from profiles.models import User
 from django.utils import timezone
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 class NotificationService:
     @staticmethod
-    def create_notification(recipient, content, notification_type_name, url, content_object, priority=0):
+    def create_notification(recipient, content, notification_type_name, content_object=None, priority=0):
         notification_type, created = NotificationType.objects.get_or_create(type_name=notification_type_name)
         content_type = ContentType.objects.get_for_model(content_object)
 
@@ -19,12 +19,11 @@ class NotificationService:
             recipient=recipient,
             content=content,
             notification_type=notification_type,
-            url=url,
-            content_object=content_object,
             content_type=content_type,
             object_id=content_object.id,
             priority=priority,
         )
+        NotificationService.send_notification(notification)
         return notification
 
     @staticmethod

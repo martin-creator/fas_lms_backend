@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from activity.models import Reaction, Share
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
 NOTIFICATION_TYPE = [
     ('job_application', 'Job Application'),

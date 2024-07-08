@@ -15,8 +15,6 @@ class NotificationHandler:
             priority=0
         )
 
-
-
 def send_notification(user, message, notification_type='general'):
     Notification.objects.create(
         user=user,
