@@ -2,7 +2,7 @@ from django.contrib import admin
 from django import forms
 from taggit.forms import TagWidget
 from django.contrib.contenttypes.admin import GenericTabularInline
-from .models import Course, CourseEnrollment, CourseCompletion
+from .models import Course, CourseEnrollment, CourseCompletion, LearningPath
 from certifications.models import Certification
 from activity.models import Attachment
 from posts.models import Comment
@@ -83,3 +83,9 @@ class CourseCompletionAdmin(admin.ModelAdmin):
     search_fields = ('course__title', 'student__user__username')
 
 
+class LearningPathAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+    filter_horizontal = ('courses', 'prerequisites')
+
+admin.site.register(LearningPath, LearningPathAdmin)

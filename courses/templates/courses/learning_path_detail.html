@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{{ learning_path.name }}</h1>
+    <p>{{ learning_path.description }}</p>
+    <h2>Courses</h2>
+    <ul>
+        {% for course in learning_path.courses.all %}
+            <li>{{ course.name }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Prerequisite Learning Paths</h2>
+    <ul>
+        {% for prerequisite in learning_path.prerequisites.all %}
+            <li>{{ prerequisite.name }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Certifications</h2>
+    <ul>
+        {% for certification in learning_path.learning_path_certifications.all %}
+            <li>{{ certification.name }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

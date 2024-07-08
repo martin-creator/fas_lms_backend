@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Your Certifications</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Issued By</th>
+                <th>Issue Date</th>
+                <th>Expiration Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cert in certifications %}
+            <tr>
+                <td>{{ cert.name }}</td>
+                <td>{{ cert.issuing_organization }}</td>
+                <td>{{ cert.issue_date }}</td>
+                <td>{{ cert.expiration_date }}</td>
+                <td>
+                    {% if cert.verification_status %}
+                    Verified
+                    {% else %}
+                    Unverified
+                    {% endif %}
+                    {% if cert.is_expired %}
+                    (Expired)
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'share_certification' cert.shareable_url %}" class="btn btn-primary btn-sm">Share</a>
+                    <a href="{% url 'email_certification' cert.id %}" class="btn btn-secondary btn-sm">Email</a>
+                    {% if not cert.verification_status %}
+                    <a href="{% url 'verify_certification' cert.id %}" class="btn btn-success btn-sm">Verify</a>
+                    {% endif %}
+                    {% if cert.expiration_date and cert.expiration_date < now %}
+                    <a href="{% url 'renew_certification' cert.id %}" class="btn btn-warning btn-sm">Renew</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

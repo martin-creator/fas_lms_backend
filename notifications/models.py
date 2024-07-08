@@ -24,7 +24,10 @@ NOTIFICATION_TYPE = [
 
 class NotificationType(models.Model):
     PREDEFINED_TYPES = ['type1', 'type2']
-
+    NEW_CERTIFICATION = 'new_certification', _('New Certification')
+    VERIFICATION_STATUS_CHANGE = 'verification_status_change', _('Verification Status Change')
+    RENEWAL_REMINDER = 'renewal_reminder', _('Renewal Reminder')
+    VERIFIED = 'verified', _('Verified')
     type_name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):

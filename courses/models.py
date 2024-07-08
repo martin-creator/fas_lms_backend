@@ -1,10 +1,13 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from activity.models import Attachment
 # from posts.models import Comment
 # from certifications.models import Certification
 from taggit.managers import TaggableManager
 from django.contrib.contenttypes.fields import GenericRelation
 from django.conf import settings
+from services.integrations.certification import generate_certificate
 
 
 class Course(models.Model):
@@ -40,3 +43,17 @@ class CourseCompletion(models.Model):
 
     def __str__(self):
         return f"{self.student.user.username} completed {self.course.title}"
+    
+    @receiver(post_save, sender=Course)
+    def course_completion_handler(sender, instance, created, **kwargs):
+        if not created and instance.completed:
+            generate_certificate(instance.student, instance)
+    
+class LearningPath(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    courses = models.ManyToManyField(Course, related_name='learning_path_courses')
+    prerequisites = models.ManyToManyField('self', symmetrical=False, related_name='required_for', blank=True)
+
+    def __str__(self):
+        return self.name
