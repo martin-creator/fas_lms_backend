@@ -9,22 +9,22 @@ This document outlines the tasks and functionalities required to implement a cer
 The `services` app is designed to handle various services within the LMS project, with a specific focus on certification management. Key files and their purposes include:
 
 utils/
-- `file_handling.py`: Handles file operations such as PDF generation for certificates.
-- `data_processing.py`: Manages data processing tasks related to certifications, such as data validation and formatting.
-- `storage.py`: Provides functionalities related to storage and file handling for certificates.
-- `notification.py`: Contains notification logic and integration, including notifications related to certification events.
-- `email_integration.py`: Implements email functionalities for certification-related communications.
-- `auth.py`: Manages authentication and authorization tasks, ensuring secure access to certification functionalities.
-- `ai_integration.py`: Integrates with AI or external services for certification verification purposes.
-- `tasks.py`: Contains background tasks and asynchronous operations related to certifications, such as scheduled certificate issuance.
+- `file_handling.py`: Handles file operations such as PDF generation for certificates and other document-related tasks.
+- `data_processing.py`: Manages data processing tasks related to certifications, ensuring data validation and formatting standards are met.
+- `storage.py`: Provides functionalities related to storage and file handling for certificates and other service-related data.
+- `notification.py`: Contains notification logic and integration, including notifications related to certification events and other service updates.
+- `email_integration.py`: Implements email functionalities for certification-related communications and general service notifications.
+- `auth.py`: Manages authentication and authorization tasks, ensuring secure access to certification and other service functionalities.
+- `ai_integration.py`: Integrates with AI or external services for certification verification purposes and other service-specific AI integrations.
+- `tasks.py`: Contains background tasks and asynchronous operations related to certifications and other service tasks, such as scheduled certificate issuance and data processing.
 
 integration/
 - `certification.py`: Handles integration with external certification services or APIs specific to the LMS project.
-- `forum.py`: Integrates certification functionalities with forum features, facilitating discussions on certifications.
-- `grading.py`: Manages integration with grading systems or algorithms for certification evaluation.
-- `job.py`: Integrates certification with job listing and application systems, reflecting certifications in job applications.
-- `messaging.py`: Integrates messaging services for certification-related communication between users.
-- `payment.py`: Handles integration with payment gateways or systems for certification fees and transactions.
+- `forum.py`: Integrates certification functionalities with forum features, facilitating discussions on certifications and other service topics.
+- `grading.py`: Manages integration with grading systems or algorithms for certification evaluation and other service assessments.
+- `job.py`: Integrates certification with job listing and application systems, reflecting certifications in job applications and other career-related services.
+- `messaging.py`: Integrates messaging services for certification-related communication between users and other service-related messaging needs.
+- `payment.py`: Handles integration with payment gateways or systems for certification fees and transactions, along with other payment-related services.
 
 
 ## Functionality Details
