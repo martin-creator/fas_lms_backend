@@ -29,6 +29,13 @@ def update_related_courses(sender, instance, created, **kwargs):
         related_courses = instance.related_courses.all()
         for course in related_courses:
             course.required_certifications.add(instance)
+            
+# signals to Update related jobs and courses when a new certification is earned
+@receiver(post_save, sender=Certification)
+def update_related_jobs_courses(sender, instance, created, **kwargs):
+    if created:
+        instance.related_jobs.add(*instance.user.profile.job_listings.all())
+        instance.related_courses.add(*instance.user.profile.courses.all())
 
 # Signal to update certification count when a certification is created or deleted
 @receiver(post_save, sender=Certification)
