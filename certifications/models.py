@@ -24,14 +24,26 @@ class Certification(models.Model):
         
         
     def verify(self):
-            # Logic to verify certification authenticity
-            # Example: Check credential_id against an external service
-            self.verification_status = True  # Set verification status based on check
+        """
+        Method to verify certification authenticity using external service.
+        Example: Check credential_id against an external API for verification.
+        # Replace with actual verification logic
+        verified = external_verification_service.verify_certification(self.credential_id)
+        if verified:
+            self.verification_status = True
             self.save()
+        return verified
+        """
+        # Logic to verify certification authenticity
+        # Example: Check credential_id against an external service
+        self.verification_status = True  # Set verification status based on check
+        self.save()
+            
+        
     
     def save(self, *args, **kwargs):
-            super().save(*args, **kwargs)
-            # Example: Update user profile with certification details
+        super().save(*args, **kwargs)
+        if not self.user.profile.certifications.filter(id=self.id).exists():
             self.user.profile.certifications.add(self)
     
     def is_expired(self):
