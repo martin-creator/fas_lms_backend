@@ -119,7 +119,95 @@ class StorageHandler:
         s3 = session.resource('s3')
         try:
             s3.Bucket(bucket_name).put_object(Key=file_path, Body=file)
-            return f"s3://{bucket_name}/{file
+                        return f"s3://{bucket_name}/{file_path}"
+        except Exception as e:
+            logger.error(f"Error uploading file to S3: {e}")
+            raise StorageException("Failed to upload file to S3.")
+    
+    @staticmethod
+    def download_from_s3(bucket_name: str, file_path: str) -> bytes:
+        """
+        Download a file from AWS S3.
+        """
+        session = Session(
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION
+        )
+        s3 = session.resource('s3')
+        try:
+            obj = s3.Object(bucket_name, file_path)
+            return obj.get()['Body'].read()
+        except Exception as e:
+            logger.error(f"Error downloading file from S3: {e}")
+            raise StorageException("Failed to download file from S3.")
+    
+    @staticmethod
+    def upload_to_gcs(file: UploadedFile, bucket_name: str, file_path: str) -> str:
+        """
+        Upload a file to Google Cloud Storage.
+        """
+        client = gcs.Client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(file_path)
+        try:
+            blob.upload_from_file(file)
+            return f"gs://{bucket_name}/{file_path}"
+        except Exception as e:
+            logger.error(f"Error uploading file to GCS: {e}")
+            raise StorageException("Failed to upload file to GCS.")
+    
+    @staticmethod
+    def download_from_gcs(bucket_name: str, file_path: str) -> bytes:
+        """
+        Download a file from Google Cloud Storage.
+        """
+        client = gcs.Client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(file_path)
+        try:
+            return blob.download_as_bytes()
+        except Exception as e:
+            logger.error(f"Error downloading file from GCS: {e}")
+            raise StorageException("Failed to download file from GCS.")
+    
+    @staticmethod
+    def async_process_file(file_path: str):
+        """
+        Celery task to process a file asynchronously.
+        Placeholder for actual processing logic.
+        """
+        try:
+            # Example processing: simply read the file content
+            file_content = StorageHandler.download_file(file_path)
+            # Perform actual processing here (e.g., parsing, conversion)
+            logger.info(f"Processed file: {file_path}")
+        except StorageException as e:
+            logger.error(f"File processing failed: {e}")
+            raise
+    
+    @staticmethod
+    def upload_file(file: UploadedFile, directory: str = '') -> str:
+        """
+        Handle file upload: validate and save.
+        """
+        StorageHandler.validate_file(file)
+        file_path = StorageHandler.generate_unique_filepath(file.name, directory)
+        StorageHandler.save_file(file, file_path)
+        return file_path
+    
+    @staticmethod
+    def delete_directory(directory: str):
+        """
+        Delete all files in the given directory.
+        """
+        try:
+            file_list = StorageHandler.list_files(directory)
+            for file_name in file_list:
+                StorageHandler.delete_file(os.path.join(directory, file_name))
+        except StorageException as e:
+            logger.error(f"Failed to delete directory {directory}: {e}")
+            raise
 
 
 class StorageService:
