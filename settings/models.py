@@ -1,6 +1,7 @@
 from django.db import models
 from profiles.models import UserProfile
 
+# Define Setting Types for categorizing settings
 class SettingType(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -8,31 +9,74 @@ class SettingType(models.Model):
     def __str__(self):
         return self.name
 
-class UserSetting(models.Model):
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    setting_type = models.ForeignKey(SettingType, on_delete=models.CASCADE)
-    value = models.TextField()
-
-    class Meta:
-        unique_together = ['user', 'setting_type']
-
-    def __str__(self):
-        return f"{self.user}'s {self.setting_type} setting"
-
-    def save(self, *args, **kwargs):
-        # Add custom validation logic before saving
-        super(UserSetting, self).save(*args, **kwargs)
-
+# Global settings applicable across the entire LMS
 class GlobalSetting(models.Model):
-    setting_type = models.ForeignKey(SettingType, on_delete=models.CASCADE)
-    value = models.TextField()
-
-    class Meta:
-        unique_together = ['setting_type']
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True)
+    value_type = models.CharField(max_length=50)
+    default_value = models.CharField(max_length=255)
+    is_required = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.setting_type)
+        return self.name
 
-    def save(self, *args, **kwargs):
-        # Add custom validation logic before saving
-        super(GlobalSetting, self).save(*args, **kwargs)
+# Module-specific settings linked to specific modules (e.g., Courses, Events)
+class ModuleSetting(models.Model):
+    module = models.ForeignKey('modules.Module', on_delete=models.CASCADE)  # Adjust 'modules.Module' to your actual module model
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    value_type = models.CharField(max_length=50)
+    default_value = models.CharField(max_length=255)
+    is_required = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.module.name} - {self.name}"
+
+# Options for settings that have predefined choices (e.g., dropdown selections)
+class SettingOption(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    default_value = models.JSONField()
+
+    def __str__(self):
+        return self.name
+
+# Actual values for module settings
+class SettingValue(models.Model):
+    setting = models.ForeignKey(ModuleSetting, on_delete=models.CASCADE, related_name='values')
+    value = models.JSONField()
+
+    def __str__(self):
+        return str(self.value)
+
+# Validation rules for module settings
+class SettingValidation(models.Model):
+    setting = models.ForeignKey(ModuleSetting, on_delete=models.CASCADE, related_name='validations')
+    validation_type = models.CharField(max_length=50)
+    validation_rule = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f'{self.setting} - {self.validation_type}'
+
+# Integration services configuration for external services
+class IntegrationService(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    endpoint_url = models.URLField()
+    api_key = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+# Reports and analytics on settings usage and configurations
+class SettingsReport(models.Model):
+    date_generated = models.DateTimeField(auto_now_add=True)
+    report_content = models.TextField()
+    generated_by = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Settings Report - {self.date_generated}"
