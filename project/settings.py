@@ -285,3 +285,9 @@ SIMPLE_JWT = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # Replace this git GMAIL SMTP settings in production
+
+AWS_ACCESS_KEY_ID = 'aws_access_key'
+AWS_SECRET_ACCESS_KEY = 'aws_secret_key'
+AWS_REGION = 'aws_region'
+
+GOOGLE_APPLICATION_CREDENTIALS = 'path_to_gcs_credentials.json'
