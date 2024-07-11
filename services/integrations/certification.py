@@ -3,11 +3,15 @@ from django.core.files.storage import default_storage
 from notifications.services import NotificationService
 from certifications.models import Certificate
 from notifications.models import Notification
-from utils import file_handling, notifications
-from courses.models import CourseCompletion, LearningPath
+from courses.models import Course, CourseCompletion, LearningPath
 from utils.email_integration import EmailService
+from django.core.exceptions import ObjectDoesNotExist
+from utils import file_handling, notifications
+from grading import GradingService  # Import the GradingService from grading.py
 
 class CertificationService:
+    
+    
     @staticmethod
     def generate_certificate(user, course):
         certificate_url = file_handling.FileHandler.upload_file(course.generate_certificate_pdf(), 'certificates/')
@@ -110,3 +114,21 @@ class CertificationService:
                 priority=notification.priority
             )
         return [notification.to_dict() for notification in notifications]
+
+    #  integrating with GradingService
+
+    @staticmethod
+    def grade_course(user, course_id, grade_value):
+        try:
+            course = Course.objects.get(id=course_id)
+            certificate_url = CertificationService.generate_certificate(user, course)
+            
+            # Integrate grading with certification
+            GradingService.grade_assignment(course.assignment.id, user.id, grade_value)
+            
+            return certificate_url
+        
+        except ObjectDoesNotExist as e:
+            raise ValueError(f"Course with ID {course_id} not found: {e}")
+
+    # Other methods...
