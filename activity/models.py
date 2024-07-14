@@ -139,3 +139,19 @@ class Analytics(models.Model):
 
     def __str__(self):
         return self.activity_type
+    
+    
+class Activity(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    location = models.CharField(max_length=255)
+    tags = TaggableManager()
+    participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='activities_participated')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='activities_created')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
