@@ -158,3 +158,73 @@ def update_activity_settings(request):
     if "error" in result:
         return Response(result, status=status.HTTP_400_BAD_REQUEST)
     return Response(result, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def log_user_activity(request):
+    """
+    Log user activity across the platform.
+    """
+    user = request.user  # Assuming authenticated user
+    activity_type = request.data.get('activity_type')
+    details = request.data.get('details')
+    categories = request.data.get('categories', None)
+    result = activity_controller.log_user_activity(user, activity_type, details, categories)
+    if "error" in result:
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    return Response(result, status=status.HTTP_201_CREATED)
+
+@api_view(['POST'])
+def log_system_event(request):
+    """
+    Log system-wide events and interactions.
+    """
+    event_type = request.data.get('event_type')
+    details = request.data.get('details')
+    result = activity_controller.log_system_event(event_type, details)
+    if "error" in result:
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    return Response(result, status=status.HTTP_201_CREATED)
+
+@api_view(['POST'])
+def log_attachment(request):
+    """
+    Log attachments related to an object (post, message, etc.).
+    """
+    content_object = request.data.get('content_object')
+    attachment_type = request.data.get('attachment_type')
+    file = request.FILES.get('file')
+    result = activity_controller.log_attachment(content_object, attachment_type, file)
+    if "error" in result:
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    return Response(result, status=status.HTTP_201_CREATED)
+
+@api_view(['GET'])
+def get_attachments_for_object(request, content_object):
+    """
+    Retrieve attachments related to a specific object.
+    """
+    result = activity_controller.get_attachments_for_object(content_object)
+    if "error" in result:
+        return Response(result, status=status.HTTP_404_NOT_FOUND)
+    return Response(result, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def generate_user_activity_report(request, user_id):
+    """
+    Generate a report for user activities.
+    """
+    result = activity_controller.generate_user_activity_report(user_id)
+    if "error" in result:
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    return Response(result, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def process_activity_data(request):
+    """
+    Process activity data before saving or updating.
+    """
+    activity_data = request.data
+    result = activity_controller.process_activity_data(activity_data)
+    if "error" in result:
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    return Response(result, status=status.HTTP_200_OK)

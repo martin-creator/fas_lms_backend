@@ -17,4 +17,9 @@ urlpatterns = [
     path('analytics/trending/', views.get_trending_topics, name='get_trending_topics'),
     path('settings/activity/', views.get_activity_settings, name='get_activity_settings'),
     path('settings/activity/update/', views.update_activity_settings, name='update_activity_settings'),
+    path('activities/log-user-activity/', views.log_user_activity, name='log_user_activity'),
+    path('activities/log-system-event/', views.log_system_event, name='log_system_event'),
+    path('attachments/object/<str:content_object>/', views.get_attachments_for_object, name='get_attachments_for_object'),
+    path('activities/generate-report/<int:user_id>/', views.generate_user_activity_report, name='generate_user_activity_report'),
+    path('activities/process-data/', views.process_activity_data, name='process_activity_data'),
 ]
