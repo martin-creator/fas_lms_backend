@@ -136,14 +136,18 @@ Python script that offers two command options: one to generate a high-level text
 
 
 3. **Run the script with the desired command**:
-    - To generate a textual representation:
-      ```bash
-      python model_inspector.py text
-      ```
-    - To generate a UML diagram:
-      ```bash
-      python model_inspector.py uml
-      ```
+
+To generate a textual representation:
+
+ ```bash
+ python model_inspector.py text
+ ```
+
+To generate a UML diagram:
+
+ ```bash
+ python model_inspector.py uml
+ ```
 
 The script will:
 - Traverse your Django apps and find the model files.
