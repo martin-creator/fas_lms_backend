@@ -1,11 +1,8 @@
 import os
 import sys
 import ast
-import inspect
 from django.apps import apps
-from django.conf import settings
-from django.db import models
-from graphviz import Digraph
+from graphviz import Digraph, ExecutableNotFound
 
 # Set up your Django project settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
@@ -13,6 +10,7 @@ import django
 django.setup()
 
 def find_model_files():
+    """Find and return a list of model files in the Django project."""
     model_files = []
     for app in apps.get_app_configs():
         app_path = app.path
@@ -22,7 +20,8 @@ def find_model_files():
     return model_files
 
 def extract_model_relations(model_file):
-    with open(model_file, 'r') as f:
+    """Extract and return model relations from a given models.py file."""
+    with open(model_file, 'r', encoding='utf-8') as f:
         tree = ast.parse(f.read(), filename=model_file)
 
     class ModelVisitor(ast.NodeVisitor):
@@ -30,7 +29,7 @@ def extract_model_relations(model_file):
             self.models = {}
 
         def visit_ClassDef(self, node):
-            if 'models.Model' in [base.id for base in node.bases if isinstance(base, ast.Name)]:
+            if any(base.attr == 'Model' for base in node.bases if isinstance(base, ast.Attribute)):
                 self.models[node.name] = []
                 for stmt in node.body:
                     if isinstance(stmt, ast.Assign):
@@ -38,36 +37,76 @@ def extract_model_relations(model_file):
                             if isinstance(target, ast.Name):
                                 field_name = target.id
                                 if isinstance(stmt.value, ast.Call):
-                                    field_type = stmt.value.func.attr
-                                    if field_type in ('ForeignKey', 'OneToOneField', 'ManyToManyField'):
-                                        related_model = stmt.value.args[0].id
-                                        self.models[node.name].append((field_name, field_type, related_model))
+                                    field_type = get_field_type(stmt.value)
+                                    if field_type:
+                                        related_model = get_related_model(stmt.value)
+                                        if related_model:
+                                            self.models[node.name].append((field_name, field_type, related_model))
+
+    def get_field_type(value):
+        if isinstance(value.func, ast.Attribute):
+            return value.func.attr
+        elif isinstance(value.func, ast.Name):
+            return value.func.id
+        return None
+
+    def get_related_model(value):
+        if value.args and isinstance(value.args[0], ast.Name):
+            return value.args[0].id
+        elif value.args and isinstance(value.args[0], ast.Constant):
+            return value.args[0].value
+        return None
 
     visitor = ModelVisitor()
     visitor.visit(tree)
     return visitor.models
 
 def generate_textual_representation(models_relations):
+    """Generate a textual representation of the model relations."""
     representation = ""
     for model, relations in models_relations.items():
         representation += f"{model}\n"
         for relation in relations:
             representation += f" └── {relation[0]} ({relation[1]}) -> {relation[2]}\n"
+        representation += "\n"  # Add an extra newline after each model's relations
+
     return representation
 
 def generate_uml_diagram(models_relations, output_file='uml_diagram'):
+    """Generate a UML diagram of the model relations and save it as a PNG file."""
     dot = Digraph(comment='UML Diagram')
 
     for model, relations in models_relations.items():
-        dot.node(model, model)
+        dot.node(model, model, shape='box')
         for relation in relations:
             dot.edge(model, relation[2], label=f"{relation[0]} ({relation[1]})")
     
-    dot.render(output_file, format='png')
+    try:
+        dot.render(output_file, format='png')
+    except ExecutableNotFound:
+        print("Graphviz 'dot' executable not found. Please ensure Graphviz is installed and the PATH is set correctly.")
+        sys.exit(1)
+
+def generate_comprehensive_visualization(models_relations, output_file='comprehensive_visualization'):
+    """Generate a comprehensive visualization of the model relations in a custom format."""
+    dot = Digraph(comment='Comprehensive Visualization')
+
+    for model, relations in models_relations.items():
+        with dot.subgraph(name=f"cluster_{model}") as c:
+            c.attr(label=model, shape='box', style='filled', color='lightgrey')
+            c.node(model, model)
+            for relation in relations:
+                c.edge(model, relation[2], label=f"{relation[0]} ({relation[1]})", style='dotted')
+    
+    try:
+        dot.render(output_file, format='png')
+    except ExecutableNotFound:
+        print("Graphviz 'dot' executable not found. Please ensure Graphviz is installed and the PATH is set correctly.")
+        sys.exit(1)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python script.py [text|uml]")
+        print("Usage: python script.py [text|uml|comprehensive]")
         sys.exit(1)
     
     command = sys.argv[1]
@@ -76,11 +115,12 @@ if __name__ == "__main__":
     all_models_relations = {}
     for model_file in model_files:
         models_relations = extract_model_relations(model_file)
-        all_models_relations.update(models_relations)
+        if models_relations:
+            all_models_relations.update(models_relations)
     
     if command == "text":
         representation = generate_textual_representation(all_models_relations)
-        with open('models_representation.md', 'w') as f:
+        with open('models_representation.md', 'w', encoding='utf-8') as f:
             f.write(representation)
         print("Textual representation written to models_representation.md")
     
@@ -88,5 +128,9 @@ if __name__ == "__main__":
         generate_uml_diagram(all_models_relations, output_file='uml_diagram')
         print("UML diagram written to uml_diagram.png")
     
+    elif command == "comprehensive":
+        generate_comprehensive_visualization(all_models_relations, output_file='comprehensive_visualization')
+        print("Comprehensive visualization written to comprehensive_visualization.png")
+    
     else:
-        print("Invalid command. Use 'text' or 'uml'.")
+        print("Invalid command. Use 'text', 'uml', or 'comprehensive'.")
