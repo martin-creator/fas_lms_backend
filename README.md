@@ -126,3 +126,27 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
   ```bash
   python manage.py graph_models -a -o myapp_models.png
   ```
+  
+---
+
+Python script that offers two command options: one to generate a high-level textual representation and another to generate a UML diagram using `graphviz`. The script will save the results in separate files.
+
+
+### Usage Instructions:
+
+
+3. **Run the script with the desired command**:
+    - To generate a textual representation:
+      ```bash
+      python model_inspector.py text
+      ```
+    - To generate a UML diagram:
+      ```bash
+      python model_inspector.py uml
+      ```
+
+The script will:
+- Traverse your Django apps and find the model files.
+- Parse the models to extract relationships.
+- Generate a high-level textual representation and save it as `models_representation.md` when the `text` command is used.
+- Generate a UML diagram and save it as `uml_diagram.png` when the `uml` command is used.
