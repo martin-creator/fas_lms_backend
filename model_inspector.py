@@ -8,7 +8,7 @@ from django.db import models
 from graphviz import Digraph
 
 # Set up your Django project settings
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'your_project.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
 import django
 django.setup()
 
