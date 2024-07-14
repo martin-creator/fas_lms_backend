@@ -30,10 +30,10 @@ from activity.utils import (
     ActivityValidators,
     ActivityConstants,
 )
-from activity.services.activity_services import ActivityService
 from activity.querying.activity_query import ActivityQuery
 from activity.reports.activity_report import ActivityReport
 from activity.settings.activity_settings import ActivitySettings
+from activity.helpers.activity_helpers import ActivityHelpers
 
 class ActivityService:
 
@@ -42,6 +42,9 @@ class ActivityService:
         """
         Create a new activity.
         """
+        if not ActivityValidators.validate_activity_data(activity_data):
+            return {"error": "Invalid activity data."}
+
         serializer = UserActivitySerializer(data=activity_data)
         if serializer.is_valid():
             activity = serializer.save(user=user)
@@ -58,6 +61,9 @@ class ActivityService:
             activity = UserActivity.objects.get(id=activity_id)
         except UserActivity.DoesNotExist:
             return {"error": "Activity not found."}
+
+        if not ActivityValidators.validate_activity_data(activity_data):
+            return {"error": "Invalid activity data."}
 
         serializer = UserActivitySerializer(instance=activity, data=activity_data, partial=True)
         if serializer.is_valid():
@@ -153,6 +159,9 @@ class ActivityService:
         """
         Add an attachment to an activity.
         """
+        if not FileUtils.validate_file(attachment_data['file']):
+            return {"error": "Invalid file."}
+
         serializer = AttachmentSerializer(data=attachment_data)
         if serializer.is_valid():
             attachment = serializer.save(content_object=content_object)
@@ -181,7 +190,7 @@ class ActivityService:
         reactions_count = Reaction.objects.filter(user=user).count()
         shares_count = Share.objects.filter(user=user).count()
 
-        engagement_rate = (posts_count + reactions_count + shares_count) / 3  # Example calculation
+        engagement_rate = StatsUtils.calculate_engagement_rate(posts_count, reactions_count, shares_count)
 
         return {
             'posts_count': posts_count,
@@ -189,7 +198,7 @@ class ActivityService:
             'shares_count': shares_count,
             'engagement_rate': engagement_rate
         }
-        
+
     @staticmethod
     def log_user_activity(user, activity_type, details, categories=None):
         """
@@ -197,7 +206,7 @@ class ActivityService:
         """
         if categories is None:
             categories = []
-        
+
         activity = UserActivity.objects.create(
             user=user,
             activity_type=activity_type,
@@ -215,51 +224,6 @@ class ActivityService:
         pass
 
     @staticmethod
-    def get_user_activities(user):
-        """
-        Retrieve user activity logs.
-        """
-        activities = UserActivity.objects.filter(user=user).order_by('-timestamp')
-        serializer = UserActivitySerializer(activities, many=True)
-        return serializer.data
-
-    @staticmethod
-    def get_activities_by_category(category_name):
-        """
-        Retrieve activities based on category.
-        """
-        activities = UserActivity.objects.filter(categories__name=category_name).order_by('-timestamp')
-        serializer = UserActivitySerializer(activities, many=True)
-        return serializer.data
-
-    @staticmethod
-    def get_popular_categories():
-        """
-        Retrieve popular activity categories.
-        """
-        categories = Category.objects.annotate(num_activities=Count('user_activity_categories')).order_by('-num_activities')
-        serializer = CategorySerializer(categories, many=True)
-        return serializer.data
-
-    @staticmethod
-    def analyze_user_engagement(user):
-        """
-        Analyze user engagement based on activities.
-        """
-        posts_count = UserActivity.objects.filter(user=user, activity_type='post').count()
-        reactions_count = Reaction.objects.filter(user=user).count()
-        shares_count = Share.objects.filter(user=user).count()
-
-        engagement_rate = (posts_count + reactions_count + shares_count) / 3  # Example calculation
-
-        return {
-            'posts_count': posts_count,
-            'reactions_count': reactions_count,
-            'shares_count': shares_count,
-            'engagement_rate': engagement_rate
-        }
-
-    @staticmethod
     def get_trending_topics():
         """
         Retrieve trending topics based on analytics.
@@ -272,6 +236,9 @@ class ActivityService:
         """
         Log attachments related to an object (post, message, etc.).
         """
+        if not FileUtils.validate_file(file):
+            return {"error": "Invalid file."}
+
         attachment = Attachment.objects.create(
             content_object=content_object,
             attachment_type=attachment_type,
@@ -287,3 +254,34 @@ class ActivityService:
         attachments = Attachment.objects.filter(content_object=content_object)
         serializer = AttachmentSerializer(attachments, many=True)
         return serializer.data
+
+    @staticmethod
+    def generate_user_activity_report(user_id):
+        """
+        Generate a report for user activities.
+        """
+        activities = ActivityQuery.get_activities_by_user(user_id)
+        report = ActivityReport.generate_user_activity_report(user_id, activities)
+        return report
+
+    @staticmethod
+    def get_activity_settings():
+        """
+        Get activity settings.
+        """
+        return ActivitySettings.get_activity_settings()
+
+    @staticmethod
+    def update_activity_settings(settings_data):
+        """
+        Update activity settings.
+        """
+        return ActivitySettings.update_activity_settings(settings_data)
+
+    @staticmethod
+    def process_activity_data(activity_data):
+        """
+        Process activity data before saving or updating.
+        """
+        processed_data = ActivityHelpers.process_activity_data(activity_data)
+        return processed_data
