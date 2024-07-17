@@ -1,0 +1,124 @@
+version: "3.12"
+
+services:
+
+  # backend api service
+  django:
+    restart: always
+    build: .
+    container_name: fas_backend
+    command: >
+      bash -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/usr/src/app/
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      # - pgdb
+      - redis
+
+  # frontend:
+  #   restart: always
+  #   build: ./TheVillageFrontend
+  #   container_name: frontend
+  #   volumes:
+  #     - ./TheVillageFrontend:/usr/src/app/
+  #   ports:
+  #     - "5173:5173"
+  #   depends_on:
+  #     - django
+
+  # Celery Service
+  celery:
+    restart: always
+    build: .
+    # command: celery -A ApiTheVillage worker --beat -linfo
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,[::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - django
+      - redis
+
+  # PostgreSQL Database Service
+  # pgdb:
+  #   image: postgres
+  #   container_name: pgdb
+  #   environment:
+  #     - POSTGRES_DB=postgres
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data/
+
+  # Redis Service
+  redis:
+    image: "redis:alpine"
+
+# Define a named volume for PostgreSQL data storage
+# volumes:
+#   pgdata:
+
+
+
+
+
+
+
+
+
+# version: "3.8"
+
+# services:
+#   # Django Service
+#   ApiTheVillage:
+#     build: 
+#     container_name: ApiTheVillage
+#     command: >
+#       bash -c "python manage.py makemigrations &&
+#                python manage.py migrate &&
+#                python manage.py runserver 0.0.0.0:8000"
+#     volumes:
+#       - .:/usr/src/app/
+#     ports:
+#       - "8000:8000"
+#     environment:
+#       - DEBUG=1
+#       - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,[::1]
+#       - CELERY_BROKER=redis://redis:6379/0
+#       - CELERY_BACKEND=redis://redis:6379/0
+#     depends_on:
+#       - redis
+
+#   # Celery Service
+#   celery:
+#     build: .
+#     command: celery -A ApiTheVillage worker --beat -l info
+#     volumes:
+#       - .:/usr/src/app
+#     environment:
+#       - DEBUG=1
+#       - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,[::1]
+#       - CELERY_BROKER_REDIS_URL=redis://redis:6379/0
+#       - CELERY_BACKEND=redis://redis:6379/0
+#     depends_on:
+#       - ApiTheVillage
+#       - redis
+
+#   # Redis Service
+#   redis:
+#     image: "redis:alpine"
+
+# # Define a named volume for PostgreSQL data storage
+# volumes:
+#   pgdata:
