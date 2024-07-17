@@ -154,3 +154,27 @@ The script will:
 - Parse the models to extract relationships.
 - Generate a high-level textual representation and save it as `models_representation.md` when the `text` command is used.
 - Generate a UML diagram and save it as `uml_diagram.png` when the `uml` command is used.
+
+
+## Docker commands
+
+[cheat sheet](https://www.geeksforgeeks.org/docker-cheat-sheet/)
+
+- Build the image:
+
+  ```bash
+  docker buildx build -t fas_lms_backend .
+  ```
+
+  - Run the container:
+
+  ```bash
+    docker run -p 8000:8000 fas_lms_backend
+    ```
+
+- Run services with docker-compose:
+
+````bash
+
+docker compose up
+```
