@@ -5,4 +5,4 @@ from .datetime_utils import DateTimeUtils
 from .file_utils import FileUtils
 from .stats_utils import StatsUtils
 from .validators import ActivityValidators
-from .constants import ActivityConstants
+from ..settings.config.constants import ActivityConstants
