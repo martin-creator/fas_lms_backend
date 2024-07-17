@@ -72,8 +72,8 @@ To set up this project locally, follow these steps:
 1. **Clone the repository:**
 
     ```bash
-    git clone https://github.com/AbdullahBakir97/Django--LMS--Learning-Management-System.git
-    cd Django--LMS--Learning-Management-System
+    git clone https://github.com/martin-creator/fas_lms_backend.git
+    cd fas_lms_backend
     ```
 
 2. **Create a virtual environment:**
