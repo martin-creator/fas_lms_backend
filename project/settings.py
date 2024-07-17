@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'taggit',
     'django_extensions',
     'drf_spectacular',
-    'drf_spectacular_sidecar', 
+    'drf_spectacular_sidecar',
+    'django_rq', 
     
     # my apps
     'activity',
@@ -151,7 +152,34 @@ ASGI_APPLICATION = "project.asgi.application"
 # }
 
 
-# # Celery Configuration
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    },
+    'high': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    },
+    'low': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    }
+}
+
+
+# Celery Configuration
+
+# RabbitMQ config
+# # CELERY_BROKER_URL = 'amqp://localhost'
+# # CELERY_RESULT_BACKEND = 'rpc://'
+
 # CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 # CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
 # CELERY_ACCEPT_CONTENT = ['json']

@@ -1,9 +1,11 @@
+# notifications/services.py
 from django.contrib.contenttypes.models import ContentType
 from .models import Notification, NotificationType, NotificationSettings, NotificationReadStatus
-from profiles.models import User, UserProfile
 from django.utils import timezone
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+import django_rq
+from .tasks import send_email_notification, send_push_notification
 
 class NotificationService:
     @staticmethod
@@ -29,9 +31,10 @@ class NotificationService:
 
     @staticmethod
     def send_notification(notification):
+        # Asynchronous task dispatch
+        django_rq.enqueue(send_email_notification, notification.id)
+        django_rq.enqueue(send_push_notification, notification.id)
         NotificationService.send_websocket_notification(notification)
-        NotificationService.send_email_notification(notification)
-        NotificationService.send_push_notification(notification)
 
     @staticmethod
     def send_websocket_notification(notification):
@@ -49,16 +52,6 @@ class NotificationService:
                 }
             }
         )
-
-    @staticmethod
-    def send_email_notification(notification):
-        # Implement email sending logic, possibly with a library like Django's EmailMessage or an external service
-        pass
-
-    @staticmethod
-    def send_push_notification(notification):
-        # Implement push notification logic, possibly with an external service like Firebase Cloud Messaging (FCM)
-        pass
 
     @staticmethod
     def mark_as_read(notification, user):
@@ -80,7 +73,7 @@ class NotificationService:
     @staticmethod
     def get_unread_notifications(user):
         return Notification.objects.filter(recipient=user, is_read=False)
-    
+
     @staticmethod
     def create_default_notification_settings(user):
         default_settings = NotificationType.objects.all()
