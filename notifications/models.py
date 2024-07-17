@@ -4,6 +4,14 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from activity.models import Reaction, Share
 from django.conf import settings
 
+
+NOTIFICATION_PRIORITY = [
+    (1, 'Low'),
+    (2, 'Medium'),
+    (3, 'High'),
+    (4, 'Critical'),
+]
+
 NOTIFICATION_TYPE = [
     ('job_application', 'Job Application'),
     ('job_listing', 'Job Listing'),
@@ -41,7 +49,7 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     notification_type = models.ForeignKey(NotificationType, on_delete=models.CASCADE)
     shares = models.ManyToManyField(Share, related_name='notifications_shares', blank=True)
-    priority = models.IntegerField(default=0)
+    priority = models.IntegerField(choices=NOTIFICATION_PRIORITY, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -59,6 +67,7 @@ class NotificationSettings(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     notification_type = models.ForeignKey(NotificationType, on_delete=models.CASCADE)
     is_enabled = models.BooleanField(default=True)
+    channel_preferences = models.JSONField(default=dict)  # Stores user preferences for channels (email, SMS, push, etc.)
 
     def __str__(self):
         return f"{self.user.user.username}'s Notification Settings"
