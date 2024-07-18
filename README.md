@@ -186,4 +186,4 @@ docker compose up
 
 ## Central Monitoring Dashboard
 
-- Visit: http://localhost:3000/dashboards
+- Visit: http://localhost:3000
