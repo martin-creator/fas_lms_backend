@@ -10,16 +10,17 @@ from notifications.querying.notification_query import (
     get_notifications_by_user,
     search_notifications
 )
-from notifications.utils.notification_utils import (
-    format_notification_data,
-    validate_notification_data
+from notifications.utils import (
+    format_notification_content,
+    validate_notification_data,
+    process_notification_data
 )
 from notifications.helpers.notification_helpers import (
     process_notification_data,
     validate_notification_permissions,
     send_push_notification
 )
-from notifications.settings.notification_settings import (
+from notifications.settings import (
     get_notification_settings,
     update_notification_settings
 )

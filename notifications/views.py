@@ -3,6 +3,7 @@ from django_ratelimit.decorators import ratelimit
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from notifications.models import Notification, NotificationSettings
 from notifications.controllers.notification_controller import NotificationController
 
 notification_controller = NotificationController()
