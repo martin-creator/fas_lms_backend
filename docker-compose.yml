@@ -13,6 +13,8 @@ services:
                python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/usr/src/app/
+      - static_volume:/src/staticfiles
+      - logs_volume:/src/logs
     ports:
       - "8000:8000"
     environment:
@@ -50,6 +52,79 @@ services:
       - django
       - redis
 
+  nginx:
+    image: nginx
+    restart: always
+    volumes:
+      - static_volume:/src/staticfiles
+    ports:
+      - 8080:80
+    depends_on:
+      - django
+      - grafana
+
+  prometheus:
+    image: prometheus
+    restart: always
+    build:
+      context: .docker/prometheus
+      dockerfile: Dockerfile
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana
+    restart: always
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_USERS_DEFAULT_THEME=${GF_USERS_DEFAULT_THEME}
+      - GF_USERS_ALLOW_SIGN_UP=${GF_USERS_ALLOW_SIGN_UP}
+      - GF_USERS_ALLOW_ORG_CREATE=${GF_USERS_ALLOW_ORG_CREATE}
+      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED}
+
+  logstash:
+    image: logstash:7.5.2
+    restart: always
+    depends_on:
+      - elasticsearch
+    networks:
+      - elastic
+    volumes:
+      - logs_volume:/logs:ro
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - http.host=0.0.0.0
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms750m -Xmx750m
+    ports:
+      - 9200:9200
+    networks:
+      - elastic
+    volumes:
+      - elasticsearch_volume:/usr/share/elasticsearch/data
+
+  kibana:
+    image: kibana:7.5.2
+
+    restart: always
+    ports:
+      - 5601:5601
+    networks:
+      - elastic
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
   # PostgreSQL Database Service
   # pgdb:
   #   image: postgres
@@ -64,6 +139,17 @@ services:
   # Redis Service
   redis:
     image: "redis:alpine"
+
+# Define named volumes
+volumes:
+  elasticsearch_volume:
+  static_volume:
+  logs_volume:
+  grafana_data:
+
+networks:
+  elastic:
+    driver: bridge
 
 # Define a named volume for PostgreSQL data storage
 # volumes:
