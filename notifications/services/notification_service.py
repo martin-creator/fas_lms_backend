@@ -76,6 +76,41 @@ class NotificationService:
         - notification_id (int): ID of the notification to delete.
         """
         Notification.objects.filter(id=notification_id).delete()
+        
+    @staticmethod
+    def get_notification(notification_id):
+        """
+        Retrieve a specific notification by its ID.
+
+        Args:
+        - notification_id (int): ID of the notification to retrieve.
+
+        Returns:
+        - dict: Serialized data of the notification.
+        """
+        notification = Notification.objects.get(id=notification_id)
+        serializer = NotificationSerializer(notification)
+        return serializer.data
+
+    @staticmethod
+    def update_notification(notification_id, data):
+        """
+        Update a notification.
+
+        Args:
+        - notification_id (int): ID of the notification to update.
+        - data (dict): Updated data for the notification.
+
+        Returns:
+        - dict: Serialized data of the updated notification.
+        """
+        notification = Notification.objects.get(id=notification_id)
+        serializer = NotificationSerializer(notification, data=data)
+        if serializer.is_valid():
+            updated_notification = serializer.save()
+            return serializer.data
+        else:
+            raise ValueError(serializer.errors)
 
     @staticmethod
     def get_user_notifications(user_id):
