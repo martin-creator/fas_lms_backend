@@ -7,11 +7,11 @@ from connections.models import Connection
 from django.contrib.contenttypes.models import ContentType
 
 # Signal to create a UserProfile when a new User is created
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        UserProfile.objects.create(user=instance)
-        NotificationService.create_default_notification_settings(instance)
+# @receiver(post_save, sender=User)
+# def create_user_profile(sender, instance, created, **kwargs):
+#     if created:
+#         UserProfile.objects.create(user=instance)
+#         NotificationService.create_default_notification_settings(instance)
 
 @receiver(post_save, sender=UserProfile)
 def create_default_notification_settings(sender, instance, created, **kwargs):
