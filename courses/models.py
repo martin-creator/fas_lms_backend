@@ -72,6 +72,30 @@ class Lesson(models.Model):
         return f"{self.title} - {self.course.title}"
     
 
+class LessonProgress(models.Model):
+    """
+    Represents the progress of a user through a lesson.
+
+    Attributes:
+        user (ForeignKey): The user who is progressing through the lesson.
+        lesson (ForeignKey): The lesson being tracked.
+        completed_at (DateTimeField): The date and time when the lesson was completed.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, related_name='progress', on_delete=models.CASCADE)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'lesson')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.lesson.title}"
+    
+    
+
+
+    
+
 class Quiz(models.Model):
     """
     Represents a quiz associated with a lesson.
@@ -117,6 +141,28 @@ class Choice(models.Model):
 
     def __str__(self):
         return self.text
+    
+
+class QuizProgress(models.Model):
+    """
+    Represents the progress of a user through a quiz.
+
+    Attributes:
+        user (ForeignKey): The user who is progressing through the quiz.
+        quiz (ForeignKey): The quiz being tracked.
+        completed_at (DateTimeField): The date and time when the quiz was completed.
+        score (IntegerField): The score achieved by the user in the quiz.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, related_name='progress', on_delete=models.CASCADE)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    score = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'quiz')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.quiz.title}"
 
 
 class CourseEnrollment(models.Model):
