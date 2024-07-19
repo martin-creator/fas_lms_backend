@@ -137,7 +137,7 @@ class QuizProgressAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         """Disable adding new QuizProgress objects."""
-        return False
+        return True
 
     def has_delete_permission(self, request, obj=None):
         """Disable deleting QuizProgress objects."""
