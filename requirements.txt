@@ -4,6 +4,7 @@ attrs==23.2.0
 billiard==4.2.0
 celery==5.4.0
 certifi==2024.6.2
+cffi==1.16.0
 channels==4.1.0
 channels-redis==4.2.0
 chardet==5.2.0
@@ -14,6 +15,7 @@ click-plugins==1.1.1
 click-repl==0.3.0
 colorama==0.4.6
 cron-descriptor==1.4.3
+cryptography==42.0.8
 dj-rest-auth==6.0.0
 Django==5.0.6
 django-allauth==0.63.3
@@ -21,6 +23,7 @@ django-celery-beat==2.6.0
 django-ckeditor==6.7.1
 django-cors-headers==4.3.1
 django-crispy-forms==2.1
+django-encrypted-model-fields==0.6.5
 django-extensions==3.2.3
 django-js-asset==2.2.0
 django-model-utils==4.5.1
@@ -51,6 +54,7 @@ pillow==10.3.0
 prometheus_client==0.20.0
 prompt_toolkit==3.0.47
 psycopg2-binary==2.9.9
+pycparser==2.22
 PyJWT==1.7.1
 PyPDF2==3.0.1
 python-crontab==3.1.0
