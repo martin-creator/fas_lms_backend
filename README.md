@@ -174,7 +174,16 @@ The script will:
 
 - Run services with docker-compose:
 
-````bash
+```bash
 
 docker compose up
 ```
+
+```bash
+ docker-compose up --build
+
+```
+
+## Central Monitoring Dashboard
+
+- Visit: http://localhost:3000

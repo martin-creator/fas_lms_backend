@@ -1,0 +1,3 @@
+server.name: "Django logs example"
+server.basePath: "/kibana"
+elasticsearch.hosts: ["http://elasticsearch:9200"]

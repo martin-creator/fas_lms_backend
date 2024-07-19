@@ -3,6 +3,9 @@ FROM python:3.12
 # Set the working directory in the container
 WORKDIR /app
 
+RUN mkdir -p /app/logs
+
+
 # Expose 
 EXPOSE 8000
 
