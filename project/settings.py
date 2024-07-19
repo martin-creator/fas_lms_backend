@@ -74,7 +74,7 @@ INSTALLED_APPS = [
     'connections',
     'companies',
     'certifications',
-    'logging',
+    'logging', # renamed
     
 ]
 
