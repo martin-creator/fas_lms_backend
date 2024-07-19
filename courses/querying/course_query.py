@@ -151,4 +151,75 @@ class CourseQuery:
         """
         return Course.objects.exclude(quiz__quizprogress__student=student).distinct()
     
+    @staticmethod
+    def get_course_by_id(course_id):
+        """
+        Get a course by its ID.
+        """
+        return Course.objects.get(id=course_id)
+        
+
+    @staticmethod
+    def get_course_enrollment_by_id(enrollment_id):
+        """
+        Get a course enrollment by its ID.
+        """
+        return CourseEnrollment.objects.get(id=enrollment_id)
+    
+    @staticmethod
+    def get_course_completion_by_id(completion_id):
+        """
+        Get a course completion by its ID.
+        """
+        return CourseCompletion.objects.get(id=completion_id)
+        
+
+    @staticmethod
+    def get_lesson_by_id(lesson_id):
+        """
+        Get a lesson by its ID.
+        """
+      
+        return Lesson.objects.get(id=lesson_id)
+       
+    @staticmethod
+    def get_lesson_progress_by_id(progress_id):
+        """
+        Get a lesson progress by its ID.
+        """
+      
+        return LessonProgress.objects.get(id=progress_id)
+        
+
+    @staticmethod
+    def get_quiz_by_id(quiz_id):
+        """
+        Get a quiz by its ID.
+        """
+       
+        return Quiz.objects.get(id=quiz_id)
+       
+    @staticmethod
+    def get_quiz_progress_by_id(progress_id):
+        """
+        Get a quiz progress by its ID.
+        """
+        return QuizProgress.objects.get(id=progress_id)
+        
+    @staticmethod
+    def get_question_by_id(question_id):
+        """
+        Get a question by its ID.
+        """
+        return Question.objects.get(id=question_id)
+
+    @staticmethod
+    def get_choice_by_id(choice_id):
+        """
+        Get a choice by its ID.
+        """
+        return Choice.objects.get(id=choice_id)
+        
+        
+    
     
