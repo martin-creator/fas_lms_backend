@@ -8,3 +8,5 @@ from courses.querying.course_query import CourseQuery
 from courses.settings.course_settings import CourseSettings
 from courses.reports.course_report import CourseReport
 
+# automatically save course progress and then return the updated course progress when a person logs in
+
