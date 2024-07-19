@@ -2,6 +2,21 @@ version: "3.12"
 
 services:
 
+  # agent:
+  #   container_name: newrelic-infra
+  #   build:
+  #     context: .
+  #     dockerfile: newrelic-infra.dockerfile
+  #   cap_add:
+  #     - SYS_PTRACE
+  #   network_mode: host
+  #   pid: host
+  #   privileged: true
+  #   volumes:
+  #     - "/:/host:ro"
+  #     - "/var/run/docker.sock:/var/run/docker.sock"
+  #   restart: unless-stopped
+
   # backend api service
   django:
     restart: always
@@ -10,7 +25,7 @@ services:
     command: >
       bash -c "python manage.py makemigrations &&
                python manage.py migrate &&
-               python manage.py runserver 0.0.0.0:8000"
+               NEW_RELIC_CONFIG_FILE=newrelic.ini newrelic-admin run-program python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/usr/src/app/
       - static_volume:/src/staticfiles
@@ -57,8 +72,12 @@ services:
     restart: always
     volumes:
       - static_volume:/src/staticfiles
+      - .docker/nginx/certs:/etc/nginx/certs
+      - .docker/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+
     ports:
       - 8080:80
+      - 8443:443
     depends_on:
       - django
       - grafana
@@ -208,3 +227,27 @@ networks:
 # # Define a named volume for PostgreSQL data storage
 # volumes:
 #   pgdata:
+
+# 4d646c47762b21cde97691d1399eb1daFFFFNRAL
+
+# newrelic-admin generate-config YOUR_LICENSE_KEY newrelic.ini
+
+# cat >> docker-compose.yaml << EOF
+# version: '3'
+
+# services:
+#   agent:
+#     container_name: newrelic-infra
+#     build:
+#       context: .
+#       dockerfile: newrelic-infra.dockerfile
+#     cap_add:
+#       - SYS_PTRACE
+#     network_mode: host
+#     pid: host
+#     privileged: true
+#     volumes:
+#       - "/:/host:ro"
+#       - "/var/run/docker.sock:/var/run/docker.sock"
+#     restart: unless-stopped
+# EOF
