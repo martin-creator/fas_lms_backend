@@ -4,6 +4,27 @@ from courses.serializers import CourseSerializer, CourseEnrollmentSerializer, Co
 
 
 class CourseQuery:
+
+    @staticmethod
+    def get_all_courses():
+        """
+        Get all courses.
+        """
+        courses = Course.objects.all()
+        serializer = CourseSerializer(courses, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_course_by_id(course_id):
+        """
+        Get a course by its ID.
+        """
+        course = Course.objects.get(id=course_id)
+        serializer = CourseSerializer(course)
+        return serializer.data
+    
+
     @staticmethod
     def get_courses_by_instructor(instructor):
         """
@@ -151,12 +172,6 @@ class CourseQuery:
         """
         return Course.objects.exclude(quiz__quizprogress__student=student).distinct()
     
-    @staticmethod
-    def get_course_by_id(course_id):
-        """
-        Get a course by its ID.
-        """
-        return Course.objects.get(id=course_id)
         
 
     @staticmethod

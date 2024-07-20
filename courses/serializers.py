@@ -8,6 +8,15 @@ class CourseSerializer(serializers.ModelSerializer):
         model = Course
         fields = '__all__'
 
+class CourseCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        # Ony the title, description, instructor, categories and tags are required to create a course
+        # should return the id of the created course plus the other fields
+        fields  = ['id', 'title', 'description', 'instructor', 'categories', 'tags']
+
+    
+
 class CourseEnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseEnrollment

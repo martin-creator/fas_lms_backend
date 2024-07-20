@@ -36,6 +36,8 @@ class Course(models.Model):
     comments = models.ManyToManyField('posts.Comment', related_name='course_comments', blank=True)
     reactions = models.ManyToManyField('activity.Reaction', related_name='course_reactions', blank=True)
     tags = TaggableManager()
+    # video_url = models.URLField(blank=True, null=True)
+    image = models.ImageField(upload_to='courses/', blank=True, null=True)
     prerequisites = models.ManyToManyField('self', symmetrical=False, related_name='required_for_courses', blank=True)
     duration = models.DurationField(default=timedelta(weeks=1))
     language = models.CharField(max_length=50, default='English')
