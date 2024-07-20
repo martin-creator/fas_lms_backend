@@ -1,1 +1,1 @@
-from .notification_service import NotificationService
+from notifications.services.notification_service import NotificationService

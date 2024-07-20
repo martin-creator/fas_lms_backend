@@ -21,10 +21,10 @@ from notifications.helpers.notification_helpers import (
     validate_notification_permissions,
     send_push_notification
 )
-from notifications.settings import (
-    get_notification_settings,
-    update_notification_settings
-)
+# from notifications.settings import (
+#     get_notification_settings,
+#     update_notification_settings
+# )
 from notifications.serializers import (
     NotificationSerializer,
     NotificationTypeSerializer,

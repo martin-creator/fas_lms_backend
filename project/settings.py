@@ -75,7 +75,7 @@ INSTALLED_APPS = [
     'connections',
     'companies',
     'certifications',
-    'logging', # renamed
+    'app_logs', # renamed
     
 ]
 
@@ -284,35 +284,35 @@ USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Logging
-LOG_PATH = os.path.join(BASE_DIR, 'logs')
-LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+# LOG_PATH = os.path.join(BASE_DIR, 'logs')
+# LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        "json": {
-            '()': CustomisedJSONFormatter,
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-        'app_log_file': {
-            'level': LOG_LEVEL,
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(LOG_PATH, 'app.log.json'),
-            'maxBytes': 1024 * 1024 * 15,  # 15MB
-            'backupCount': 10,
-            'formatter': 'json',
-        },
-    },
-    'root': {
-        'handlers': ['console', 'app_log_file'],
-        'level': LOG_LEVEL,
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         "json": {
+#             '()': CustomisedJSONFormatter,
+#         },
+#     },
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#         'app_log_file': {
+#             'level': LOG_LEVEL,
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'filename': os.path.join(LOG_PATH, 'app.log.json'),
+#             'maxBytes': 1024 * 1024 * 15,  # 15MB
+#             'backupCount': 10,
+#             'formatter': 'json',
+#         },
+#     },
+#     'root': {
+#         'handlers': ['console', 'app_log_file'],
+#         'level': LOG_LEVEL,
+#     },
+# }
 
 PROMETHEUS_LATENCY_BUCKETS = (0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0, 25.0, 50.0, 75.0, float("inf"),)
 PROMETHEUS_METRIC_EXPORT_DURATION = True
