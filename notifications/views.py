@@ -122,6 +122,105 @@ def generate_summary_report(request):
         return Response(summary, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+@api_view(['GET'])
+def get_unread_notifications_count(request):
+    """
+    Retrieve the count of unread notifications for the authenticated user.
+    """
+    user = request.user
+    count = notification_controller.get_unread_notifications_count(user)
+    return Response({'unread_count': count}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def create_notification_template(request):
+    """
+    Create or update a notification template for a notification type.
+    """
+    notification_type = request.data.get('notification_type')
+    template = request.data.get('template')
+    try:
+        template_obj = notification_controller.create_notification_template(notification_type, template)
+        return Response({'template': template_obj.template}, status=status.HTTP_201_CREATED)
+    except ValueError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_notification_template(request, notification_type):
+    """
+    Retrieve the notification template for a notification type.
+    """
+    try:
+        template = notification_controller.get_notification_template(notification_type)
+        return Response({'template': template}, status=status.HTTP_200_OK)
+    except ValueError:
+        return Response({'error': 'Template not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def get_notification_types(request):
+    """
+    Retrieve all notification types available in the system.
+    """
+    types = notification_controller.get_notification_types()
+    return Response({'notification_types': [type_.name for type_ in types]}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def subscribe_to_notifications(request):
+    """
+    Subscribe a user to receive notifications of specific types.
+    """
+    user = request.user
+    notification_types = request.data.get('notification_types')
+    try:
+        notification_controller.subscribe_to_notifications(user, notification_types)
+        return Response({'message': 'Subscribed successfully'}, status=status.HTTP_200_OK)
+    except ValueError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def unsubscribe_from_notifications(request):
+    """
+    Unsubscribe a user from receiving notifications of specific types.
+    """
+    user = request.user
+    notification_types = request.data.get('notification_types')
+    try:
+        notification_controller.unsubscribe_from_notifications(user, notification_types)
+        return Response({'message': 'Unsubscribed successfully'}, status=status.HTTP_200_OK)
+    except ValueError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def notify_followers(request):
+    """
+    Notify followers of a user profile about an action.
+    """
+    user_profile = request.data.get('user_profile')
+    notification_type = request.data.get('notification_type')
+    content_object = request.data.get('content_object', None)
+    content = request.data.get('content', '')
+    url = request.data.get('url', '')
+    try:
+        notification_controller.notify_followers(user_profile, notification_type, content_object, content, url)
+        return Response({'message': 'Followers notified successfully'}, status=status.HTTP_200_OK)
+    except ValueError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def notify_all_users(request):
+    """
+    Notify all users about an action.
+    """
+    notification_type = request.data.get('notification_type')
+    content_object = request.data.get('content_object', None)
+    content = request.data.get('content', '')
+    url = request.data.get('url', '')
+    try:
+        notification_controller.notify_all_users(notification_type, content_object, content, url)
+        return Response({'message': 'All users notified successfully'}, status=status.HTTP_200_OK)
+    except ValueError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @ratelimit(key='user', rate='5/m', method='POST', block=True)
 def send_notification_view(request):
