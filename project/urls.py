@@ -45,7 +45,7 @@ urlpatterns = [
 
     path("admin/", admin.site.urls),
     path('p/', include('django_prometheus.urls')),
-    path('', include('app_logs.urls')),
+    path('', include('loggings.urls')),
     re_path(r'^account-confirm-email/(?P<key>[-:\w]+)/$',CustomConfirmEmailView.as_view(),name='account_confirm_email',),
     
     
