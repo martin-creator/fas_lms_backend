@@ -12,7 +12,7 @@ NOTIFICATION_PRIORITY = [
     (4, 'Critical'),
 ]
 
-NOTIFICATION_TYPE = [
+DEFAULT_NOTIFICATION_TYPE = [
     ('job_application', 'Job Application'),
     ('job_listing', 'Job Listing'),
     ('message', 'Message'),
@@ -31,8 +31,7 @@ NOTIFICATION_TYPE = [
 ]
 
 class NotificationType(models.Model):
-    PREDEFINED_TYPES = ['type1', 'type2']
-
+    PREDEFINED_TYPES = DEFAULT_NOTIFICATION_TYPE
     type_name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
