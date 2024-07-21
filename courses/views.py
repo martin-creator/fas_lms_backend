@@ -549,12 +549,40 @@ def delete_specific_lesson(request, course_id, lesson_id):
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['POST'])
-def register_lesson_progress(request, user_id, lesson_id):
+def register_lesson_progress(request, course_id, lesson_id, user_id):
     """
     API endpoint that allows course progress to be registered.
     """
     if request.method == 'POST':
-        lesson = course_controller.register_lesson_progress(user_id, lesson_id)
+        lesson = course_controller.register_lesson_progress(course_id, lesson_id, user_id,)
         return Response(lesson, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='course_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='lesson_id', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='quiz_data', type=str, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Create a quiz for a lesson',
+            description='Create a quiz for a lesson',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['POST'])
+def create_lesson_quiz(request, course_id, lesson_id, quiz_data):
+    """
+    API endpoint that allows a quiz to be created for a lesson.
+    """
+    if request.method == 'POST':
+        quiz = course_controller.create_lesson_quiz(course_id, lesson_id, quiz_data)
+        return Response(quiz, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)

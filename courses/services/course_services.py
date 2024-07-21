@@ -213,16 +213,48 @@ class CourseService:
     #     return f"{self.user.username} - {self.lesson.title}"
 
     @staticmethod
-    def register_lesson_progress(lesson_id, user_id):
+    def register_lesson_progress(course_id, lesson_id, user_id,):
         """
         Make a lesson progress.
         """
-        lesson = CourseQuery.get_course_lesson_by_id_without_serializer(lesson_id)
+        lesson = CourseQuery.get_course_lesson_by_id_without_serializer(course_id, lesson_id)
         user = UserUtils.get_user_by_id(user_id)
         lesson_progress = LessonProgress(lesson=lesson, user=user)
         lesson_progress.save()
         serializer = LessonProgressSerializer(lesson_progress)
         return serializer.data
+    
+
+    # class Quiz(models.Model):
+    # """
+    # Represents a quiz associated with a lesson.
+
+    # Attributes:
+    #     lesson (ForeignKey): The lesson to which the quiz belongs.
+    #     title (CharField): The title of the quiz.
+    #     description (TextField): A detailed description of the quiz.
+    #     questions (ManyToManyField): The questions that are part of the quiz.
+    # """
+    # lesson = models.ForeignKey(Lesson, related_name='quizzes', on_delete=models.CASCADE)
+    # title = models.CharField(max_length=255)
+    # description = models.TextField(default='', blank=True, null=True)
+    # questions = models.ManyToManyField('Question', related_name='quizzes')
+
+    # def __str__(self):
+    #     return f"Quiz for {self.lesson.title}"
+
+    @staticmethod
+    def add_quiz_to_lesson(course_id, lesson_id, quiz_data):
+        """
+        Add a quiz to a lesson.
+        """
+        lesson = CourseQuery.get_course_lesson_by_id_without_serializer(course_id, lesson_id)
+        quiz = CourseHelpers.process_quiz_data(lesson, quiz_data)
+        quiz.save()
+        serializer = QuizSerializer(quiz)
+        return serializer.data
+    
+    
     
 
     

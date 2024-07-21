@@ -241,5 +241,42 @@ class CourseHelpers:
         return lesson, new_tags
     
 
+    # class Quiz(models.Model):
+    # """
+    # Represents a quiz associated with a lesson.
+
+    # Attributes:
+    #     lesson (ForeignKey): The lesson to which the quiz belongs.
+    #     title (CharField): The title of the quiz.
+    #     description (TextField): A detailed description of the quiz.
+    #     questions (ManyToManyField): The questions that are part of the quiz.
+    # """
+    # lesson = models.ForeignKey(Lesson, related_name='quizzes', on_delete=models.CASCADE)
+    # title = models.CharField(max_length=255)
+    # description = models.TextField(default='', blank=True, null=True)
+    # questions = models.ManyToManyField('Question', related_name='quizzes')
+
+    # def __str__(self):
+    #     return f"Quiz for {self.lesson.title}"
+    
+    
+    # add quiz to lesson
+
+    def process_quiz_data(lesson, quiz_data):
+        """
+        Process quiz data to create a quiz.
+        """
+        title = quiz_data.get('title')
+        description = quiz_data.get('description')
+
+        quiz = Quiz(
+                lesson_id=lesson,
+                title=title,
+                description=description
+            )
+
+        return quiz
+
+
     
 

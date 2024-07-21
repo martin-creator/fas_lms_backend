@@ -108,19 +108,25 @@ class CourseController:
         """
         Delete all lessons in a specific course.
         """
-        return self.course_service.delete_all_lessons(course_id)
+        return self.course_service.delete_all_course_lesssons(course_id)
     
     def delete_specific_lesson(self, course_id, lesson_id):
         """
         Delete a specific lesson in a specific course.
         """
-        return self.course_service.delete_specific_lesson(course_id, lesson_id)
+        return self.course_service.delete_specific_course_lesson(course_id, lesson_id)
     
-    def register_lesson_progress(self, user_id, lesson_id,):
+    def register_lesson_progress(self, course_id, lesson_id, user_id):
         """
         Register course progress.
         """
-        return self.course_service.register_lessson_progress(user_id, lesson_id)
+        return self.course_service.register_lesson_progress(course_id, lesson_id, user_id,)
+    
+    def create_lesson_quiz(self, course_id, lesson_id, quiz_data):
+        """
+        Create a quiz for a lesson.
+        """
+        return self.course_service.add_quiz_to_lesson(course_id, lesson_id, quiz_data)
     
     
 
