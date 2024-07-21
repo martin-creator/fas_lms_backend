@@ -82,6 +82,22 @@ class CourseQuery:
         serializer = LessonSerializer(lessons)
         return serializer.data
     
+    @staticmethod
+    def delete_all_course_lessons(course_id):
+        """
+        Delete all lessons in a specific course.
+        """
+        Lesson.objects.filter(course=course_id).delete()
+        return True
+    
+    @staticmethod
+    def delete_course_lesson(course_id, lesson_id):
+        """
+        Delete a lesson in a specific course.
+        """
+        Lesson.objects.get(course=course_id, id=lesson_id).delete()
+        return True
+    
     
 
 

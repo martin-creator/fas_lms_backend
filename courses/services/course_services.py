@@ -175,6 +175,21 @@ class CourseService:
         """
         return CourseQuery.get_course_lesson_by_id(course_id, lesson_id)
     
+    @staticmethod
+    def delete_all_course_lesssons(course_id):
+        """
+        Delete all lessons in a course.
+        """
+        return CourseQuery.delete_all_course_lessons(course_id)
+    
+    @staticmethod
+    def delete_specific_course_lesson(course_id, lesson_id):
+        """
+        Delete a specific lesson in a course.
+        """
+        return CourseQuery.delete_course_lesson(course_id, lesson_id)
+    
+    
 
     
     

@@ -104,6 +104,18 @@ class CourseController:
         """
         return self.course_query.get_course_lesson_by_id(course_id, lesson_id)
     
+    def delete_all_course_lessons(self, course_id):
+        """
+        Delete all lessons in a specific course.
+        """
+        return self.course_service.delete_all_lessons(course_id)
+    
+    def delete_specific_lesson(self, course_id, lesson_id):
+        """
+        Delete a specific lesson in a specific course.
+        """
+        return self.course_service.delete_specific_lesson(course_id, lesson_id)
+    
     
 
 

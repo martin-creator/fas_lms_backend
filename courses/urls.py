@@ -15,4 +15,6 @@ urlpatterns = [
     path('list_lessons/<int:course_id>/', views.get_lessons_by_course, name='get_lessons_by_course'),
     path('get_lesson_by_order/<int:course_id>/<int:lesson_order>/', views.get_specific_lesson_by_order, name='get_specific_lesson'),
     path('update_lesson/<int:course_id>/<int:lesson_id>/', views.update_lesson, name='update_lesson'),
+    path('delete_lesson/<int:course_id>/', views.delete_all_course_lessons , name='delete_all_lessons'),
+    path('delete_specific_lesson/<int:course_id>/<int:lesson_id>/', views.delete_specific_lesson, name='delete_specific_lesson'),
 ]

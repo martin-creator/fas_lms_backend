@@ -478,3 +478,56 @@ def update_lesson(request, course_id, lesson_id):
         return Response(lesson, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='course_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete all lessons in a course',
+            description='Delete all lessons in a course',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['DELETE'])
+def delete_all_course_lessons(request, course_id):
+    """
+    API endpoint that allows all lessons in a course to be deleted.
+    """
+    if request.method == 'DELETE':
+        lesson = course_controller.delete_all_course_lessons(course_id)
+        return Response(lesson, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='course_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='lesson_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete a specific lesson in a course',
+            description='Delete a specific lesson in a course',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['DELETE'])
+def delete_specific_lesson(request, course_id, lesson_id):
+    """
+    API endpoint that allows a specific lesson in a course to be deleted.
+    """
+    if request.method == 'DELETE':
+        lesson = course_controller.delete_specific_lesson(course_id, lesson_id)
+        return Response(lesson, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
