@@ -1,6 +1,7 @@
 # notifications/services/notification_service.py
-
+import logging
 from django.utils import timezone
+from django.core.mail import send_mail
 from notifications.models import Notification, NotificationType, NotificationTemplate, NotificationSettings, NotificationReadStatus
 from profiles.models import UserProfile
 from notifications.reports.notification_report import (
@@ -32,6 +33,12 @@ from notifications.serializers import (
     NotificationSettingsSerializer,
     NotificationReadStatusSerializer
 )
+from django.core.exceptions import PermissionDenied
+from notifications.tasks import send_bulk_notifications
+from django.core.cache import cache
+
+logger = logging.getLogger(__name__)
+
 
 class NotificationService:
 
@@ -46,16 +53,50 @@ class NotificationService:
         Returns:
         - Notification: The created Notification object.
         """
+        user = UserProfile.objects.get(id=data['recipient'])
+        if not validate_notification_permissions(user, data['notification_type']):
+            raise PermissionDenied("User does not have permission to receive this notification.")
         serializer = NotificationSerializer(data=data)
         if serializer.is_valid():
             notification = serializer.save()
-            # Send push notification as an example
-            if data.get('notification_type') == 'push':
+            delivery_method = data.get('delivery_method', 'push')
+
+            if delivery_method == 'email':
+                send_email_notification(notification)
+            elif delivery_method == 'sms':
+                send_sms_notification(notification)
+            elif delivery_method == 'push':
                 send_push_notification(data['recipient'], data['content'])
             return notification
         else:
             raise ValueError(serializer.errors)
+    
+    @staticmethod
+    def send_email_notification(notification):
+        user_email = notification.recipient.email
+        send_mail(
+            notification.title,
+            notification.content,
+            'no-reply@myapp.com',
+            [user_email],
+            fail_silently=False,
+        )
 
+    @staticmethod
+    def send_sms_notification(notification):
+        user_phone = notification.recipient.phone_number
+        # Implement SMS sending logic here
+    
+    @staticmethod
+    def validate_notification_permissions(user, notification_type):
+        # Implement permission check logic here
+        return True
+    
+    @staticmethod
+    def handle_notification_failure(data, error_message):
+        # Ensure to handle data privacy in failure logs
+        logger.error(f"Failed to send notification for user {data['recipient']}: {error_message}")
+        
     @staticmethod
     def mark_notification_as_read(notification_id):
         """
@@ -168,10 +209,12 @@ class NotificationService:
         serializer = NotificationSettingsSerializer(settings, data=settings_data)
         if serializer.is_valid():
             updated_settings = serializer.save()
+            cache_key = f"notification_settings_{user_id}"
+            cache.set(cache_key, updated_settings, timeout=3600)
             return updated_settings
         else:
             raise ValueError(serializer.errors)
-
+            
     @staticmethod
     def get_notification_settings(user_id):
         """
@@ -183,9 +226,12 @@ class NotificationService:
         Returns:
         - dict: The user's notification settings.
         """
-        settings = NotificationSettings.objects.get(user_id=user_id)
-        serializer = NotificationSettingsSerializer(settings)
-        return serializer.data
+        cache_key = f"notification_settings_{user_id}"
+        settings = cache.get(cache_key)
+        if not settings:
+            settings = NotificationSettings.objects.get(user_id=user_id)
+            cache.set(cache_key, settings, timeout=3600)
+        return settings
         
     @staticmethod
     def get_unread_notifications_count(user):
@@ -352,3 +398,5 @@ class NotificationService:
             else:
                 raise ValueError(serializer.errors)
         return notifications
+        
+    
