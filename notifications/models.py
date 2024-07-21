@@ -47,10 +47,15 @@ class Notification(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     notification_type = models.ForeignKey(NotificationType, on_delete=models.CASCADE)
+    delivery_method = models.CharField(
+        max_length=10,
+        choices=[('push', 'Push'), ('email', 'Email'), ('sms', 'SMS')]
+    )
     shares = models.ManyToManyField(Share, related_name='notifications_shares', blank=True)
     priority = models.IntegerField(choices=NOTIFICATION_PRIORITY, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
 
     def __str__(self):
         return f"{self.notification_type.type_name} Notification for {self.recipient.username}"
@@ -79,3 +84,39 @@ class NotificationReadStatus(models.Model):
 
     def __str__(self):
         return f"{self.user.user.username} read status for {self.notification}"
+        
+        
+class UserNotificationPreference(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    email_notifications = models.BooleanField(default=True)
+    sms_notifications = models.BooleanField(default=True)
+    push_notifications = models.BooleanField(default=True)
+    notification_frequency = models.CharField(
+        max_length=20,
+        choices=[
+            ('instant', 'Instant'),
+            ('daily', 'Daily'),
+            ('weekly', 'Weekly')
+        ],
+        default='instant'
+    )
+    
+class NotificationSnooze(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    
+    
+class NotificationEngagement(models.Model):
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    viewed_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    clicked_at = models.DateTimeField(null=True, blank=True)
+    
+    
+class NotificationABTest(models.Model):
+    test_name = models.CharField(max_length=100)
+    variant = models.CharField(max_length=50)
+    notification_template = models.ForeignKey(NotificationTemplate, on_delete=models.CASCADE)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
