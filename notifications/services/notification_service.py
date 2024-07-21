@@ -36,6 +36,8 @@ from notifications.serializers import (
 from django.core.exceptions import PermissionDenied
 from notifications.tasks import send_bulk_notifications
 from django.core.cache import cache
+from .metrics import increment_notifications_sent, increment_notifications_failed
+
 
 logger = logging.getLogger(__name__)
 
@@ -53,26 +55,41 @@ class NotificationService:
         Returns:
         - Notification: The created Notification object.
         """
-        user = UserProfile.objects.get(id=data['recipient'])
-        if not validate_notification_permissions(user, data['notification_type']):
-            raise PermissionDenied("User does not have permission to receive this notification.")
-        serializer = NotificationSerializer(data=data)
-        if serializer.is_valid():
-            notification = serializer.save()
-            delivery_method = data.get('delivery_method', 'push')
+        try:
+            user = UserProfile.objects.get(id=data['recipient'])
+            if not NotificationService.validate_notification_permissions(user, data['notification_type']):
+                raise PermissionDenied("User does not have permission to receive this notification.")
 
-            if delivery_method == 'email':
-                send_email_notification(notification)
-            elif delivery_method == 'sms':
-                send_sms_notification(notification)
-            elif delivery_method == 'push':
-                send_push_notification(data['recipient'], data['content'])
-            return notification
-        else:
-            raise ValueError(serializer.errors)
-    
+            serializer = NotificationSerializer(data=data)
+            if serializer.is_valid():
+                notification = serializer.save()
+                delivery_method = data.get('delivery_method', 'push')
+
+                if delivery_method == 'email':
+                    NotificationService.send_email_notification(notification)
+                elif delivery_method == 'sms':
+                    NotificationService.send_sms_notification(notification)
+                elif delivery_method == 'push':
+                    NotificationService.send_push_notification(notification)
+
+                increment_notifications_sent()
+                return notification
+            else:
+                raise ValueError(serializer.errors)
+        except Exception as e:
+            increment_notifications_failed()
+            logger.error(f"Failed to send notification: {e}")
+            NotificationService.handle_notification_failure(data, str(e))
+            raise
+
     @staticmethod
     def send_email_notification(notification):
+        """
+        Send an email notification.
+
+        Args:
+        - notification (Notification): The notification object containing email details.
+        """
         user_email = notification.recipient.email
         send_mail(
             notification.title,
@@ -84,19 +101,56 @@ class NotificationService:
 
     @staticmethod
     def send_sms_notification(notification):
+        """
+        Send an SMS notification.
+
+        Args:
+        - notification (Notification): The notification object containing SMS details.
+        """
         user_phone = notification.recipient.phone_number
         # Implement SMS sending logic here
-    
+        # Example:
+        # sms_client.send_message(user_phone, notification.content)
+
+    @staticmethod
+    def send_push_notification(notification):
+        """
+        Send a push notification.
+
+        Args:
+        - notification (Notification): The notification object containing push details.
+        """
+        # Implement push notification sending logic here
+        # Example:
+        # push_service.send_message(notification.recipient, notification.content)
+
     @staticmethod
     def validate_notification_permissions(user, notification_type):
+        """
+        Validate if a user has permission to receive a notification.
+
+        Args:
+        - user (UserProfile): The user object.
+        - notification_type (str): The type of notification.
+
+        Returns:
+        - bool: True if the user has permission, False otherwise.
+        """
         # Implement permission check logic here
         return True
-    
+
     @staticmethod
     def handle_notification_failure(data, error_message):
+        """
+        Handle a notification failure.
+
+        Args:
+        - data (dict): The data related to the notification.
+        - error_message (str): The error message encountered.
+        """
         # Ensure to handle data privacy in failure logs
         logger.error(f"Failed to send notification for user {data['recipient']}: {error_message}")
-        
+                
     @staticmethod
     def mark_notification_as_read(notification_id):
         """
