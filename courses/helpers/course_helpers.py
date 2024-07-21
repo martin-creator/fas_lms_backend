@@ -204,7 +204,7 @@ class CourseHelpers:
         return lesson, tags
     
 
-    def process_lesson_update_data(lesson_id, lesson_data):
+    def process_lesson_update_data(course_id, lesson_id, lesson_data):
         """
         Process lesson data to update a lesson.
         """
@@ -214,6 +214,7 @@ class CourseHelpers:
         video_url = lesson_data.get('video_url')
         order = lesson_data.get('order')
         tags = lesson_data.get('tags')
+        new_tags = []
 
         lesson = Lesson.objects.get(id=lesson_id)
 
@@ -233,9 +234,11 @@ class CourseHelpers:
             lesson.order = order
         
         if tags is not None:
-            lesson.tags = tags
+            new_tags = tags
+        else:
+            new_tags = lesson.tags
         
-        return lesson
+        return lesson, new_tags
     
 
     

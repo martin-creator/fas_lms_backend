@@ -137,6 +137,44 @@ class CourseService:
 
         serializer = LessonSerializer(lesson)
         return serializer.data
+    
+    @staticmethod
+    def update_lesson(course_id, lesson_id, lesson_data):
+        """
+        Update an existing lesson.
+        """
+        lesson = CourseQuery.get_course_lesson_by_id_without_serializer(course_id, lesson_id)
+        lesson, new_tags = CourseHelpers.process_lesson_update_data(lesson, lesson_data)
+        lesson.save()
+        # save tags
+        if new_tags:
+            for tag in new_tags:
+                lesson.tags.add(tag)
+        serializer = LessonSerializer(lesson)
+        return serializer.data
+    
+    
+    @staticmethod
+    def get_lessons_by_course(course_id):
+        """
+        Get all lessons for a course.
+        """
+        return CourseQuery.get_lessons_by_course(course_id)
+    
+    @staticmethod
+    def get_course_lessons_by_order(course_id, lesson_order):
+        """
+        Get a specific lesson in a course.
+        """
+        return CourseQuery.get_course_lessons_by_order(course_id, lesson_order)
+    
+    @staticmethod
+    def get_specific_lesson_by_id(course_id, lesson_id):
+        """
+        Get a specific lesson in a course.
+        """
+        return CourseQuery.get_course_lesson_by_id(course_id, lesson_id)
+    
 
     
     

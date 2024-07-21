@@ -80,6 +80,31 @@ class CourseController:
         """
         return self.course_service.add_lesson_to_course(course_id, lesson_data)
     
+    def get_lessons_by_course(self, course_id):
+        """
+        Get all lessons in a specific course.
+        """
+        return self.course_query.get_lessons_by_course(course_id)
+    
+    def get_course_lesson_by_order(self, course_id, lesson_order):
+        """
+        Get a specific lesson in a specific course.
+        """
+        return self.course_query.get_course_lessons_by_order(course_id, lesson_order)
+    
+    def update_lesson(self, course_id, lesson_id, lesson_data):
+        """
+        Update a lesson.
+        """
+        return self.course_service.update_lesson( course_id, lesson_id, lesson_data)
+    
+    def get_course_lesson_by_id(self, course_id, lesson_id):
+        """
+        Get a specific lesson in a specific course.
+        """
+        return self.course_query.get_course_lesson_by_id(course_id, lesson_id)
+    
+    
 
 
     

@@ -394,3 +394,87 @@ def add_lesson_to_course(request, course_id):
         return Response(lesson, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='course_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get all lessons in a course',
+            description='Get all lessons in a course',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['GET'])
+def get_lessons_by_course(request, course_id):
+    """
+    API endpoint that allows all lessons in a course to be retrieved.
+    """
+    if request.method == 'GET':
+        lessons = course_controller.get_lessons_by_course(course_id)
+        return Response(lessons, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='course_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='lesson_order', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get a specific lesson in a course',
+            description='Get a specific lesson in a course',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['GET'])
+def get_specific_lesson_by_order(request, course_id, lesson_order):
+    """
+    API endpoint that allows a specific lesson in a course to be retrieved.
+    """
+    if request.method == 'GET':
+        lesson = course_controller.get_course_lesson_by_order(course_id, lesson_order)
+        return Response(lesson, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='course_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='lesson_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update a lesson',
+            description='Update a lesson',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['PUT','GET'])
+def update_lesson(request, course_id, lesson_id):
+    """
+    API endpoint that allows a lesson to be updated.
+    """
+    if request.method == 'PUT':
+        lesson_data = request.data
+        lesson = course_controller.update_lesson(course_id, lesson_id, lesson_data)
+        return Response(lesson, status=status.HTTP_200_OK)
+    elif request.method == 'GET':
+        lesson = course_controller.get_course_lesson_by_id(course_id, lesson_id)
+        return Response(lesson, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)

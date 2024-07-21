@@ -48,6 +48,41 @@ class CourseQuery:
         Course.objects.all().delete()
         return True
     
+    @staticmethod
+    def get_lessons_by_course(course_id):
+        """
+        Get all lessons in a specific course.
+        """
+        lessons = Lesson.objects.filter(course=course_id)
+        serializer = LessonSerializer(lessons, many=True)
+        return serializer.data
+    
+    @staticmethod
+    def get_course_lesson_by_id(course_id, lesson_id):
+        """
+        Get a lesson in a specific course by its ID.
+        """
+        lesson = Lesson.objects.get(course=course_id, id=lesson_id)
+        serializer = LessonSerializer(lesson)
+        return serializer.data
+    
+    @staticmethod
+    def get_course_lesson_by_id_without_serializer(course_id, lesson_id):
+        """
+        Get a lesson in a specific course by its ID without using a serializer.
+        """
+        return Lesson.objects.get(course=course_id, id=lesson_id)
+    
+    @staticmethod
+    def get_course_lessons_by_order(course_id, lesson_order):
+        """
+        Get a specific lesson in a specific course.
+        """
+        lessons =  Lesson.objects.get(course=course_id, order=lesson_order)
+        serializer = LessonSerializer(lessons)
+        return serializer.data
+    
+    
 
 
     
@@ -80,12 +115,6 @@ class CourseQuery:
         """
         return CourseCompletion.objects.filter(student=student)
 
-    @staticmethod
-    def get_lessons_by_course(course):
-        """
-        Get all lessons in a specific course.
-        """
-        return Lesson.objects.filter(course=course)
 
     @staticmethod
     def get_lessons_by_student(student):
@@ -216,13 +245,13 @@ class CourseQuery:
         return CourseCompletion.objects.get(id=completion_id)
         
 
-    @staticmethod
-    def get_lesson_by_id(lesson_id):
-        """
-        Get a lesson by its ID.
-        """
+    # @staticmethod
+    # def get_lesson_by_id(lesson_id):
+    #     """
+    #     Get a lesson by its ID.
+    #     """
       
-        return Lesson.objects.get(id=lesson_id)
+    #     return Lesson.objects.get(id=lesson_id)
        
     @staticmethod
     def get_lesson_progress_by_id(progress_id):
