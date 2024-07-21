@@ -24,6 +24,26 @@ class CourseQuery:
         serializer = CourseSerializer(course)
         return serializer.data
     
+    @staticmethod
+    def delete_course(course_id):
+        """
+        Delete a course by its ID.
+        """
+        course = Course.objects.get(id=course_id)
+        course.delete()
+        return True
+    
+    @staticmethod
+    def delete_all_courses():
+        """
+        Delete all courses.
+        """
+        Course.objects.all().delete()
+        return True
+    
+
+
+    
 
     @staticmethod
     def get_courses_by_instructor(instructor):
@@ -234,6 +254,8 @@ class CourseQuery:
         Get a choice by its ID.
         """
         return Choice.objects.get(id=choice_id)
+    
+    
         
         
     

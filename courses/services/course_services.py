@@ -57,6 +57,20 @@ class CourseService:
         serializer = CourseSerializer(course)
         return serializer.data
     
+    @staticmethod
+    def delete_course(course_id):
+        """
+        Delete a course.
+        """
+        return CourseQuery.delete_course(course_id)
+    
+    @staticmethod
+    def delete_all_courses():
+        """
+        Delete all courses.
+        """
+        return CourseQuery.delete_all_courses()
+    
     
     
 

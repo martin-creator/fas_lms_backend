@@ -225,3 +225,55 @@ def update_course(request, course_id):
         return Response(course, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='course_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete a specific course',
+            description='Delete a specific course',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['DELETE'])
+def delete_specific_course(request, course_id):
+    """
+    API endpoint that allows a specific course to be deleted.
+    """
+    if request.method == 'DELETE':
+        course_controller = CourseController()
+        course = course_controller.delete_specific_course(course_id)
+        return Response(course, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete all courses',
+            description='Delete all courses',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['DELETE'])
+def delete_all_courses(request):
+    """
+    API endpoint that allows all courses to be deleted.
+    """
+    if request.method == 'DELETE':
+        course_controller = CourseController()
+        course = course_controller.delete_all_courses()
+        return Response(course, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)

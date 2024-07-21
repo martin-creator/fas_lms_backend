@@ -44,6 +44,12 @@ class CourseController:
         """
         return self.course_service.update_course(course_id, course_data)
     
+    def delete_specific_course(self, course_id):
+        """
+        Delete a specific course.
+        """
+        return self.course_query.delete_course(course_id)
+    
 
 
     
