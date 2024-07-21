@@ -38,6 +38,8 @@ from notifications.tasks import send_bulk_notifications
 from django.core.cache import cache
 from .metrics import increment_notifications_sent, increment_notifications_failed
 from .pubsub_service import publish_notification
+from .crm_integration import send_crm_alert
+from .alert_system_integration import send_external_alert
 
 
 logger = logging.getLogger(__name__)
@@ -75,7 +77,10 @@ class NotificationService:
             if serializer.is_valid():
                 notification = serializer.save()
                 delivery_method = data.get('delivery_method', 'push')
-
+                if data.get('notify_crm'):
+                    send_crm_alert(user.id, data['event_type'], data['event_data'])
+                if data.get('notify_alert_system'):
+                    send_external_alert(user.id, data['alert_type'], data['message'])
                 if delivery_method == 'email':
                     NotificationService.send_email_notification(notification)
                 elif delivery_method == 'sms':
