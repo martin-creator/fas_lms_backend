@@ -1,8 +1,12 @@
 from django.db import models
+from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from activity.models import Reaction, Share
 from django.conf import settings
+from datetime import timedelta
+from django.utils import timezone
+from django_cryptography.fields import encrypt
 
 
 NOTIFICATION_PRIORITY = [
@@ -42,7 +46,8 @@ class Notification(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField(null=True, blank=True)
     content_object = GenericForeignKey('content_type', 'object_id')
-    content = models.TextField()
+    content = encrypt(models.TextField())
+    html_content = models.TextField(blank=True, null=True)
     url = models.URLField()
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
@@ -56,9 +61,18 @@ class Notification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    class Meta:
+        permissions = [
+            ("can_manage_notifications", "Can manage notifications"),
+            ("can_view_notifications", "Can view notifications"),
+        ]
 
     def __str__(self):
         return f"{self.notification_type.type_name} Notification for {self.recipient.username}"
+        
+    def delete_old_notifications():
+        threshold_date = timezone.now() - timedelta(days=365)  # Example: 1 year retention
+        Notification.objects.filter(sent_at__lt=threshold_date).delete()
 
 class NotificationTemplate(models.Model):
     notification_type = models.ForeignKey(NotificationType, on_delete=models.CASCADE)
