@@ -62,6 +62,18 @@ class CourseController:
         """
         return self.course_service.enroll_course(course_id, user_id)
     
+    def track_course_progress(self, course_id, user_id):
+        """
+        Track course progress.
+        """
+        return self.course_report.get_course_progress(user_id, course_id)
+    
+    def complete_course(self, course_id, user_id):
+        """
+        Complete a course.
+        """
+        return self.course_report.complete_course(user_id, course_id)
+    
 
 
     
