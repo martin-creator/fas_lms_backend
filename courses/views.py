@@ -277,3 +277,31 @@ def delete_all_courses(request):
         return Response(course, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='course_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='user_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Enroll in a course',
+            description='Enroll in a course',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['POST'])
+def enroll_course(request, course_id, user_id):
+    """
+    API endpoint that allows a user to enroll in a course.
+    """
+    if request.method == 'POST':
+        course_controller = CourseController()
+        course = course_controller.enroll_course(course_id, user_id)
+        return Response(course, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)

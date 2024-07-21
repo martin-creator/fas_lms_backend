@@ -50,6 +50,18 @@ class CourseController:
         """
         return self.course_query.delete_course(course_id)
     
+    def delete_all_courses(self):
+        """
+        Delete all courses.
+        """
+        return self.course_query.delete_all_courses()
+    
+    def enroll_course(self, course_id, user_id):
+        """
+        Enroll in a course.
+        """
+        return self.course_service.enroll_course(course_id, user_id)
+    
 
 
     

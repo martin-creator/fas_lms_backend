@@ -25,6 +25,13 @@ class CourseQuery:
         return serializer.data
     
     @staticmethod
+    def get_course_by_id_without_serializer(course_id):
+        """
+        Get a course by its ID without using a serializer.
+        """
+        return Course.objects.get(id=course_id)
+    
+    @staticmethod
     def delete_course(course_id):
         """
         Delete a course by its ID.

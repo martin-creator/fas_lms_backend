@@ -2,7 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Count
 from courses.models import Course, CourseEnrollment, CourseCompletion, Lesson, LessonProgress, Quiz, QuizProgress, Question, Choice
 from courses.serializers import CourseSerializer, CourseEnrollmentSerializer, CourseCompletionSerializer, LessonSerializer, LessonProgressSerializer, QuizSerializer, QuizProgressSerializer, QuestionSerializer, ChoiceSerializer
-from courses.utils import DateTimeUtils
+from courses.utils import DateTimeUtils, UserUtils
 from courses.helpers.course_helpers import CourseHelpers
 from courses.querying.course_query import CourseQuery
 from courses.settings.course_settings import CourseSettings
@@ -70,6 +70,25 @@ class CourseService:
         Delete all courses.
         """
         return CourseQuery.delete_all_courses()
+    
+    @staticmethod
+    def enroll_course(course_id, user_id):
+        """
+        Enroll a user in a course.
+        """
+        course = CourseQuery.get_course_by_id_without_serializer(course_id)
+        user = UserUtils.get_user_by_id(user_id)
+
+        # Check if the user is already enrolled in the course
+        if CourseQuery.get_course_enrollment(user, course):
+            raise ValidationError('You are already enrolled in this course.')
+        
+        course_enrollment = CourseEnrollment(user=user, course=course)
+        course_enrollment.save()
+        serializer = CourseEnrollmentSerializer(course_enrollment)
+        return serializer.data
+
+    
     
     
     
