@@ -13,7 +13,7 @@ from drf_spectacular.types import OpenApiTypes
 
 
 
-
+course_controller = CourseController()
 
 # Create your views here.
 # Ony the title, description, instructor, categories and tags are required to create a course
@@ -38,7 +38,6 @@ def get_courses(request):
     API endpoint that allows all courses to be retrieved.
     """
     if request.method == 'GET':
-        course_controller = CourseController()
         courses = course_controller.get_all_courses()
         return Response(courses, status=status.HTTP_200_OK)
     else:
@@ -66,7 +65,6 @@ def get_specific_course(request, course_id):
     API endpoint that allows a specific course to be retrieved.
     """
     if request.method == 'GET':
-        course_controller = CourseController()
         course = course_controller.get_course_by_id(course_id)
         return Response(course, status=status.HTTP_200_OK)
     else:
@@ -140,7 +138,6 @@ def create_course(request):
     """
     if request.method == 'POST':
         course_data = request.data
-        course_controller = CourseController()
         course = course_controller.create_course(course_data)
         return Response(course, status=status.HTTP_201_CREATED)
     else:
@@ -216,11 +213,9 @@ def update_course(request, course_id):
     """
     if request.method == 'PUT':
         course_data = request.data
-        course_controller = CourseController()
         course = course_controller.update_course(course_id, course_data)
         return Response(course, status=status.HTTP_200_OK)
     elif request.method == 'GET':
-        course_controller = CourseController()
         course = course_controller.get_course_by_id(course_id)
         return Response(course, status=status.HTTP_200_OK)
     else:
@@ -247,7 +242,6 @@ def delete_specific_course(request, course_id):
     API endpoint that allows a specific course to be deleted.
     """
     if request.method == 'DELETE':
-        course_controller = CourseController()
         course = course_controller.delete_specific_course(course_id)
         return Response(course, status=status.HTTP_200_OK)
     else:
@@ -272,7 +266,6 @@ def delete_all_courses(request):
     API endpoint that allows all courses to be deleted.
     """
     if request.method == 'DELETE':
-        course_controller = CourseController()
         course = course_controller.delete_all_courses()
         return Response(course, status=status.HTTP_200_OK)
     else:
@@ -300,8 +293,61 @@ def enroll_course(request, course_id, user_id):
     API endpoint that allows a user to enroll in a course.
     """
     if request.method == 'POST':
-        course_controller = CourseController()
         course = course_controller.enroll_course(course_id, user_id)
+        return Response(course, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameter = [
+         OpenApiParameter(name='course_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='user_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update course progress',
+            description='Update course progress',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['GET'])
+def update_course_progress(request, course_id, user_id):
+    """
+    API endpoint that allows a user to update course progress.
+    """
+    if request.method == 'GET':
+        course = course_controller.track_course_progress(course_id, user_id)
+        return Response(course, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='course_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='lesson_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Complete course',
+            description='Complete course',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['POST'])
+def complete_course(request, course_id, user_id):
+    """
+    API endpoint that allows a user to complete a course.
+    """
+    if request.method == 'POST':
+        course = course_controller.complete_course(course_id, user_id)
         return Response(course, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
