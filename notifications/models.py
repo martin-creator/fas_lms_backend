@@ -115,11 +115,16 @@ class UserNotificationPreference(models.Model):
         default='instant'
     )
     
+    def __str__(self):
+        return f"{self.user.username}'s Notification Preferences"
+    
 class NotificationSnooze(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     
+    def __str__(self):
+        return f"Snooze for {self.user.username} from {self.start_time} to {self.end_time}"
     
 class NotificationEngagement(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
@@ -127,6 +132,8 @@ class NotificationEngagement(models.Model):
     viewed_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     clicked_at = models.DateTimeField(null=True, blank=True)
     
+    def __str__(self):
+        return f"Engagement for {self.user.username} on {self.notification}"
     
 class NotificationABTest(models.Model):
     test_name = models.CharField(max_length=100)
@@ -134,3 +141,6 @@ class NotificationABTest(models.Model):
     notification_template = models.ForeignKey(NotificationTemplate, on_delete=models.CASCADE)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+    
+    def __str__(self):
+        return f"A/B Test {self.test_name} - Variant {self.variant}"
