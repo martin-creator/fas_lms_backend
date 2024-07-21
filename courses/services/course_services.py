@@ -119,6 +119,23 @@ class CourseService:
         course_completion.save()
         serializer = CourseCompletionSerializer(course_completion)
         return serializer.data
+    
+
+    @staticmethod
+    def add_lesson_to_course(course_id, lesson_data):
+        """
+        Add a lesson to a course.
+        """
+        course = CourseQuery.get_course_by_id_without_serializer(course_id)
+        lesson, tags = CourseHelpers.process_lesson_data(course, lesson_data)
+        lesson.save()
+
+        # Add tags to the lesson after it has been saved
+        if tags:
+            lesson.tags.add(tags)
+            
+        serializer = LessonSerializer(lesson)
+        return serializer.data
 
     
     

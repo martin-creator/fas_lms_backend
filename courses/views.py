@@ -351,3 +351,46 @@ def complete_course(request, course_id, user_id):
         return Response(course, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+# course = models.ForeignKey(Course, related_name='lessons', on_delete=models.CASCADE)
+    # title = models.CharField(max_length=255)
+    # description = models.TextField(default='', blank=True, null=True)
+    # content = models.TextField(default='', blank=True, null=True)
+    # video_url = models.URLField(blank=True, null=True)
+    # attachments = GenericRelation('Attachment')
+    # tags = TaggableManager()
+    # order = models.PositiveIntegerField(default=0, blank=True, null=True)
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='course_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='content', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='video_url', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='order', type=int, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='tags', type=str, location=OpenApiParameter.QUERY, required=False),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Add a lesson to a course',
+            description='Add a lesson to a course',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['POST'])
+def add_lesson_to_course(request, course_id):
+    """
+    API endpoint that allows a lesson to be added to a course.
+    """
+    if request.method == 'POST':
+        lesson_data = request.data
+        lesson = course_controller.add_lesson_to_course(course_id, lesson_data)
+        return Response(lesson, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)

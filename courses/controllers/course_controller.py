@@ -74,6 +74,12 @@ class CourseController:
         """
         return self.course_report.complete_course(user_id, course_id)
     
+    def add_lesson_to_course(self, course_id, lesson_data):
+        """
+        Add a lesson to a course.
+        """
+        return self.course_service.add_lesson_to_course(course_id, lesson_data)
+    
 
 
     

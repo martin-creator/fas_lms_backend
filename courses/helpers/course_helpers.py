@@ -170,3 +170,73 @@ class CourseHelpers:
 
         return enrollment
     
+
+    # course = models.ForeignKey(Course, related_name='lessons', on_delete=models.CASCADE)
+    # title = models.CharField(max_length=255)
+    # description = models.TextField(default='', blank=True, null=True)
+    # content = models.TextField(default='', blank=True, null=True)
+    # video_url = models.URLField(blank=True, null=True)
+    # attachments = GenericRelation('Attachment')
+    # tags = TaggableManager()
+    # order = models.PositiveIntegerField(default=0, blank=True, null=True)
+
+    def process_lesson_data(lesson_data):
+        """
+        Process lesson data to create a lesson.
+        """
+        course_id = lesson_data.get('course')
+        title = lesson_data.get('title')
+        description = lesson_data.get('description')
+        content = lesson_data.get('content')
+        video_url = lesson_data.get('video_url')
+        order = lesson_data.get('order')
+        tags = lesson_data.get('tags')
+
+        lesson = Lesson(
+                course_id=course_id,
+                title=title,
+                description=description,
+                content=content,
+                video_url=video_url,
+                order=order
+            )
+
+        return lesson, tags
+    
+
+    def process_lesson_update_data(lesson_id, lesson_data):
+        """
+        Process lesson data to update a lesson.
+        """
+        title = lesson_data.get('title')
+        description = lesson_data.get('description')
+        content = lesson_data.get('content')
+        video_url = lesson_data.get('video_url')
+        order = lesson_data.get('order')
+        tags = lesson_data.get('tags')
+
+        lesson = Lesson.objects.get(id=lesson_id)
+
+        if title is not None:
+            lesson.title = title
+        
+        if description is not None:
+            lesson.description = description
+        
+        if content is not None:
+            lesson.content = content
+        
+        if video_url is not None:
+            lesson.video_url = video_url
+        
+        if order is not None:
+            lesson.order = order
+        
+        if tags is not None:
+            lesson.tags = tags
+        
+        return lesson
+    
+
+    
+
