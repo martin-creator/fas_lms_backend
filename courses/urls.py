@@ -17,5 +17,5 @@ urlpatterns = [
     path('update_lesson/<int:course_id>/<int:lesson_id>/', views.update_lesson, name='update_lesson'),
     path('delete_lesson/<int:course_id>/', views.delete_all_course_lessons , name='delete_all_lessons'),
     path('delete_specific_lesson/<int:course_id>/<int:lesson_id>/', views.delete_specific_lesson, name='delete_specific_lesson'),
-    path('lesson_progress/<int:lesson_id>/<int:user_id>/', views.make_lesson_progress, name='make_lesson_progress'),
+    path('lesson_progress/<int:lesson_id>/<int:user_id>/', views.register_lesson_progress, name='make_lesson_progress'),
 ]
