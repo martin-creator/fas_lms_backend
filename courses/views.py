@@ -300,7 +300,7 @@ def enroll_course(request, course_id, user_id):
     
 
 @extend_schema(
-    parameter = [
+    parameters = [
          OpenApiParameter(name='course_id', type=int, location=OpenApiParameter.PATH, required=True),
         OpenApiParameter(name='user_id', type=int, location=OpenApiParameter.QUERY, required=True),
     ],

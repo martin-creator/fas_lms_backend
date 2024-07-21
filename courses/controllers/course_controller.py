@@ -66,13 +66,13 @@ class CourseController:
         """
         Track course progress.
         """
-        return self.course_report.get_course_progress(user_id, course_id)
+        return self.course_service.get_course_progress(user_id, course_id)
     
     def complete_course(self, course_id, user_id):
         """
         Complete a course.
         """
-        return self.course_report.complete_course(user_id, course_id)
+        return self.course_service.complete_course(user_id, course_id)
     
     def add_lesson_to_course(self, course_id, lesson_data):
         """
