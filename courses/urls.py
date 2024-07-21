@@ -11,4 +11,5 @@ urlpatterns = [
     path('enroll/<int:course_id>/<int:user_id>/', views.enroll_course, name='enroll_course'),
     path('progress/<int:course_id>/<int:user_id>/', views.update_course_progress, name='track_course_progress'),
     path('complete/<int:course_id>/<int:user_id>/', views.complete_course, name='complete_course'),
+    path('add_lesson/<int:course_id>/', views.add_lesson_to_course, name='add_lesson_to_course'),
 ]

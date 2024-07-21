@@ -127,13 +127,14 @@ class CourseService:
         Add a lesson to a course.
         """
         course = CourseQuery.get_course_by_id_without_serializer(course_id)
-        lesson, tags = CourseHelpers.process_lesson_data(course, lesson_data)
+        lesson, tags = CourseHelpers.process_lesson_data(course_id, lesson_data)
         lesson.save()
 
         # Add tags to the lesson after it has been saved
         if tags:
-            lesson.tags.add(tags)
-            
+            for tag in tags:
+             lesson.tags.add(tag)
+
         serializer = LessonSerializer(lesson)
         return serializer.data
 

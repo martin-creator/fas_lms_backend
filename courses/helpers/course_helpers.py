@@ -180,7 +180,7 @@ class CourseHelpers:
     # tags = TaggableManager()
     # order = models.PositiveIntegerField(default=0, blank=True, null=True)
 
-    def process_lesson_data(lesson_data):
+    def process_lesson_data(course_id, lesson_data):
         """
         Process lesson data to create a lesson.
         """
