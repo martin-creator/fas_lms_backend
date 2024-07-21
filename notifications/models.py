@@ -7,6 +7,7 @@ from django.conf import settings
 from datetime import timedelta
 from django.utils import timezone
 from django_cryptography.fields import encrypt
+from django.utils.translation import gettext_lazy as _
 
 
 NOTIFICATION_PRIORITY = [
@@ -52,6 +53,10 @@ class Notification(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     notification_type = models.ForeignKey(NotificationType, on_delete=models.CASCADE)
+    language = models.CharField(
+        max_length=10, 
+        default='en', 
+        choices=[('en', _('English')), ('es', _('Spanish')), ('fr', _('French'))])
     delivery_method = models.CharField(
         max_length=10,
         choices=[('push', 'Push'), ('email', 'Email'), ('sms', 'SMS')]
@@ -87,6 +92,9 @@ class NotificationSettings(models.Model):
     is_enabled = models.BooleanField(default=True)
     channel_preferences = models.JSONField(default=dict)  # Stores user preferences for channels (email, SMS, push, etc.)
 
+    class Meta:
+        unique_together = ('user', 'notification_type')
+
     def __str__(self):
         return f"{self.user.user.username}'s Notification Settings"
 
@@ -119,7 +127,7 @@ class UserNotificationPreference(models.Model):
         return f"{self.user.username}'s Notification Preferences"
     
 class NotificationSnooze(models.Model):
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     
@@ -128,7 +136,7 @@ class NotificationSnooze(models.Model):
     
 class NotificationEngagement(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     viewed_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     clicked_at = models.DateTimeField(null=True, blank=True)
     
@@ -144,3 +152,13 @@ class NotificationABTest(models.Model):
     
     def __str__(self):
         return f"A/B Test {self.test_name} - Variant {self.variant}"
+
+
+class NotificationLog(models.Model):
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
+    action = models.CharField(max_length=50)
+    performed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Action: {self.action} on Notification {self.notification.id} by {self.performed_by.username if self.performed_by else 'Unknown'} at {self.timestamp}"

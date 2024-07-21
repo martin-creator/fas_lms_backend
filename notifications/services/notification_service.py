@@ -1,8 +1,13 @@
 # notifications/services/notification_service.py
 import logging
+import random
 from django.utils import timezone
 from django.core.mail import send_mail
-from notifications.models import Notification, NotificationType, NotificationTemplate, NotificationSettings, NotificationReadStatus
+from notifications.models import (
+    Notification, NotificationType, NotificationTemplate, NotificationSettings, 
+    NotificationReadStatus, NotificationLog, NotificationEngagement, NotificationSnooze,
+    UserNotificationPreference,
+)
 from profiles.models import UserProfile
 from notifications.reports.notification_report import (
     generate_user_notification_report,
@@ -27,49 +32,75 @@ from notifications.helpers.notification_helpers import (
 #     update_notification_settings
 # )
 from notifications.serializers import (
-    NotificationSerializer,
-    NotificationTypeSerializer,
-    NotificationTemplateSerializer,
-    NotificationSettingsSerializer,
-    NotificationReadStatusSerializer
+    NotificationSerializer, NotificationTypeSerializer,
+    NotificationTemplateSerializer, NotificationSettingsSerializer,
+    NotificationReadStatusSerializer, UserNotificationPreferenceSerializer,
+    NotificationSnoozeSerializer, NotificationEngagementSerializer,
+    NotificationABTestSerializer
 )
+from django.utils.translation import activate, gettext as _
 from django.core.exceptions import PermissionDenied
 from notifications.tasks import send_bulk_notifications
 from django.core.cache import cache
-from .metrics import increment_notifications_sent, increment_notifications_failed
-from .pubsub_service import publish_notification
+from notifications.metrics import increment_notifications_sent, increment_notifications_failed
+from .pubsub_service import PubSubService
 from .crm_integration import send_crm_alert
 from .alert_system_integration import send_external_alert
-
 
 logger = logging.getLogger(__name__)
 
 
 class NotificationService:
+    """
+    Service for managing notifications within the application.
+    """
 
     @staticmethod
     def user_can_manage_notifications(user):
+        """
+        Check if the user has permission to manage notifications.
+
+        Args:
+            user (User): The user to check.
+
+        Returns:
+            bool: True if the user has the permission, False otherwise.
+        """
         return user.has_perm('notifications.can_manage_notifications')
 
     @staticmethod
     def user_can_view_notifications(user):
+        """
+        Check if the user has permission to view notifications.
+
+        Args:
+            user (User): The user to check.
+
+        Returns:
+            bool: True if the user has the permission, False otherwise.
+        """
         return user.has_perm('notifications.can_view_notifications')
-    
+
     @staticmethod
     def send_notification(data):
         """
         Send a notification to a user.
 
         Args:
-        - data (dict): Data for creating the notification.
+            data (dict): Data for creating the notification.
 
         Returns:
-        - Notification: The created Notification object.
+            Notification: The created Notification object.
+
+        Raises:
+            PermissionDenied: If the user does not have permission to send notifications.
+            ValueError: If the notification data is invalid.
+            Exception: If sending the notification fails.
         """
         try:
-            if not user_can_manage_notifications(user):
-                raise PermissionDenied("You do not have permission to send notifications.")
             user = UserProfile.objects.get(id=data['recipient'])
+            if not NotificationService.user_can_manage_notifications(user):
+                raise PermissionDenied("You do not have permission to send notifications.")
             if not NotificationService.validate_notification_permissions(user, data['notification_type']):
                 raise PermissionDenied("User does not have permission to receive this notification.")
 
@@ -87,8 +118,8 @@ class NotificationService:
                     NotificationService.send_sms_notification(notification)
                 elif delivery_method == 'push':
                     NotificationService.send_push_notification(notification)
-                    
-                publish_notification('notifications', notification.content)
+
+                PubSubService.publish_notification('notifications', notification.content)
                 increment_notifications_sent()
                 return notification
             else:
@@ -98,6 +129,7 @@ class NotificationService:
             logger.error(f"Failed to send notification: {e}")
             NotificationService.handle_notification_failure(data, str(e))
             raise
+
 
     @staticmethod
     def send_email_notification(notification):
@@ -336,6 +368,29 @@ class NotificationService:
         
         serializer = NotificationTemplateSerializer(template_obj)
         return serializer.data
+    
+    @staticmethod
+    def update_notification_template(template_id, data):
+        """
+        Update a notification template.
+
+        Args:
+            template_id (int): ID of the template to update.
+            data (dict): Updated data for the template.
+
+        Returns:
+            dict: Serialized data of the updated template.
+
+        Raises:
+            ValueError: If the template data is invalid.
+        """
+        template = NotificationTemplate.objects.get(id=template_id)
+        serializer = NotificationTemplateSerializer(template, data=data)
+        if serializer.is_valid():
+            updated_template = serializer.save()
+            return serializer.data
+        else:
+            raise ValueError(serializer.errors)
         
     @staticmethod
     def get_notification_template(notification_type):
@@ -367,6 +422,60 @@ class NotificationService:
         serializer = NotificationTypeSerializer(notification_types, many=True)
         return serializer.data
         
+    @staticmethod
+    def create_notification_type(data):
+        """
+        Create a new notification type.
+
+        Args:
+            data (dict): Data for the new notification type.
+
+        Returns:
+            NotificationType: The created NotificationType object.
+
+        Raises:
+            ValueError: If the notification type data is invalid.
+        """
+        serializer = NotificationTypeSerializer(data=data)
+        if serializer.is_valid():
+            notification_type = serializer.save()
+            return notification_type
+        else:
+            raise ValueError(serializer.errors)
+
+    @staticmethod
+    def update_notification_type(notification_type_id, data):
+        """
+        Update a notification type.
+
+        Args:
+            notification_type_id (int): ID of the notification type to update.
+            data (dict): Updated data for the notification type.
+
+        Returns:
+            dict: Serialized data of the updated notification type.
+
+        Raises:
+            ValueError: If the notification type data is invalid.
+        """
+        notification_type = NotificationType.objects.get(id=notification_type_id)
+        serializer = NotificationTypeSerializer(notification_type, data=data)
+        if serializer.is_valid():
+            updated_notification_type = serializer.save()
+            return serializer.data
+        else:
+            raise ValueError(serializer.errors)
+
+    @staticmethod
+    def delete_notification_type(notification_type_id):
+        """
+        Delete a notification type.
+
+        Args:
+            notification_type_id (int): ID of the notification type to delete.
+        """
+        NotificationType.objects.filter(id=notification_type_id).delete()
+
     @staticmethod
     def subscribe_to_notifications(user, notification_types):
         """
@@ -484,17 +593,72 @@ class NotificationService:
                 notification_type=preference['notification_type'],
                 defaults={'is_enabled': preference['is_enabled'], 'frequency': preference['frequency']}
             )
-        return get_user_preferences(user)
+        return NotificationService.get_user_preferences(user)
         
     @staticmethod
     def snooze_notifications(user, start_time, end_time):
         NotificationSnooze.objects.create(user=user, start_time=start_time, end_time=end_time)
+        
+    @staticmethod
+    def snooze_notification(notification_id, snooze_until):
+        """
+        Snooze a notification until a specified time.
+
+        Args:
+            notification_id (int): ID of the notification to snooze.
+            snooze_until (datetime): The time until which to snooze the notification.
+        """
+        notification = Notification.objects.get(id=notification_id)
+        NotificationSnooze.objects.update_or_create(
+            notification=notification,
+            defaults={'snooze_until': snooze_until}
+        )
     
     @staticmethod
     def is_user_snoozed(user):
         snooze = NotificationSnooze.objects.filter(user=user, start_time__lte=timezone.now(), end_time__gte=timezone.now()).first()
         return snooze is not None
                 
+    @staticmethod
+    def get_snoozed_notifications(user):
+        """
+        Retrieve all snoozed notifications for a user.
+
+        Args:
+            user (User): The user whose snoozed notifications to retrieve.
+
+        Returns:
+            list: A list of serialized snoozed notifications.
+        """
+        snoozed_notifications = NotificationSnooze.objects.filter(
+            notification__recipient=user,
+            snooze_until__gt=timezone.now()
+        ).select_related('notification')
+        serializer = NotificationSerializer(
+            [snooze.notification for snooze in snoozed_notifications], 
+            many=True
+        )
+        return serializer.data
+    
+    @staticmethod
+    def log_notification_engagement(notification_id, engagement_data):
+        """
+        Log engagement data for a notification.
+
+        Args:
+            notification_id (int): ID of the notification.
+            engagement_data (dict): Data about the engagement (e.g., clicks, views).
+
+        Returns:
+            NotificationEngagement: The logged NotificationEngagement object.
+        """
+        notification = Notification.objects.get(id=notification_id)
+        engagement, created = NotificationEngagement.objects.update_or_create(
+            notification=notification,
+            defaults=engagement_data
+        )
+        return engagement
+
     @staticmethod
     def record_engagement(notification_id, user_id, action):
         engagement, created = NotificationEngagement.objects.get_or_create(
@@ -506,6 +670,27 @@ class NotificationService:
         elif action == 'click':
             engagement.clicked_at = timezone.now()
         engagement.save()
+        
+    @staticmethod
+    def log_notification_event(notification_id, event_type, event_details):
+        """
+        Log an event for a notification.
+
+        Args:
+            notification_id (int): ID of the notification.
+            event_type (str): Type of the event (e.g., sent, read).
+            event_details (dict): Additional details about the event.
+
+        Returns:
+            NotificationLog: The created NotificationLog object.
+        """
+        notification = Notification.objects.get(id=notification_id)
+        log = NotificationLog.objects.create(
+            notification=notification,
+            event_type=event_type,
+            event_details=event_details
+        )
+        return log
         
     @staticmethod
     def assign_user_to_test(user):
@@ -541,9 +726,9 @@ class NotificationService:
             if data['delivery_method'] == 'push':
                 send_push_notification(user, data['content'])
             elif data['delivery_method'] == 'email':
-                send_email_notification(user, _("Notification"), data['content'])
+                NotificationService.send_email_notification(user, _("Notification"), data['content'])
             elif data['delivery_method'] == 'sms':
-                send_sms_notification(user, data['content'])
+                NotificationService.send_sms_notification(user, data['content'])
             return notification
         else:
             raise ValueError(serializer.errors)
