@@ -116,6 +116,12 @@ class CourseController:
         """
         return self.course_service.delete_specific_lesson(course_id, lesson_id)
     
+    def register_lesson_progress(self, user_id, lesson_id,):
+        """
+        Register course progress.
+        """
+        return self.course_service.register_lessson_progress(user_id, lesson_id)
+    
     
 
 

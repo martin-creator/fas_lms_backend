@@ -531,3 +531,30 @@ def delete_specific_lesson(request, course_id, lesson_id):
         return Response(lesson, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='user_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='lesson_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Register course progress',
+            description='Register course progress',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['POST'])
+def register_lesson_progress(request, user_id, lesson_id):
+    """
+    API endpoint that allows course progress to be registered.
+    """
+    if request.method == 'POST':
+        lesson = course_controller.register_lesson_progress(user_id, lesson_id)
+        return Response(lesson, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)

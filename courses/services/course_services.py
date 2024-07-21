@@ -190,6 +190,40 @@ class CourseService:
         return CourseQuery.delete_course_lesson(course_id, lesson_id)
     
     
+    # @staticmethod
+    # def make_course_lesson_progress(lesson_id, student_id):
+
+    # class LessonProgress(models.Model):
+    # """
+    # Represents the progress of a user through a lesson.
+
+    # Attributes:
+    #     user (ForeignKey): The user who is progressing through the lesson.
+    #     lesson (ForeignKey): The lesson being tracked.
+    #     completed_at (DateTimeField): The date and time when the lesson was completed.
+    # """
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    # lesson = models.ForeignKey(Lesson, related_name='progress', on_delete=models.CASCADE)
+    # completed_at = models.DateTimeField(null=True, blank=True)
+
+    # class Meta:
+    #     unique_together = ('user', 'lesson')
+
+    # def __str__(self):
+    #     return f"{self.user.username} - {self.lesson.title}"
+
+    @staticmethod
+    def register_lesson_progress(lesson_id, user_id):
+        """
+        Make a lesson progress.
+        """
+        lesson = CourseQuery.get_course_lesson_by_id_without_serializer(lesson_id)
+        user = UserUtils.get_user_by_id(user_id)
+        lesson_progress = LessonProgress(lesson=lesson, user=user)
+        lesson_progress.save()
+        serializer = LessonProgressSerializer(lesson_progress)
+        return serializer.data
+    
 
     
     

@@ -98,6 +98,16 @@ class CourseQuery:
         Lesson.objects.get(course=course_id, id=lesson_id).delete()
         return True
     
+    @staticmethod
+    def make_lesson_progress(lesson_id, user):
+        """
+        Make a lesson progress.
+        """
+        lesson = Lesson.objects.get(id=lesson_id)
+        lesson_progress = LessonProgress(lesson=lesson, user=user)
+        lesson_progress.save()
+        return True
+    
     
 
 
