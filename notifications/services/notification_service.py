@@ -37,6 +37,7 @@ from django.core.exceptions import PermissionDenied
 from notifications.tasks import send_bulk_notifications
 from django.core.cache import cache
 from .metrics import increment_notifications_sent, increment_notifications_failed
+from .pubsub_service import publish_notification
 
 
 logger = logging.getLogger(__name__)
@@ -44,6 +45,14 @@ logger = logging.getLogger(__name__)
 
 class NotificationService:
 
+    @staticmethod
+    def user_can_manage_notifications(user):
+        return user.has_perm('notifications.can_manage_notifications')
+
+    @staticmethod
+    def user_can_view_notifications(user):
+        return user.has_perm('notifications.can_view_notifications')
+    
     @staticmethod
     def send_notification(data):
         """
@@ -56,6 +65,8 @@ class NotificationService:
         - Notification: The created Notification object.
         """
         try:
+            if not user_can_manage_notifications(user):
+                raise PermissionDenied("You do not have permission to send notifications.")
             user = UserProfile.objects.get(id=data['recipient'])
             if not NotificationService.validate_notification_permissions(user, data['notification_type']):
                 raise PermissionDenied("User does not have permission to receive this notification.")
@@ -71,7 +82,8 @@ class NotificationService:
                     NotificationService.send_sms_notification(notification)
                 elif delivery_method == 'push':
                     NotificationService.send_push_notification(notification)
-
+                    
+                publish_notification('notifications', notification.content)
                 increment_notifications_sent()
                 return notification
             else:
@@ -453,4 +465,84 @@ class NotificationService:
                 raise ValueError(serializer.errors)
         return notifications
         
+    @staticmethod
+    def get_user_preferences(user):
+        preferences = UserNotificationPreference.objects.filter(user=user)
+        serializer = UserNotificationPreferenceSerializer(preferences, many=True)
+        return serializer.data
+        
+    @staticmethod
+    def update_user_preferences(user, preferences_data):
+        for preference in preferences_data:
+            pref_obj, created = UserNotificationPreference.objects.update_or_create(
+                user=user,
+                notification_type=preference['notification_type'],
+                defaults={'is_enabled': preference['is_enabled'], 'frequency': preference['frequency']}
+            )
+        return get_user_preferences(user)
+        
+    @staticmethod
+    def snooze_notifications(user, start_time, end_time):
+        NotificationSnooze.objects.create(user=user, start_time=start_time, end_time=end_time)
     
+    @staticmethod
+    def is_user_snoozed(user):
+        snooze = NotificationSnooze.objects.filter(user=user, start_time__lte=timezone.now(), end_time__gte=timezone.now()).first()
+        return snooze is not None
+                
+    @staticmethod
+    def record_engagement(notification_id, user_id, action):
+        engagement, created = NotificationEngagement.objects.get_or_create(
+            notification_id=notification_id,
+            user_id=user_id
+        )
+        if action == 'view':
+            engagement.viewed_at = timezone.now()
+        elif action == 'click':
+            engagement.clicked_at = timezone.now()
+        engagement.save()
+        
+    @staticmethod
+    def assign_user_to_test(user):
+        return 'variant_a' if random.choice([True, False]) else 'variant_b'
+
+    @staticmethod
+    def analyze_ab_test_results(test_name):
+        # Implement analysis logic
+        pass
+            
+    @staticmethod
+    def send_test_notification(data):
+        test_group = assign_user_to_test(data['recipient'])
+        template = get_template_for_test_group(test_group)
+        send_rich_notification({
+            'recipient': data['recipient'],
+            'content': template.content,
+            'html_content': template.html_content,
+            'media_url': template.media_url,
+            'delivery_method': data['delivery_method']
+        })
+        
+    @staticmethod
+    def send_test_multi_notification(data):
+        user = UserProfile.objects.get(id=data['recipient'])
+        activate(user.preferred_language)
+        data['content'] = _(data['content'])
+        data['html_content'] = _(data['html_content'])
+        serializer = NotificationSerializer(data=data)
+        if serializer.is_valid():
+            notification = serializer.save()
+            # Delivery logic
+            if data['delivery_method'] == 'push':
+                send_push_notification(user, data['content'])
+            elif data['delivery_method'] == 'email':
+                send_email_notification(user, _("Notification"), data['content'])
+            elif data['delivery_method'] == 'sms':
+                send_sms_notification(user, data['content'])
+            return notification
+        else:
+            raise ValueError(serializer.errors)
+            
+    @staticmethod
+    def log_notification_action(notification, action, user):
+        NotificationLog.objects.create(notification=notification, action=action, performed_by=user)
