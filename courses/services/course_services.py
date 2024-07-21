@@ -87,6 +87,38 @@ class CourseService:
         course_enrollment.save()
         serializer = CourseEnrollmentSerializer(course_enrollment)
         return serializer.data
+    
+    @staticmethod
+    def get_course_progress(user_id, course_id):
+        """
+        Update course progress for a user.
+        """
+        course = CourseQuery.get_course_by_id_without_serializer(course_id)
+        user = UserUtils.get_user_by_id(user_id)
+        lessons = Lesson.objects.filter(course=course)
+        total_lessons = lessons.count()
+        completed_lessons = LessonProgress.objects.filter(user=user, lesson__in=lessons).count()
+        progress = (completed_lessons / total_lessons) * 100
+        return progress
+    
+    
+    
+    @staticmethod
+    def complete_course(course_id, user_id):
+        """
+        Complete a course for a user.
+        """
+        course = CourseQuery.get_course_by_id_without_serializer(course_id)
+        user = UserUtils.get_user_by_id(user_id)
+
+        # Check if the user has already completed the course
+        if CourseQuery.get_course_completion(user, course):
+            raise ValidationError('You have already completed this course.')
+        
+        course_completion = CourseCompletion(user=user, course=course)
+        course_completion.save()
+        serializer = CourseCompletionSerializer(course_completion)
+        return serializer.data
 
     
     
