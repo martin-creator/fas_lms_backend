@@ -280,4 +280,30 @@ class QueryExecutor:
         - queryset: Django QuerySet to fetch data from.
 
         Returns:
-        - List of results from the queryset
+        - List of results from the queryset.
+        “””
+        return await asyncio.to_thread(list, queryset)
+        
+    async def async_save_data(self, model_instance):
+        """
+        Save a Django model instance asynchronously.
+    
+        Args:
+        - model_instance: Django model instance to save.
+    
+        Returns:
+        - Saved model instance.
+        """
+        return await asyncio.to_thread(model_instance.save)
+    
+    async def async_delete_data(self, model_instance):
+        """
+        Delete a Django model instance asynchronously.
+    
+        Args:
+        - model_instance: Django model instance to delete.
+    
+        Returns:
+        - None.
+        """
+        return await asyncio.to_thread(model_instance.delete)
