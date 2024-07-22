@@ -27,3 +27,6 @@ urlpatterns = [
 
 
 # addd routes to create bootcamp that has specific courses, tracking lesson progress
+# and quiz completion
+# Add routes for delete most of the resources
+# Add routes for updating most of the resources
