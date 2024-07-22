@@ -3,13 +3,11 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from .logging import log_data_access
-from .models import Course, Module, Assignment
+from .models import Course, Assignment, Module
 from querying.models import QueryExecutionPermission
 from rest_framework import permissions
 
 User = get_user_model()
-
-
 
 class IsEnrolledInCourse(permissions.BasePermission):
     """
@@ -17,7 +15,6 @@ class IsEnrolledInCourse(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        # Check if the user is enrolled in the course associated with the object
         return obj.students.filter(id=request.user.id).exists()
 
 class IsInstructorOfCourse(permissions.BasePermission):
@@ -26,7 +23,6 @@ class IsInstructorOfCourse(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        # Check if the user is the instructor of the course associated with the object
         return obj.instructor == request.user
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -35,11 +31,8 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any request
         if request.method in permissions.SAFE_METHODS:
             return True
-
-        # Write permissions are only allowed to the owner of the object
         return obj.owner == request.user
 
 class IsAdminUserOrReadOnly(permissions.BasePermission):
@@ -48,11 +41,8 @@ class IsAdminUserOrReadOnly(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        # Read permissions are allowed to any request
         if request.method in permissions.SAFE_METHODS:
             return True
-
-        # Write permissions are only allowed to admin users
         return request.user and request.user.is_staff
 
 class IsCourseInstructorOrReadOnly(permissions.BasePermission):
@@ -61,11 +51,8 @@ class IsCourseInstructorOrReadOnly(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any request
         if request.method in permissions.SAFE_METHODS:
             return True
-
-        # Write permissions are only allowed to the instructor of the course
         return obj.instructor == request.user
 
 class IsCourseOwnerOrReadOnly(permissions.BasePermission):
@@ -74,11 +61,8 @@ class IsCourseOwnerOrReadOnly(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any request
         if request.method in permissions.SAFE_METHODS:
             return True
-
-        # Write permissions are only allowed to the owner of the course
         return obj.owner == request.user
 
 class IsStudentEnrolledInCourse(permissions.BasePermission):
@@ -101,7 +85,8 @@ def check_user_is_admin(user):
     - PermissionDenied: If the user is not an admin.
     """
     if not user.is_staff:
-        raise PermissionDenied("You do not have permission to perform this action. Admin access required.")
+        log_data_access(user=user, query="Attempted admin action without admin rights.")
+        raise PermissionDenied("Admin access required.")
 
 def check_user_has_permission(user, required_permission):
     """
@@ -115,7 +100,8 @@ def check_user_has_permission(user, required_permission):
     - PermissionDenied: If the user does not have the required permission.
     """
     if not user.has_perm(required_permission):
-        raise PermissionDenied(f"You do not have permission to perform this action. Required permission: {required_permission}")
+        log_data_access(user=user, query=f"Attempted action without permission: {required_permission}")
+        raise PermissionDenied(f"Required permission: {required_permission}.")
 
 def check_user_can_access_course(user, course_id):
     """
@@ -130,6 +116,7 @@ def check_user_can_access_course(user, course_id):
     """
     course = get_object_or_404(Course, id=course_id)
     if not user.is_authenticated or not user.has_perm('view_course', course):
+        log_data_access(user=user, query=f"Attempted to access course '{course.title}' without permission.")
         raise PermissionDenied("You do not have permission to access this course.")
 
     log_data_access(user=user, query=f"Accessed course '{course.title}'.")
@@ -147,6 +134,7 @@ def check_user_can_manage_module(user, module_id):
     """
     module = get_object_or_404(Module, id=module_id)
     if not user.is_authenticated or not user.has_perm('manage_module', module):
+        log_data_access(user=user, query=f"Attempted to manage module '{module.title}' without permission.")
         raise PermissionDenied("You do not have permission to manage this module.")
 
     log_data_access(user=user, query=f"Managed module '{module.title}'.")
@@ -164,6 +152,7 @@ def check_user_can_modify_assignment(user, assignment_id):
     """
     assignment = get_object_or_404(Assignment, id=assignment_id)
     if not user.is_authenticated or not user.has_perm('modify_assignment', assignment):
+        log_data_access(user=user, query=f"Attempted to modify assignment '{assignment.title}' without permission.")
         raise PermissionDenied("You do not have permission to modify this assignment.")
 
     log_data_access(user=user, query=f"Modified assignment '{assignment.title}'.")
@@ -173,7 +162,7 @@ def check_query_execution_permission(query, user):
     Check if the user has permission to execute the query.
 
     Args:
-    - query: Query object from querying.models.Query.
+    - query: Query object from querying.models.QueryExecutionPermission.
     - user: User object from Django's custom user model.
 
     Returns:
@@ -181,6 +170,12 @@ def check_query_execution_permission(query, user):
     """
     try:
         permission = QueryExecutionPermission.objects.get(query=query)
-        return user.profile.followers.filter(id__in=permission.allowed_groups.all()).exists() or permission.allowed_users.filter(id=user.id).exists()
+        has_permission = user.profile.followers.filter(id__in=permission.allowed_groups.all()).exists() or permission.allowed_users.filter(id=user.id).exists()
+        if not has_permission:
+            log_data_access(user=user, query=f"Attempted to execute query '{query}' without permission.")
+        return has_permission
     except QueryExecutionPermission.DoesNotExist:
+        log_data_access(user=user, query=f"Attempted to execute non-existent query '{query}'.")
         return False
+
+# Additional Permission Functions can be added here for specific use cases
