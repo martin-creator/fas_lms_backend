@@ -281,7 +281,7 @@ class QueryExecutor:
 
         Returns:
         - List of results from the queryset.
-        “””
+        """
         return await asyncio.to_thread(list, queryset)
         
     async def async_save_data(self, model_instance):
