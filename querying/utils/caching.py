@@ -71,7 +71,68 @@ class CacheManager:
             # Handle cache clear failure based on your application's requirements
             raise
 
-def execute_cached_query(query_key, query_function, timeout=3600):
+    @staticmethod
+    def cache_exists(key):
+        """
+        Check if a cache entry exists.
+        """
+        try:
+            return cache.get(key) is not None
+        except Exception as e:
+            logger.error(f"Failed to check cache existence for key '{key}': {e}")
+            return False
+
+    @staticmethod
+    def get_cache_stats():
+        """
+        Get cache statistics (if supported by the cache backend).
+        """
+        try:
+            # This may vary depending on the cache backend being used
+            # Example for Redis cache:
+            if hasattr(cache, 'cache'):
+                return cache.cache.info()
+            else:
+                logger.warning("Cache backend does not support statistics retrieval")
+                return {}
+        except Exception as e:
+            logger.error(f"Failed to retrieve cache statistics: {e}")
+            return {}
+
+    @staticmethod
+    def invalidate_cache_by_prefix(prefix):
+        """
+        Invalidate cache entries by prefix.
+        """
+        try:
+            # This implementation depends on the cache backend
+            # For example, using Redis:
+            if hasattr(cache, 'delete_pattern'):
+                cache.delete_pattern(f"{prefix}*")
+            else:
+                logger.warning("Cache backend does not support delete_pattern")
+        except Exception as e:
+            logger.error(f"Failed to invalidate cache by prefix '{prefix}': {e}")
+            raise
+
+    @staticmethod
+    def lock_cache(key, timeout=60):
+        """
+        Lock a cache key to prevent race conditions.
+        """
+        try:
+            # This implementation depends on the cache backend
+            # For example, using Redis:
+            if hasattr(cache, 'lock'):
+                return cache.lock(key, timeout=timeout)
+            else:
+                logger.warning("Cache backend does not support locking")
+                return None
+        except Exception as e:
+            logger.error(f"Failed to lock cache key '{key}': {e}")
+            raise
+
+def execute_cached_query(query_key, query_function, timeout=3600, retry_on_failure=3):
     """
     Execute a cached query or fetch from cache if available.
 
@@ -79,6 +140,7 @@ def execute_cached_query(query_key, query_function, timeout=3600):
     - query_key: Key to identify the cached query result.
     - query_function: Function that executes the query if not found in cache.
     - timeout: Timeout duration in seconds for caching (default is 1 hour).
+    - retry_on_failure: Number of retries on failure (default is 3).
 
     Returns:
     - Cached query result or result from query_function execution.
@@ -87,15 +149,32 @@ def execute_cached_query(query_key, query_function, timeout=3600):
     - Uses Django's caching framework (defaulting to cache backend set in Django settings).
     - Logs any error encountered during query execution.
     """
-    try:
-        cached_result = cache.get(query_key)
-        if cached_result is None:
-            result = query_function()
-            cache.set(query_key, result, timeout=timeout)
-            return result
-        return cached_result
+    for attempt in range(retry_on_failure):
+        try:
+            cached_result = cache.get(query_key)
+            if cached_result is None:
+                result = query_function()
+                cache.set(query_key, result, timeout=timeout)
+                return result
+            return cached_result
 
-    except Exception as e:
-        # Handle and log cache execution errors
-        handle_query_execution_error(query_name="Cached Query Execution", error_message=str(e))
-        raise e  # Re-raise the exception for the caller to handle
+        except Exception as e:
+            # Handle and log cache execution errors
+            handle_query_execution_error(query_name="Cached Query Execution", error_message=str(e))
+            if attempt < retry_on_failure - 1:
+                logger.warning(f"Retrying cached query execution for key '{query_key}' (attempt {attempt + 1}/{retry_on_failure})")
+            else:
+                raise e  # Re-raise the exception for the caller to handle
+
+def notify_admins(message):
+    """
+    Notify administrators of critical cache errors.
+
+    Args:
+    - message: Message to send to administrators.
+
+    Returns:
+    - None
+    """
+    # Implement your notification logic here, e.g., send an email or a message to a monitoring system
+    pass
