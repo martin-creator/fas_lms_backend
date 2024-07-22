@@ -115,6 +115,39 @@ class CourseQuery:
         """
         return Quiz.objects.get(id=quiz_id)
     
+    @staticmethod
+    def get_quiz_question_by_id_without_serializer(quiz_id, question_id):
+        """
+        Get a question in a specific quiz by its ID without using a serializer.
+        """
+        return Question.objects.get(quiz=quiz_id, id=question_id)
+    
+    @staticmethod
+    def get_quiz_question_by_id(quiz_id, question_id):
+        """
+        Get a question in a specific quiz by its ID.
+        """
+        question = Question.objects.get(quiz=quiz_id, id=question_id)
+        serializer = QuestionSerializer(question)
+        return serializer.data
+    
+    @staticmethod
+    def get_all_quiz_questions(quiz_id):
+        """
+        Get all questions in a specific quiz.
+        """
+        questions = Question.objects.filter(quiz=quiz_id)
+        serializer = QuestionSerializer(questions, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_choice_by_id_without_serializer(choice_id):
+        """
+        Get a choice by its ID without using a serializer.
+        """
+        return Choice.objects.get(id=choice_id)
+    
     
 
 

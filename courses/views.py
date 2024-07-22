@@ -621,3 +621,87 @@ def add_question_to_quiz(request, quiz_id):
         return Response(question, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='quiz_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='question_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update a question in a quiz',
+            description='Update a question in a quiz',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['PUT','GET'])
+def update_question(request, quiz_id, question_id):
+    """
+    API endpoint that allows a question in a quiz to be updated.
+    """
+    if request.method == 'PUT':
+        question_data = request.data
+        question = course_controller.update_question(quiz_id, question_id, question_data)
+        return Response(question, status=status.HTTP_200_OK)
+    elif request.method == 'GET':
+        question = course_controller.get_question_by_id(quiz_id, question_id)
+        return Response(question, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='quiz_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get a specific quiz questions',
+            description='Get a specific quiz questions',
+            value={}
+        )
+    ],
+)
+@api_view(['GET'])
+def get_all_questions_for_quiz(request, quiz_id):
+    """
+    API endpoint that allows all questions in a quiz to be retrieved.
+    """
+    if request.method == 'GET':
+        questions = course_controller.get_all_questions_for_quiz(quiz_id)
+        return Response(questions, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='quiz_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='user_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Submit a quiz',
+            description='Submit a quiz',
+            value={}
+        )
+    ],
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
+)
+@api_view(['POST'])
+def submit_lesson_quiz(request, quiz_id, user_id):
+    """
+    API endpoint that allows a quiz to be submitted.
+    """
+    if request.method == 'POST':
+        answers = request.data
+        quiz = course_controller.submit_lession_quiz(quiz_id, user_id, answers)
+        return Response(quiz, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)

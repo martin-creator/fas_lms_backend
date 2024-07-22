@@ -134,6 +134,30 @@ class CourseController:
         """
         return self.course_service.add_question_to_quiz(quiz_id, question_data)
     
+    def update_quiz_question(self, quiz_id, question_id, question_data):
+        """
+        Update a quiz question.
+        """
+        return self.course_service.update_quiz_question(quiz_id, question_id, question_data)
+    
+    def get_question_by_id(self, quiz_id, question_id):
+        """
+        Get a specific question.
+        """
+        return self.course_query.get_quiz_question_by_id(quiz_id, question_id)
+    
+    def get_all_questions_for_quiz(self, quiz_id):
+        """
+        Get all questions for a quiz.
+        """
+        return self.course_query.get_all_quiz_questions(quiz_id)
+    
+    def submit_lession_quiz(self, quiz_id, user_id, answers):
+        """
+        Submit a quiz.
+        """
+        return self.course_service.submit_lesson_quiz(quiz_id, user_id, answers)
+    
     
 
 

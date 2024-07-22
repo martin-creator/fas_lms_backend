@@ -354,6 +354,34 @@ class CourseHelpers:
         print(correct_choice)
         
         return question, choices, correct_choice
+    
+
+    @staticmethod
+    def process_question_update_data(question, question_data):
+        """
+        Process question data to update a question.
+        """
+        text = question_data.get('text')
+        choices_data = question_data.get('choices')
+        correct_choice_text = question_data.get('correct_choice')
+
+        # Update the question text
+        if text is not None:
+            question.text = text
+
+        # Update the choices
+        choices = []
+        for choice_text in choices_data:
+            choice, created = Choice.objects.get_or_create(text=choice_text)
+            choices.append(choice)
+
+        # Update the correct choice
+        try:
+            correct_choice = Choice.objects.get(text=correct_choice_text)
+        except ObjectDoesNotExist:
+            raise ValueError(f"Correct choice '{correct_choice_text}' not found")
+
+        return question, choices, correct_choice
 
     
 

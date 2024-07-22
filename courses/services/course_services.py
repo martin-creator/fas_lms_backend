@@ -297,19 +297,9 @@ class CourseService:
         """
         quiz = CourseQuery.get_quiz_by_id_without_serializer(quiz_id)
         question, choices, correct_choice = CourseHelpers.process_question_data(quiz, question_data)
-        
-        # # Log details for debugging
-        # logger.debug(f"Question: {question}")
-        # logger.debug(f"Choices: {choices}")
-        # logger.debug(f"Correct Choice: {correct_choice}")
 
         # Save the question first to get an ID
         question.save()
-
-        print("Printing functions in add_question_to_quiz")
-        print(question)
-        print(choices)
-        print(correct_choice)
 
         # Associate choices with the question
         # choice format = [<Choice: Protein synthesis>, <Choice: DNA replication>, <Choice: Lipid synthesis>, <Choice: Cell division>]
@@ -325,7 +315,86 @@ class CourseService:
         # serializer = QuestionSerializer(question)
         # return actual choice data instead of the choice id
         serializer = QuestionSerializer(question, context={'request': request})
-        
+
+        return serializer.data
+    
+
+    @staticmethod
+    def update_quiz_question(quiz_id, question_id, question_data):
+        """
+        Update a question in a quiz.
+        """
+        quiz = CourseQuery.get_quiz_by_id_without_serializer(quiz_id)
+        question = CourseQuery.get_quiz_question_by_id_without_serializer(quiz_id, question_id)
+        question, choices, correct_choice = CourseHelpers.process_question_update_data(question, question_data)
+
+        # Save the question first to get an ID
+        question.save()
+
+        # Associate choices with the question
+        question.choices.set(choices)
+        question.correct_choice = correct_choice
+        question.save()
+
+        # Serialize and return response data
+        serializer = QuestionSerializer(question, context={'request': request})
+        return serializer.data
+    
+
+    @staticmethod
+    def get_quiz_question_by_id(quiz_id, question_id):
+        """
+        Get a specific question in a quiz.
+        """
+        return CourseQuery.get_quiz_question_by_id(quiz_id, question_id)
+    
+
+    @staticmethod
+    def get_all_quiz_questions(quiz_id):
+        """
+        Get all questions in a quiz.
+        """
+        return CourseQuery.get_all_quiz_questions(quiz_id)
+    
+
+
+    # class QuizProgress(models.Model):
+    # """
+    # Represents the progress of a user through a quiz.
+
+    # Attributes:
+    #     user (ForeignKey): The user who is progressing through the quiz.
+    #     quiz (ForeignKey): The quiz being tracked.
+    #     completed_at (DateTimeField): The date and time when the quiz was completed.
+    #     score (IntegerField): The score achieved by the user in the quiz.
+    # """
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    # quiz = models.ForeignKey(Quiz, related_name='progress', on_delete=models.CASCADE)
+    # completed_at = models.DateTimeField(null=True, blank=True)
+    # score = models.IntegerField(null=True, blank=True)
+
+    # class Meta:
+    #     unique_together = ('user', 'quiz')
+
+    # def __str__(self):
+    #     return f"{self.user.username} - {self.quiz.title}"
+
+    @staticmethod
+    def submit_lesson_quiz(user_id, quiz_id, answers):
+        """
+        Submit a quiz for a user.
+        """
+        quiz = CourseQuery.get_quiz_by_id_without_serializer(quiz_id)
+        user = UserUtils.get_user_by_id(user_id)
+        score = 0
+        for answer in answers:
+            question = CourseQuery.get_quiz_question_by_id_without_serializer(quiz_id, answer['question'])
+            choice = CourseQuery.get_choice_by_id_without_serializer(answer['choice'])
+            if question.correct_choice == choice:
+                score += 1
+        quiz_progress = QuizProgress(user=user, quiz=quiz, score=score)
+        quiz_progress.save()
+        serializer = QuizProgressSerializer(quiz_progress)
         return serializer.data
 
     
