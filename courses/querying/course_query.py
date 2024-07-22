@@ -108,6 +108,13 @@ class CourseQuery:
         lesson_progress.save()
         return True
     
+    @staticmethod
+    def get_quiz_by_id_without_serializer(quiz_id):
+        """
+        Get a quiz by its ID without using a serializer.
+        """
+        return Quiz.objects.get(id=quiz_id)
+    
     
 
 

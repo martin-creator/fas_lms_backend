@@ -127,7 +127,7 @@ class Question(models.Model):
     """
     text = models.TextField(default='', blank=True, null=True)
     choices = models.ManyToManyField('Choice', related_name='questions')
-    correct_choice = models.ForeignKey('Choice', related_name='correct_for_questions', on_delete=models.CASCADE)
+    correct_choice = models.ForeignKey('Choice', related_name='correct_for_questions', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.text

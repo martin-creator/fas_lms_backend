@@ -7,6 +7,10 @@ from courses.helpers.course_helpers import CourseHelpers
 from courses.querying.course_query import CourseQuery
 from courses.settings.course_settings import CourseSettings
 from courses.reports.course_report import CourseReport
+import logging
+from django.http import request
+
+logger = logging.getLogger(__name__)
 
 # automatically save course progress and then return the updated course progress when a person logs in
 
@@ -253,6 +257,78 @@ class CourseService:
         quiz.save()
         serializer = QuizSerializer(quiz)
         return serializer.data
+    
+
+
+#     class Question(models.Model):
+#     """
+#     Represents a question in a quiz.
+
+#     Attributes:
+#         text (TextField): The text of the question.
+#         choices (ManyToManyField): The possible choices for the question.
+#         correct_choice (ForeignKey): The correct choice for the question.
+#     """
+#     text = models.TextField(default='', blank=True, null=True)
+#     choices = models.ManyToManyField('Choice', related_name='questions')
+#     correct_choice = models.ForeignKey('Choice', related_name='correct_for_questions', on_delete=models.CASCADE)
+
+#     def __str__(self):
+#         return self.text
+
+# class Choice(models.Model):
+#     """
+#     Represents a choice for a quiz question.
+
+#     Attributes:
+#         text (CharField): The text of the choice.
+#     """
+#     text = models.CharField(max_length=255)
+
+#     def __str__(self):
+#         return self.text
+    
+    # add  questions and choices to a quiz, you should also add the correct choice to the question
+
+    @staticmethod
+    def add_question_to_quiz(quiz_id, question_data):
+        """
+        Add a question to a quiz.
+        """
+        quiz = CourseQuery.get_quiz_by_id_without_serializer(quiz_id)
+        question, choices, correct_choice = CourseHelpers.process_question_data(quiz, question_data)
+        
+        # # Log details for debugging
+        # logger.debug(f"Question: {question}")
+        # logger.debug(f"Choices: {choices}")
+        # logger.debug(f"Correct Choice: {correct_choice}")
+
+        # Save the question first to get an ID
+        question.save()
+
+        print("Printing functions in add_question_to_quiz")
+        print(question)
+        print(choices)
+        print(correct_choice)
+
+        # Associate choices with the question
+        # choice format = [<Choice: Protein synthesis>, <Choice: DNA replication>, <Choice: Lipid synthesis>, <Choice: Cell division>]
+        question.choices.set(choices)
+        question.correct_choice = correct_choice
+        question.save()
+
+        # Add the question to the quiz
+        quiz.questions.add(question)
+        quiz.save()
+        
+        # Serialize and return response data
+        # serializer = QuestionSerializer(question)
+        # return actual choice data instead of the choice id
+        serializer = QuestionSerializer(question, context={'request': request})
+        
+        return serializer.data
+
+    
     
     
     

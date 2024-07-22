@@ -53,6 +53,8 @@ class QuizProgressSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class QuestionSerializer(serializers.ModelSerializer):
+    choices = ChoiceSerializer(many=True, read_only=True)
+    correct_choice = ChoiceSerializer(read_only=True)
     class Meta:
         model = Question
         fields = '__all__'

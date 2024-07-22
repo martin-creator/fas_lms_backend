@@ -128,6 +128,12 @@ class CourseController:
         """
         return self.course_service.add_quiz_to_lesson(course_id, lesson_id, quiz_data)
     
+    def add_question_to_quiz(self, quiz_id, question_data):
+        """
+        Add a question to a quiz.
+        """
+        return self.course_service.add_question_to_quiz(quiz_id, question_data)
+    
     
 
 

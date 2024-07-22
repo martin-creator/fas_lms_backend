@@ -19,6 +19,7 @@ urlpatterns = [
     path('delete_specific_lesson/<int:course_id>/<int:lesson_id>/', views.delete_specific_lesson, name='delete_specific_lesson'),
     path('lesson_progress/<int:course_id>/<int:lesson_id>/<int:user_id>/', views.register_lesson_progress, name='make_lesson_progress'),
     path('create_quiz/<int:course_id>/<int:lesson_id>/', views.create_lesson_quiz, name='create_lesson_quiz'),
+    path('add_question_to_quiz/<int:quiz_id>/', views.add_question_to_quiz, name='add_question_to_quiz'),
 ]
 
 

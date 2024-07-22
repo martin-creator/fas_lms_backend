@@ -180,6 +180,7 @@ class CourseHelpers:
     # tags = TaggableManager()
     # order = models.PositiveIntegerField(default=0, blank=True, null=True)
 
+    @staticmethod
     def process_lesson_data(course_id, lesson_data):
         """
         Process lesson data to create a lesson.
@@ -204,6 +205,7 @@ class CourseHelpers:
         return lesson, tags
     
 
+    @staticmethod
     def process_lesson_update_data(course_id, lesson_id, lesson_data):
         """
         Process lesson data to update a lesson.
@@ -262,6 +264,7 @@ class CourseHelpers:
     
     # add quiz to lesson
 
+    @staticmethod
     def process_quiz_data(lesson, quiz_data):
         """
         Process quiz data to create a quiz.
@@ -270,13 +273,87 @@ class CourseHelpers:
         description = quiz_data.get('description')
 
         quiz = Quiz(
-                lesson_id=lesson,
+                lesson_id=lesson.id,
                 title=title,
                 description=description
             )
 
         return quiz
+    
 
+    # class Question(models.Model):
+#     """
+#     Represents a question in a quiz.
+
+#     Attributes:
+#         text (TextField): The text of the question.
+#         choices (ManyToManyField): The possible choices for the question.
+#         correct_choice (ForeignKey): The correct choice for the question.
+#     """
+#     text = models.TextField(default='', blank=True, null=True)
+#     choices = models.ManyToManyField('Choice', related_name='questions')
+#     correct_choice = models.ForeignKey('Choice', related_name='correct_for_questions', on_delete=models.CASCADE)
+
+#     def __str__(self):
+#         return self.text
+
+# class Choice(models.Model):
+#     """
+#     Represents a choice for a quiz question.
+
+#     Attributes:
+#         text (CharField): The text of the choice.
+#     """
+#     text = models.CharField(max_length=255)
+
+#     def __str__(self):
+#         return self.text
+    
+    # add  questions and choices to a quiz, you should also add the correct choice to the question. no saving shoukd happren here
+    # function should return question, choices, correct_choice
+    # def add_question_to_quiz(quiz_id, question_data,):
+    #     """
+    #     Add a question to a quiz.
+    #     """
+    #     quiz = CourseQuery.get_quiz_by_id_without_serializer(quiz_id)
+    #     question, choices, correct_choice = CourseHelpers.process_question_data(question_data)
+    #     question.save()
+    #     question.choices.set(choices)
+    #     question.correct_choice = correct_choice
+    #     question.save()
+    #     serializer = QuestionSerializer(question)
+    #     return serializer.data
+
+    @staticmethod
+    def process_question_data(quiz, question_data):
+        """
+        Process question data to create a question.
+        """
+        text = question_data.get('text')
+        choices_data = question_data.get('choices')
+        correct_choice_text = question_data.get('correct_choice')
+
+        # Create or retrieve choices
+        choices = []
+        for choice_text in choices_data:
+            choice, created = Choice.objects.get_or_create(text=choice_text)
+            choices.append(choice)
+
+        # Retrieve the correct choice
+        try:
+            correct_choice = Choice.objects.get(text=correct_choice_text)
+        except ObjectDoesNotExist:
+            raise ValueError(f"Correct choice '{correct_choice_text}' not found")
+
+        # Create the question instance
+        question = Question(
+            text=text,
+        )
+
+        print(choices)
+        print(correct_choice)
+        
+        return question, choices, correct_choice
 
     
 
