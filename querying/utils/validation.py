@@ -12,6 +12,11 @@ logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
+class ValidationErrorDetail(ValidationError):
+    """
+    Custom validation error with detailed messages.
+    """
+    pass
 
 class QueryValidator:
     def __init__(self, user=None):
@@ -20,193 +25,62 @@ class QueryValidator:
     def validate_query_params(self, query_params):
         """
         Validate query parameters format and values.
-        Example: Check required fields, data types, etc.
         """
         if not isinstance(query_params, dict):
-            raise ValidationError("Query parameters must be a dictionary.")
+            raise ValidationErrorDetail("Query parameters must be a dictionary.")
         
         required_fields = ['param1', 'param2']
         for field in required_fields:
             if field not in query_params:
-                raise ValidationError(f"Missing required field: {field}.")
+                raise ValidationErrorDetail(f"Missing required field: {field}.")
             if not isinstance(query_params[field], str):
-                raise ValidationError(f"Field '{field}' must be a string.")
-    
-    def check_query_execution_permission(self, query):
-        """
-        Check if the user has permission to execute the query.
-        """
-        User = get_user_model()
-        if self.user.is_authenticated and self.user.has_perm('query_app.execute_query'):
-            return True
-        else:
-            return False
+                raise ValidationErrorDetail(f"Field '{field}' must be a string.")
     
     def validate_sql_syntax(self, sql_query):
         """
-        Validate SQL syntax before executing the query.
-        Example: Check for potential SQL injection risks.
+        Validate SQL syntax to prevent SQL injection risks.
         """
         if ";" in sql_query:
-            raise ValidationError("Multiple SQL statements detected, potential SQL injection risk.")
-        # Add more syntax validation as needed
+            raise ValidationErrorDetail("Potential SQL injection risk detected.")
+        # Add additional SQL syntax validation if needed
     
     def sanitize_input(self, input_data):
         """
-        Sanitize query inputs to prevent SQL injection attacks.
-        Example: Remove potentially harmful characters.
+        Sanitize query inputs to prevent SQL injection.
         """
-        sanitized_data = re.sub(r'[;\'\"]', '', input_data)  # Remove specific characters
-        return sanitized_data
+        return re.sub(r'[;\'\"]', '', input_data)
     
     def validate_data_integrity(self, data):
         """
         Check data integrity before executing operations.
-        Example: Ensure required fields are populated correctly.
         """
         if not data.get('required_field'):
-            raise ValidationError("Required field is missing.")
-        # Add more integrity checks as needed
+            raise ValidationErrorDetail("Required field is missing.")
+        # Add additional data integrity checks if needed
     
     def validate_configuration(self):
         """
         Validate application configuration settings.
-        Example: Check database connection settings.
         """
         if not settings.DATABASES['default'].get('HOST'):
-            raise ValidationError("Database configuration error: Host not specified.")
-        # Add more configuration checks as needed
+            raise ValidationErrorDetail("Database configuration error: Host not specified.")
+        # Add additional configuration checks if needed
     
     def handle_validation_error(self, error_message):
         """
-        Handle validation errors gracefully.
+        Handle validation errors and log them.
         """
-        try:
-            raise ValidationError(error_message)
-        except ValidationError as e:
-            # Example: Log the error
-            handle_query_execution_error(e)
-
-    # Additional Custom Validators
-    def validate_unique_email(self, email):
-        """
-        Validate if the email is unique across the system.
-        """
-        User = get_user_model()
-        if User.objects.filter(email=email).exists():
-            raise ValidationError("Email already exists in the system.")
-
-    def validate_unique_username(self, username):
-        """
-        Validate if the username is unique across the system.
-        """
-        User = get_user_model()
-        if User.objects.filter(username=username).exists():
-            raise ValidationError("Username already exists in the system.")
-
-    def validate_user_exists(self, user_id):
-        """
-        Validate if the user with given user_id exists in the system.
-        """
-        User = get_user_model()
-        if not User.objects.filter(id=user_id).exists():
-            raise ValidationError("User does not exist.")
-
-    def validate_user_active(self):
-        """
-        Validate if the user is active.
-        """
-        if not self.user.is_active:
-            raise ValidationError("User is not active.")
-    
-    # Add more custom validators as per your application's requirements
-
-class QueryParamsValidator:
-    @staticmethod
-    def validate(query_params):
-        """
-        Validate query parameters format and values.
-        Example: Check required fields, data types, etc.
-        """
-        if not isinstance(query_params, dict):
-            raise ValidationError("Query parameters must be a dictionary.")
-        
-        # Example: Validate specific fields and their types
-        required_fields = ['param1', 'param2']
-        for field in required_fields:
-            if field not in query_params:
-                raise ValidationError(f"Missing required field: {field}.")
-            # Example: Ensure specific data types
-            if not isinstance(query_params[field], str):
-                raise ValidationError(f"Field '{field}' must be a string.")
-        
-        # Add more validation logic as needed
-
-class QueryExecutionPermissionValidator:
-    @staticmethod
-    def check(query, user):
-        """
-        Check if the user has permission to execute the query.
-        """
-        User = get_user_model()
-        # Example logic: Implement your permission checks based on user roles/groups
-        if user.is_authenticated and user.has_perm('query_app.execute_query'):
-            return True
-        else:
-            return False
-
-class SQLSyntaxValidator:
-    @staticmethod
-    def validate(sql_query):
-        """
-        Validate SQL syntax before executing the query.
-        Example: Check for potential SQL injection risks.
-        """
-        if ";" in sql_query:
-            raise ValidationError("Multiple SQL statements detected, potential SQL injection risk.")
-        # Add more syntax validation as needed
-
-class InputSanitizer:
-    @staticmethod
-    def sanitize(input_data):
-        """
-        Sanitize query inputs to prevent SQL injection attacks.
-        Example: Remove potentially harmful characters.
-        """
-        sanitized_data = re.sub(r'[;\'\"]', '', input_data)  # Remove specific characters
-        return sanitized_data
-
-class DataIntegrityValidator:
-    @staticmethod
-    def check(data):
-        """
-        Check data integrity before executing operations.
-        Example: Ensure required fields are populated correctly.
-        """
-        if not data.get('required_field'):
-            raise ValidationError("Required field is missing.")
-        # Add more integrity checks as needed
-
-class ConfigurationValidator:
-    @staticmethod
-    def validate():
-        """
-        Validate application configuration settings.
-        Example: Check database connection settings.
-        """
-        if not settings.DATABASES['default'].get('HOST'):
-            raise ValidationError("Database configuration error: Host not specified.")
-        # Add more configuration checks as needed
+        logger.error(f"Validation error: {error_message}")
+        handle_query_execution_error(ValidationErrorDetail(error_message))
 
 class UserValidator:
     @staticmethod
     def exists(user_id):
         """
-        Validate if the user with given user_id exists in the system.
+        Validate if the user with the given user_id exists.
         """
-        User = get_user_model()
         if not User.objects.filter(id=user_id).exists():
-            raise ValidationError("User does not exist.")
+            raise ValidationErrorDetail("User does not exist.")
     
     @staticmethod
     def active(user):
@@ -214,7 +88,7 @@ class UserValidator:
         Validate if the user is active.
         """
         if not user.is_active:
-            raise ValidationError("User is not active.")
+            raise ValidationErrorDetail("User is not active.")
     
     @staticmethod
     def has_permission(user, required_permission):
@@ -222,7 +96,7 @@ class UserValidator:
         Validate if the user has the required permission.
         """
         if not user.has_perm(required_permission):
-            raise ValidationError(f"User does not have permission: {required_permission}")
+            raise ValidationErrorDetail(f"User lacks required permission: {required_permission}.")
     
     @staticmethod
     def is_superuser(user):
@@ -230,7 +104,7 @@ class UserValidator:
         Validate if the user is a superuser.
         """
         if not user.is_superuser:
-            raise ValidationError("User is not a superuser.")
+            raise ValidationErrorDetail("User is not a superuser.")
     
     @staticmethod
     def is_staff(user):
@@ -238,7 +112,7 @@ class UserValidator:
         Validate if the user is staff.
         """
         if not user.is_staff:
-            raise ValidationError("User is not staff.")
+            raise ValidationErrorDetail("User is not staff.")
     
     @staticmethod
     def is_owner(user, instance):
@@ -246,16 +120,15 @@ class UserValidator:
         Validate if the user is the owner of the instance.
         """
         if instance.user != user:
-            raise ValidationError("User is not the owner of the instance.")
+            raise ValidationErrorDetail("User is not the owner of the instance.")
     
     @staticmethod
     def is_instructor(user):
         """
-        Validate if the user is an instructor (custom logic example).
+        Validate if the user is an instructor.
         """
-        # Example custom logic for instructor validation
         if not user.profile.is_instructor:
-            raise ValidationError("User is not an instructor.")
+            raise ValidationErrorDetail("User is not an instructor.")
 
 class CourseValidator:
     @staticmethod
@@ -264,7 +137,7 @@ class CourseValidator:
         Validate if the user is enrolled in the course.
         """
         if not user.profile.enrollments.filter(course=course).exists():
-            raise ValidationError("User is not enrolled in the course.")
+            raise ValidationErrorDetail("User is not enrolled in the course.")
     
     @staticmethod
     def enrollment_capacity(course):
@@ -272,7 +145,7 @@ class CourseValidator:
         Validate if the course has reached its maximum enrollment capacity.
         """
         if course.enrollments.count() >= course.max_capacity:
-            raise ValidationError("Course has reached its maximum enrollment capacity.")
+            raise ValidationErrorDetail("Course has reached its maximum enrollment capacity.")
     
     @staticmethod
     def enrollment_deadline(course):
@@ -280,7 +153,7 @@ class CourseValidator:
         Validate if the enrollment deadline for the course has passed.
         """
         if course.enrollment_deadline and course.enrollment_deadline < timezone.now():
-            raise ValidationError("Enrollment deadline for the course has passed.")
+            raise ValidationErrorDetail("Enrollment deadline for the course has passed.")
 
 class GradeValidator:
     @staticmethod
@@ -289,7 +162,7 @@ class GradeValidator:
         Validate if the grade falls within a specific range.
         """
         if not (0 <= grade <= 100):
-            raise ValidationError("Grade must be between 0 and 100.")
+            raise ValidationErrorDetail("Grade must be between 0 and 100.")
 
 class AssignmentValidator:
     @staticmethod
@@ -298,7 +171,7 @@ class AssignmentValidator:
         Validate if the user has submitted the assignment.
         """
         if not assignment.submissions.filter(submitted_by=user).exists():
-            raise ValidationError("User has not submitted the assignment.")
+            raise ValidationErrorDetail("User has not submitted the assignment.")
     
     @staticmethod
     def deadline(assignment):
@@ -306,7 +179,7 @@ class AssignmentValidator:
         Validate if the assignment submission deadline has passed.
         """
         if assignment.deadline and assignment.deadline < timezone.now():
-            raise ValidationError("Assignment submission deadline has passed.")
+            raise ValidationErrorDetail("Assignment submission deadline has passed.")
 
 class QuizValidator:
     @staticmethod
@@ -315,7 +188,7 @@ class QuizValidator:
         Validate if the user has submitted the quiz.
         """
         if not quiz.submissions.filter(submitted_by=user).exists():
-            raise ValidationError("User has not submitted the quiz.")
+            raise ValidationErrorDetail("User has not submitted the quiz.")
     
     @staticmethod
     def time_limit(quiz):
@@ -323,7 +196,7 @@ class QuizValidator:
         Validate if the time limit for the quiz has been exceeded.
         """
         if quiz.time_limit and quiz.time_limit < timezone.now() - quiz.start_time:
-            raise ValidationError("Time limit for the quiz has been exceeded.")
+            raise ValidationErrorDetail("Time limit for the quiz has been exceeded.")
 
 
 
