@@ -1,0 +1,253 @@
+version: "3.12"
+
+services:
+
+  # agent:
+  #   container_name: newrelic-infra
+  #   build:
+  #     context: .
+  #     dockerfile: newrelic-infra.dockerfile
+  #   cap_add:
+  #     - SYS_PTRACE
+  #   network_mode: host
+  #   pid: host
+  #   privileged: true
+  #   volumes:
+  #     - "/:/host:ro"
+  #     - "/var/run/docker.sock:/var/run/docker.sock"
+  #   restart: unless-stopped
+
+  # backend api service
+  django:
+    restart: always
+    build: .
+    container_name: fas_backend
+    command: >
+      bash -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               NEW_RELIC_CONFIG_FILE=newrelic.ini newrelic-admin run-program python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/usr/src/app/
+      - static_volume:/src/staticfiles
+      - logs_volume:/src/logs
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      # - pgdb
+      - redis
+
+  # frontend:
+  #   restart: always
+  #   build: ./TheVillageFrontend
+  #   container_name: frontend
+  #   volumes:
+  #     - ./TheVillageFrontend:/usr/src/app/
+  #   ports:
+  #     - "5173:5173"
+  #   depends_on:
+  #     - django
+
+  # Celery Service
+  celery:
+    restart: always
+    build: .
+    # command: celery -A ApiTheVillage worker --beat -linfo
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,[::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - django
+      - redis
+
+  nginx:
+    image: nginx
+    restart: always
+    volumes:
+      - static_volume:/src/staticfiles
+      - .docker/nginx/certs:/etc/nginx/certs
+      - .docker/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+
+    ports:
+      - 8080:80
+      - 8443:443
+    depends_on:
+      - django
+      - grafana
+
+  prometheus:
+    image: prometheus
+    restart: always
+    build:
+      context: .docker/prometheus
+      dockerfile: Dockerfile
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana
+    restart: always
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_USERS_DEFAULT_THEME=${GF_USERS_DEFAULT_THEME}
+      - GF_USERS_ALLOW_SIGN_UP=${GF_USERS_ALLOW_SIGN_UP}
+      - GF_USERS_ALLOW_ORG_CREATE=${GF_USERS_ALLOW_ORG_CREATE}
+      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED}
+
+  logstash:
+    image: logstash:7.5.2
+    restart: always
+    depends_on:
+      - elasticsearch
+    networks:
+      - elastic
+    volumes:
+      - logs_volume:/logs:ro
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - http.host=0.0.0.0
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms750m -Xmx750m
+    ports:
+      - 9200:9200
+    networks:
+      - elastic
+    volumes:
+      - elasticsearch_volume:/usr/share/elasticsearch/data
+
+  kibana:
+    image: kibana:7.5.2
+
+    restart: always
+    ports:
+      - 5601:5601
+    networks:
+      - elastic
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
+  # PostgreSQL Database Service
+  # pgdb:
+  #   image: postgres
+  #   container_name: pgdb
+  #   environment:
+  #     - POSTGRES_DB=postgres
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data/
+
+  # Redis Service
+  redis:
+    image: "redis:alpine"
+
+# Define named volumes
+volumes:
+  elasticsearch_volume:
+  static_volume:
+  logs_volume:
+  grafana_data:
+
+networks:
+  elastic:
+    driver: bridge
+
+# Define a named volume for PostgreSQL data storage
+# volumes:
+#   pgdata:
+
+
+
+
+
+
+
+
+
+# version: "3.8"
+
+# services:
+#   # Django Service
+#   ApiTheVillage:
+#     build: 
+#     container_name: ApiTheVillage
+#     command: >
+#       bash -c "python manage.py makemigrations &&
+#                python manage.py migrate &&
+#                python manage.py runserver 0.0.0.0:8000"
+#     volumes:
+#       - .:/usr/src/app/
+#     ports:
+#       - "8000:8000"
+#     environment:
+#       - DEBUG=1
+#       - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,[::1]
+#       - CELERY_BROKER=redis://redis:6379/0
+#       - CELERY_BACKEND=redis://redis:6379/0
+#     depends_on:
+#       - redis
+
+#   # Celery Service
+#   celery:
+#     build: .
+#     command: celery -A ApiTheVillage worker --beat -l info
+#     volumes:
+#       - .:/usr/src/app
+#     environment:
+#       - DEBUG=1
+#       - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,[::1]
+#       - CELERY_BROKER_REDIS_URL=redis://redis:6379/0
+#       - CELERY_BACKEND=redis://redis:6379/0
+#     depends_on:
+#       - ApiTheVillage
+#       - redis
+
+#   # Redis Service
+#   redis:
+#     image: "redis:alpine"
+
+# # Define a named volume for PostgreSQL data storage
+# volumes:
+#   pgdata:
+
+# 4d646c47762b21cde97691d1399eb1daFFFFNRAL
+
+# newrelic-admin generate-config YOUR_LICENSE_KEY newrelic.ini
+
+# cat >> docker-compose.yaml << EOF
+# version: '3'
+
+# services:
+#   agent:
+#     container_name: newrelic-infra
+#     build:
+#       context: .
+#       dockerfile: newrelic-infra.dockerfile
+#     cap_add:
+#       - SYS_PTRACE
+#     network_mode: host
+#     pid: host
+#     privileged: true
+#     volumes:
+#       - "/:/host:ro"
+#       - "/var/run/docker.sock:/var/run/docker.sock"
+#     restart: unless-stopped
+# EOF

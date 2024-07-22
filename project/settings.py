@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+from app_logs.logger import CustomisedJSONFormatter
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,7 +28,7 @@ SECRET_KEY = "django-insecure-*n#-ls9^j#y=3j^j@56gvuo0f2v!-&)61jjrifq^7pspy6ov)1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -44,6 +45,8 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'django_celery_beat',
     'django_redis',
     'crispy_forms',
@@ -53,9 +56,11 @@ INSTALLED_APPS = [
     'corsheaders',
     'ckeditor',
     'taggit',
+    'django_prometheus',
     'django_extensions',
     'drf_spectacular',
-    'drf_spectacular_sidecar', 
+    'drf_spectacular_sidecar',
+    'django_rq', 
     
     # my apps
     'activity',
@@ -70,10 +75,12 @@ INSTALLED_APPS = [
     'connections',
     'companies',
     'certifications',
+    'app_logs', # renamed
     
 ]
 
 MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -82,7 +89,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-    'corsheaders.middleware.CorsMiddleware'
+    'corsheaders.middleware.CorsMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 AUTH_USER_MODEL = 'profiles.User'
@@ -151,7 +159,34 @@ CHANNEL_LAYERS = {
 }
 
 
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    },
+    'high': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    },
+    'low': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    }
+}
+
+
 # Celery Configuration
+
+# RabbitMQ config
+# # CELERY_BROKER_URL = 'amqp://localhost'
+# # CELERY_RESULT_BACKEND = 'rpc://'
+
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
@@ -245,6 +280,44 @@ STATICFILES_DIRS = [
 MEDIA_URL =  '/media/'
 MEDIA_ROOT =  BASE_DIR / "media"
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Logging
+# LOG_PATH = os.path.join(BASE_DIR, 'logs')
+# LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         "json": {
+#             '()': CustomisedJSONFormatter,
+#         },
+#     },
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#         'app_log_file': {
+#             'level': LOG_LEVEL,
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'filename': os.path.join(LOG_PATH, 'app.log.json'),
+#             'maxBytes': 1024 * 1024 * 15,  # 15MB
+#             'backupCount': 10,
+#             'formatter': 'json',
+#         },
+#     },
+#     'root': {
+#         'handlers': ['console', 'app_log_file'],
+#         'level': LOG_LEVEL,
+#     },
+# }
+
+PROMETHEUS_LATENCY_BUCKETS = (0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0, 25.0, 50.0, 75.0, float("inf"),)
+PROMETHEUS_METRIC_EXPORT_DURATION = True
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -285,3 +358,14 @@ SIMPLE_JWT = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # Replace this git GMAIL SMTP settings in production
+
+
+# # Security
+
+# SECURE_SSL_REDIRECT = True
+# SECURE_HSTS_SECONDS = 3600
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# CSRF_COOKIE_SECURE = True
+# SESSION_COOKIE_SECURE = True

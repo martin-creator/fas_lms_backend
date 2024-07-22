@@ -84,3 +84,11 @@ class JobNotification(models.Model):
 
     def __str__(self):
         return f'{self.user.username} received a notification for {self.job_listing.title}'
+    
+
+# from encrypted_model_fields.fields import EncryptedCharField, EncryptedTextField
+# from django.db import models
+
+# class MyModel(models.Model):
+#     sensitive_data = EncryptedCharField(max_length=255)
+#     sensitive_text = EncryptedTextField()
