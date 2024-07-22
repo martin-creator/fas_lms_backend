@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from django.contrib.auth.models import Group
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 class QueryCategory(models.Model):
     name = models.CharField(max_length=100)
