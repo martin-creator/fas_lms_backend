@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from .logging import log_data_access
-from .models import Course, Assignment, Module
+from courses.models import Course, Assignment, Module
 from querying.models import QueryExecutionPermission
 from rest_framework import permissions
 

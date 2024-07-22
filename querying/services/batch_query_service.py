@@ -1,7 +1,7 @@
 # services/batch_query_service.py
 import asyncio
 from utils.async_execution import retry_async_operation
-from .query_service.py import QueryService
+from .query_service import QueryService
 
 class BatchQueryService:
     def __init__(self, user=None):

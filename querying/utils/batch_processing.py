@@ -1,6 +1,8 @@
 # utils/batch_processing.py
 import asyncio
 import logging
+import time
+from django.core.exceptions import ValidationError
 from django.db import transaction, DatabaseError
 from .logging import log_data_access, handle_query_execution_error
 from .validation import BatchValidator
