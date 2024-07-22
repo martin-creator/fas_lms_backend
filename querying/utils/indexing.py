@@ -99,13 +99,17 @@ class IndexManager:
             return False
 
     @staticmethod
-    def search_index(index_name, query):
+    def search_index(index_name, query, filters=None, sort=None, page=1, size=10):
         """
         Search the index for entities matching the query.
 
         Args:
         - index_name: Name of the index to search within.
         - query: Query string or criteria to search for.
+        - filters: Optional filters to apply to the search query.
+        - sort: Optional sorting criteria.
+        - page: Page number for pagination.
+        - size: Number of results per page.
 
         Returns:
         - List of matching entities from the index.
@@ -113,7 +117,16 @@ class IndexManager:
         try:
             # Example: Search index using a search engine or database
             # Example implementation using Elasticsearch
-            # result = es.search(index=index_name, body={'query': {'match': {'title': query}}})
+            # body = {
+            #     'query': {'match': {'title': query}},
+            #     'from': (page - 1) * size,
+            #     'size': size
+            # }
+            # if filters:
+            #     body['query'] = {'bool': {'must': {'match': {'title': query}}, 'filter': filters}}
+            # if sort:
+            #     body['sort'] = sort
+            # result = es.search(index=index_name, body=body)
             result = []  # Placeholder for actual search result
             logger.info(f"Search query '{query}' returned {len(result)} results from index {index_name}.")
             return result
@@ -153,3 +166,80 @@ class IndexManager:
         except Exception as e:
             logger.error(f"Failed to recommend indexing strategy for {table_name}: {e}")
             return []
+
+    @staticmethod
+    def optimize_indexes():
+        """
+        Optimize indexes periodically to maintain performance.
+
+        Returns:
+        - True if optimization is successful, False otherwise.
+        """
+        try:
+            # Example: Optimize indexes using a search engine or database optimization command
+            # Example implementation using Elasticsearch
+            # es.indices.forcemerge(index='*')
+            logger.info("Indexes optimized successfully.")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to optimize indexes: {e}")
+            return False
+
+    @staticmethod
+    def batch_index_entities(entity_list, entity_type):
+        """
+        Batch index multiple entities efficiently.
+
+        Args:
+        - entity_list: List of entities to index.
+        - entity_type: Type of entities (e.g., 'course', 'user_profile').
+
+        Returns:
+        - True if batch indexing is successful, False otherwise.
+        """
+        try:
+            # Example: Batch index using bulk API of a search engine
+            # Example implementation using Elasticsearch
+            # actions = [{'_op_type': 'index', '_index': f'{entity_type}s', '_id': entity['id'], '_source': entity} for entity in entity_list]
+            # helpers.bulk(es, actions)
+            logger.info(f"Batch indexed {len(entity_list)} {entity_type}s successfully.")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to batch index {entity_type}s: {e}")
+            return False
+
+    @staticmethod
+    def update_index_partial(entity_id, partial_data, index_name):
+        """
+        Update a part of the indexed document.
+
+        Args:
+        - entity_id: Unique identifier of the entity to update.
+        - partial_data: Dictionary containing the fields to update.
+        - index_name: Name of the index.
+
+        Returns:
+        - True if the partial update is successful, False otherwise.
+        """
+        try:
+            # Example: Partial update using a search engine
+            # Example implementation using Elasticsearch
+            # es.update(index=index_name, id=entity_id, body={'doc': partial_data})
+            logger.info(f"Partially updated index {index_name} for entity {entity_id} successfully.")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to partially update index {index_name} for entity {entity_id}: {e}")
+            return False
+
+def notify_admins(message):
+    """
+    Notify administrators of critical indexing errors.
+
+    Args:
+    - message: Message to send to administrators.
+
+    Returns:
+    - None
+    """
+    # Implement your notification logic here, e.g., send an email or a message to a monitoring system
+    pass
