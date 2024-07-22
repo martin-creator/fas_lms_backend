@@ -2,7 +2,7 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
-from .logging import log_data_access
+from .logging import Logger
 from courses.models import Course, Assignment, Module
 from querying.models import QueryExecutionPermission
 from rest_framework import permissions
@@ -74,108 +74,119 @@ class IsStudentEnrolledInCourse(permissions.BasePermission):
         course_id = view.kwargs.get('course_id')
         return request.user.enrolled_courses.filter(id=course_id).exists()
 
-def check_user_is_admin(user):
+class PermissionService:
     """
-    Check if the user is an admin.
-
-    Args:
-    - user: User instance.
-
-    Raises:
-    - PermissionDenied: If the user is not an admin.
+    Service class for handling various user permission checks.
     """
-    if not user.is_staff:
-        log_data_access(user=user, query="Attempted admin action without admin rights.")
-        raise PermissionDenied("Admin access required.")
 
-def check_user_has_permission(user, required_permission):
-    """
-    Check if the user has a specific permission.
+    @staticmethod
+    def check_user_is_admin(user):
+        """
+        Check if the user is an admin.
 
-    Args:
-    - user: User instance.
-    - required_permission: Required permission string.
+        Args:
+        - user: User instance.
 
-    Raises:
-    - PermissionDenied: If the user does not have the required permission.
-    """
-    if not user.has_perm(required_permission):
-        log_data_access(user=user, query=f"Attempted action without permission: {required_permission}")
-        raise PermissionDenied(f"Required permission: {required_permission}.")
+        Raises:
+        - PermissionDenied: If the user is not an admin.
+        """
+        if not user.is_staff:
+            Logger.log_data_access(user=user, query="Attempted admin action without admin rights.")
+            raise PermissionDenied("Admin access required.")
 
-def check_user_can_access_course(user, course_id):
-    """
-    Check if the user can access a specific course.
+    @staticmethod
+    def check_user_has_permission(user, required_permission):
+        """
+        Check if the user has a specific permission.
 
-    Args:
-    - user: User instance.
-    - course_id: ID of the course.
+        Args:
+        - user: User instance.
+        - required_permission: Required permission string.
 
-    Raises:
-    - PermissionDenied: If the user cannot access the course.
-    """
-    course = get_object_or_404(Course, id=course_id)
-    if not user.is_authenticated or not user.has_perm('view_course', course):
-        log_data_access(user=user, query=f"Attempted to access course '{course.title}' without permission.")
-        raise PermissionDenied("You do not have permission to access this course.")
+        Raises:
+        - PermissionDenied: If the user does not have the required permission.
+        """
+        if not user.has_perm(required_permission):
+            Logger.log_data_access(user=user, query=f"Attempted action without permission: {required_permission}")
+            raise PermissionDenied(f"Required permission: {required_permission}.")
 
-    log_data_access(user=user, query=f"Accessed course '{course.title}'.")
+    @staticmethod
+    def check_user_can_access_course(user, course_id):
+        """
+        Check if the user can access a specific course.
 
-def check_user_can_manage_module(user, module_id):
-    """
-    Check if the user can manage a specific module.
+        Args:
+        - user: User instance.
+        - course_id: ID of the course.
 
-    Args:
-    - user: User instance.
-    - module_id: ID of the module.
+        Raises:
+        - PermissionDenied: If the user cannot access the course.
+        """
+        course = get_object_or_404(Course, id=course_id)
+        if not user.is_authenticated or not user.has_perm('view_course', course):
+            Logger.log_data_access(user=user, query=f"Attempted to access course '{course.title}' without permission.")
+            raise PermissionDenied("You do not have permission to access this course.")
 
-    Raises:
-    - PermissionDenied: If the user cannot manage the module.
-    """
-    module = get_object_or_404(Module, id=module_id)
-    if not user.is_authenticated or not user.has_perm('manage_module', module):
-        log_data_access(user=user, query=f"Attempted to manage module '{module.title}' without permission.")
-        raise PermissionDenied("You do not have permission to manage this module.")
+        Logger.log_data_access(user=user, query=f"Accessed course '{course.title}'.")
 
-    log_data_access(user=user, query=f"Managed module '{module.title}'.")
+    @staticmethod
+    def check_user_can_manage_module(user, module_id):
+        """
+        Check if the user can manage a specific module.
 
-def check_user_can_modify_assignment(user, assignment_id):
-    """
-    Check if the user can modify a specific assignment.
+        Args:
+        - user: User instance.
+        - module_id: ID of the module.
 
-    Args:
-    - user: User instance.
-    - assignment_id: ID of the assignment.
+        Raises:
+        - PermissionDenied: If the user cannot manage the module.
+        """
+        module = get_object_or_404(Module, id=module_id)
+        if not user.is_authenticated or not user.has_perm('manage_module', module):
+            Logger.log_data_access(user=user, query=f"Attempted to manage module '{module.title}' without permission.")
+            raise PermissionDenied("You do not have permission to manage this module.")
 
-    Raises:
-    - PermissionDenied: If the user cannot modify the assignment.
-    """
-    assignment = get_object_or_404(Assignment, id=assignment_id)
-    if not user.is_authenticated or not user.has_perm('modify_assignment', assignment):
-        log_data_access(user=user, query=f"Attempted to modify assignment '{assignment.title}' without permission.")
-        raise PermissionDenied("You do not have permission to modify this assignment.")
+        Logger.log_data_access(user=user, query=f"Managed module '{module.title}'.")
 
-    log_data_access(user=user, query=f"Modified assignment '{assignment.title}'.")
+    @staticmethod
+    def check_user_can_modify_assignment(user, assignment_id):
+        """
+        Check if the user can modify a specific assignment.
 
-def check_query_execution_permission(query, user):
-    """
-    Check if the user has permission to execute the query.
+        Args:
+        - user: User instance.
+        - assignment_id: ID of the assignment.
 
-    Args:
-    - query: Query object from querying.models.QueryExecutionPermission.
-    - user: User object from Django's custom user model.
+        Raises:
+        - PermissionDenied: If the user cannot modify the assignment.
+        """
+        assignment = get_object_or_404(Assignment, id=assignment_id)
+        if not user.is_authenticated or not user.has_perm('modify_assignment', assignment):
+            Logger.log_data_access(user=user, query=f"Attempted to modify assignment '{assignment.title}' without permission.")
+            raise PermissionDenied("You do not have permission to modify this assignment.")
 
-    Returns:
-    - Boolean indicating whether the user has permission to execute the query.
-    """
-    try:
-        permission = QueryExecutionPermission.objects.get(query=query)
-        has_permission = user.profile.followers.filter(id__in=permission.allowed_groups.all()).exists() or permission.allowed_users.filter(id=user.id).exists()
-        if not has_permission:
-            log_data_access(user=user, query=f"Attempted to execute query '{query}' without permission.")
-        return has_permission
-    except QueryExecutionPermission.DoesNotExist:
-        log_data_access(user=user, query=f"Attempted to execute non-existent query '{query}'.")
-        return False
+        Logger.log_data_access(user=user, query=f"Modified assignment '{assignment.title}'.")
+
+    @staticmethod
+    def check_query_execution_permission(query, user):
+        """
+        Check if the user has permission to execute the query.
+
+        Args:
+        - query: Query object from querying.models.QueryExecutionPermission.
+        - user: User object from Django's custom user model.
+
+        Returns:
+        - Boolean indicating whether the user has permission to execute the query.
+        """
+        try:
+            permission = QueryExecutionPermission.objects.get(query=query)
+            has_permission = user.profile.followers.filter(id__in=permission.allowed_groups.all()).exists() or permission.allowed_users.filter(id=user.id).exists()
+            if not has_permission:
+                Logger.log_data_access(user=user, query=f"Attempted to execute query '{query}' without permission.")
+            return has_permission
+        except QueryExecutionPermission.DoesNotExist:
+            Logger.log_data_access(user=user, query=f"Attempted to execute non-existent query '{query}'.")
+            return False
 
 # Additional Permission Functions can be added here for specific use cases

@@ -1,183 +1,172 @@
 # utils/batch_processing.py
 import asyncio
-import logging
 import time
 from django.core.exceptions import ValidationError
 from django.db import transaction, DatabaseError
-from .logging import log_data_access, handle_query_execution_error
+from .logging import Logger
 from .validation import BatchValidator
 
-logger = logging.getLogger(__name__)
+# Initialize your custom logger
+logger = Logger()
 
-def process_batch_data(data_list, user=None, chunk_size=100):
-    """
-    Process large batches of data efficiently in chunks.
+class BatchProcessor:
+    def __init__(self, user=None, chunk_size=100):
+        self.user = user
+        self.chunk_size = chunk_size
+        self.validator = BatchValidator()
 
-    Args:
-    - data_list: List of data items to process.
-    - user: Optional user performing the batch processing for logging purposes.
-    - chunk_size: Size of each chunk for batch processing.
+    def process_batch_data(self, data_list):
+        """
+        Process large batches of data efficiently in chunks.
 
-    Returns:
-    - None (or any specific result as needed).
+        Args:
+        - data_list: List of data items to process.
 
-    Raises:
-    - Exception: Any exception that occurs during batch processing.
+        Returns:
+        - None (or any specific result as needed).
 
-    Notes:
-    - Uses Django's transaction management for atomicity.
-    - Logs data access events.
-    - Processes data in smaller chunks to manage memory usage.
-    """
-    try:
-        total_items = len(data_list)
-        for i in range(0, total_items, chunk_size):
-            chunk = data_list[i:i+chunk_size]
-            with transaction.atomic():
+        Raises:
+        - Exception: Any exception that occurs during batch processing.
+        """
+        try:
+            total_items = len(data_list)
+            for i in range(0, total_items, self.chunk_size):
+                chunk = data_list[i:i+self.chunk_size]
+                with transaction.atomic():
+                    for data_item in chunk:
+                        # Validate each data item
+                        self.validator.validate(data_item)
+
+                        # Process each data item (example operation)
+                        # Example: Save each data item to the database
+                        # Replace with actual processing logic
+
+                        # Example:
+                        # data_item.save()  # Assuming data_item is a Django model instance
+
+                        # Log data access for auditing
+                        if self.user:
+                            logger.log_data_access(user=self.user, query="Batch Processing", timestamp=None)
+
+                # Log progress
+                logger.logger.info(f"Processed {min(i+self.chunk_size, total_items)} out of {total_items} items")
+
+            return None
+
+        except Exception as e:
+            logger.handle_query_execution_error(query_name="Batch Processing", error_message=str(e))
+            raise e
+
+    async def process_batch_data_async(self, data_list):
+        """
+        Process large batches of data efficiently in chunks asynchronously.
+
+        Args:
+        - data_list: List of data items to process.
+
+        Returns:
+        - None (or any specific result as needed).
+
+        Raises:
+        - Exception: Any exception that occurs during batch processing.
+        """
+        try:
+            total_items = len(data_list)
+            for i in range(0, total_items, self.chunk_size):
+                chunk = data_list[i:i+self.chunk_size]
+                await self.process_chunk_async(chunk)
+
+                # Log progress
+                logger.logger.info(f"Processed {min(i+self.chunk_size, total_items)} out of {total_items} items asynchronously")
+
+            return None
+
+        except Exception as e:
+            logger.handle_query_execution_error(query_name="Async Batch Processing", error_message=str(e))
+            raise e
+
+    async def process_chunk_async(self, chunk):
+        """
+        Helper function to process a chunk of data asynchronously.
+
+        Args:
+        - chunk: List of data items to process.
+
+        Returns:
+        - None
+        """
+        try:
+            async with transaction.atomic():
                 for data_item in chunk:
                     # Validate each data item
-                    BatchValidator().validate(data_item)
+                    self.validator.validate(data_item)
 
                     # Process each data item (example operation)
                     # Example: Save each data item to the database
                     # Replace with actual processing logic
 
                     # Example:
-                    # data_item.save()  # Assuming data_item is a Django model instance
+                    # await async_save_data(data_item)  # Assuming async_save_data is a helper function
 
                     # Log data access for auditing
-                    if user:
-                        log_data_access(user=user, query="Batch Processing", timestamp=None)  # Update with actual timestamp if available
+                    if self.user:
+                        logger.log_data_access(user=self.user, query="Async Batch Processing", timestamp=None)
 
-            # Optionally, log progress or update progress tracking system
-            logger.info(f"Processed {min(i+chunk_size, total_items)} out of {total_items} items")
+        except Exception as e:
+            logger.handle_query_execution_error(query_name="Chunk Processing", error_message=str(e))
+            raise e
 
-        # Optionally return a result or None based on your application's logic
-        return None
+    @staticmethod
+    def retry_batch_operation(operation, retries=3, delay=1):
+        """
+        Retry a batch operation a specified number of times with a delay.
 
-    except Exception as e:
-        # Handle and log exceptions
-        handle_query_execution_error(query_name="Batch Processing", error_message=str(e))
-        raise e  # Re-raise the exception for the caller to handle
+        Args:
+        - operation: Batch operation function or coroutine.
+        - retries: Number of retries before giving up.
+        - delay: Delay in seconds between retries.
 
-async def process_batch_data_async(data_list, user=None, chunk_size=100):
-    """
-    Process large batches of data efficiently in chunks asynchronously.
+        Returns:
+        - Result of the batch operation if successful.
+        """
+        for attempt in range(retries):
+            try:
+                return operation()
+            except (DatabaseError, ValidationError) as e:
+                if attempt < retries - 1:
+                    logger.logger.warning(f"Retrying batch operation due to error: {e}. Attempt {attempt + 1}/{retries}")
+                    time.sleep(delay)
+                else:
+                    logger.logger.error(f"Batch operation failed after {retries} attempts: {e}")
+                    raise
 
-    Args:
-    - data_list: List of data items to process.
-    - user: Optional user performing the batch processing for logging purposes.
-    - chunk_size: Size of each chunk for batch processing.
+    @staticmethod
+    def validate_data_item(data_item):
+        """
+        Validate a data item before processing.
 
-    Returns:
-    - None (or any specific result as needed).
+        Args:
+        - data_item: Data item to validate.
 
-    Raises:
-    - Exception: Any exception that occurs during batch processing.
+        Returns:
+        - None
 
-    Notes:
-    - Uses Django's transaction management for atomicity.
-    - Logs data access events.
-    - Processes data in smaller chunks to manage memory usage.
-    """
-    try:
-        total_items = len(data_list)
-        for i in range(0, total_items, chunk_size):
-            chunk = data_list[i:i+chunk_size]
-            await process_chunk_async(chunk, user)
+        Raises:
+        - ValidationError: If the data item is invalid.
+        """
+        # Implement validation logic here
+        pass
 
-            # Optionally, log progress or update progress tracking system
-            logger.info(f"Processed {min(i+chunk_size, total_items)} out of {total_items} items asynchronously")
+    @staticmethod
+    def notify_admins(message):
+        """
+        Notify administrators of critical errors.
 
-        # Optionally return a result or None based on your application's logic
-        return None
+        Args:
+        - message: Message to send to administrators.
 
-    except Exception as e:
-        # Handle and log exceptions
-        handle_query_execution_error(query_name="Async Batch Processing", error_message=str(e))
-        raise e  # Re-raise the exception for the caller to handle
-
-async def process_chunk_async(chunk, user):
-    """
-    Helper function to process a chunk of data asynchronously.
-
-    Args:
-    - chunk: List of data items to process.
-    - user: Optional user performing the batch processing for logging purposes.
-
-    Returns:
-    - None
-    """
-    try:
-        async with transaction.atomic():
-            for data_item in chunk:
-                # Validate each data item
-                BatchValidator().validate(data_item)
-
-                # Process each data item (example operation)
-                # Example: Save each data item to the database
-                # Replace with actual processing logic
-
-                # Example:
-                # await async_save_data(data_item)  # Assuming async_save_data is a helper function
-
-                # Log data access for auditing
-                if user:
-                    log_data_access(user=user, query="Async Batch Processing", timestamp=None)  # Update with actual timestamp if available
-
-    except Exception as e:
-        # Handle and log exceptions
-        handle_query_execution_error(query_name="Chunk Processing", error_message=str(e))
-        raise e  # Re-raise the exception for the caller to handle
-
-def retry_batch_operation(operation, retries=3, delay=1):
-    """
-    Retry a batch operation a specified number of times with a delay.
-
-    Args:
-    - operation: Batch operation function or coroutine.
-    - retries: Number of retries before giving up.
-    - delay: Delay in seconds between retries.
-
-    Returns:
-    - Result of the batch operation if successful.
-    """
-    for attempt in range(retries):
-        try:
-            return operation()
-        except (DatabaseError, ValidationError) as e:
-            if attempt < retries - 1:
-                logger.warning(f"Retrying batch operation due to error: {e}. Attempt {attempt + 1}/{retries}")
-                time.sleep(delay)
-            else:
-                logger.error(f"Batch operation failed after {retries} attempts: {e}")
-                raise
-
-def validate_data_item(data_item):
-    """
-    Validate a data item before processing.
-
-    Args:
-    - data_item: Data item to validate.
-
-    Returns:
-    - None
-
-    Raises:
-    - ValidationError: If the data item is invalid.
-    """
-    # Implement your validation logic here
-    pass
-
-def notify_admins(message):
-    """
-    Notify administrators of critical errors.
-
-    Args:
-    - message: Message to send to administrators.
-
-    Returns:
-    - None
-    """
-    # Implement your notification logic here, e.g., send an email or a message to a monitoring system
-    pass
+        Returns:
+        - None
+        """
+        # Implement notification logic here
+        pass

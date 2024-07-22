@@ -1,9 +1,10 @@
 # utils/caching.py
 from django.core.cache import cache
-from .logging import handle_query_execution_error
+from .logging import Logger
 import logging
 
-logger = logging.getLogger(__name__)
+# Initialize your custom logger
+logger = Logger()
 
 class CacheManager:
     """
@@ -32,8 +33,7 @@ class CacheManager:
         try:
             cache.set(key, value, timeout)
         except Exception as e:
-            logger.error(f"Failed to set cache for key '{key}': {e}")
-            # Handle cache set failure gracefully based on your application's requirements
+            logger.handle_query_execution_error(query_name="Set Cache", error_message=f"Failed to set cache for key '{key}': {e}")
             raise
 
     @staticmethod
@@ -44,8 +44,8 @@ class CacheManager:
         try:
             return cache.get(key)
         except Exception as e:
-            logger.error(f"Failed to retrieve cache for key '{key}': {e}")
-            return None  # Return None or handle cache get failure as needed
+            logger.handle_query_execution_error(query_name="Get Cache", error_message=f"Failed to retrieve cache for key '{key}': {e}")
+            return None
 
     @staticmethod
     def delete_cache(key):
@@ -55,8 +55,7 @@ class CacheManager:
         try:
             cache.delete(key)
         except Exception as e:
-            logger.error(f"Failed to delete cache for key '{key}': {e}")
-            # Handle cache delete failure based on your application's requirements
+            logger.handle_query_execution_error(query_name="Delete Cache", error_message=f"Failed to delete cache for key '{key}': {e}")
             raise
 
     @staticmethod
@@ -67,8 +66,7 @@ class CacheManager:
         try:
             cache.clear()
         except Exception as e:
-            logger.error(f"Failed to clear cache: {e}")
-            # Handle cache clear failure based on your application's requirements
+            logger.handle_query_execution_error(query_name="Clear All Cache", error_message=f"Failed to clear cache: {e}")
             raise
 
     @staticmethod
@@ -79,7 +77,7 @@ class CacheManager:
         try:
             return cache.get(key) is not None
         except Exception as e:
-            logger.error(f"Failed to check cache existence for key '{key}': {e}")
+            logger.handle_query_execution_error(query_name="Check Cache Exists", error_message=f"Failed to check cache existence for key '{key}': {e}")
             return False
 
     @staticmethod
@@ -93,10 +91,10 @@ class CacheManager:
             if hasattr(cache, 'cache'):
                 return cache.cache.info()
             else:
-                logger.warning("Cache backend does not support statistics retrieval")
+                logger.logger.warning("Cache backend does not support statistics retrieval")
                 return {}
         except Exception as e:
-            logger.error(f"Failed to retrieve cache statistics: {e}")
+            logger.handle_query_execution_error(query_name="Get Cache Stats", error_message=f"Failed to retrieve cache statistics: {e}")
             return {}
 
     @staticmethod
@@ -110,9 +108,9 @@ class CacheManager:
             if hasattr(cache, 'delete_pattern'):
                 cache.delete_pattern(f"{prefix}*")
             else:
-                logger.warning("Cache backend does not support delete_pattern")
+                logger.logger.warning("Cache backend does not support delete_pattern")
         except Exception as e:
-            logger.error(f"Failed to invalidate cache by prefix '{prefix}': {e}")
+            logger.handle_query_execution_error(query_name="Invalidate Cache By Prefix", error_message=f"Failed to invalidate cache by prefix '{prefix}': {e}")
             raise
 
     @staticmethod
@@ -126,10 +124,10 @@ class CacheManager:
             if hasattr(cache, 'lock'):
                 return cache.lock(key, timeout=timeout)
             else:
-                logger.warning("Cache backend does not support locking")
+                logger.logger.warning("Cache backend does not support locking")
                 return None
         except Exception as e:
-            logger.error(f"Failed to lock cache key '{key}': {e}")
+            logger.handle_query_execution_error(query_name="Lock Cache", error_message=f"Failed to lock cache key '{key}': {e}")
             raise
 
 def execute_cached_query(query_key, query_function, timeout=3600, retry_on_failure=3):
@@ -160,9 +158,9 @@ def execute_cached_query(query_key, query_function, timeout=3600, retry_on_failu
 
         except Exception as e:
             # Handle and log cache execution errors
-            handle_query_execution_error(query_name="Cached Query Execution", error_message=str(e))
+            logger.handle_query_execution_error(query_name="Cached Query Execution", error_message=f"Error executing cached query for key '{query_key}': {e}")
             if attempt < retry_on_failure - 1:
-                logger.warning(f"Retrying cached query execution for key '{query_key}' (attempt {attempt + 1}/{retry_on_failure})")
+                logger.logger.warning(f"Retrying cached query execution for key '{query_key}' (attempt {attempt + 1}/{retry_on_failure})")
             else:
                 raise e  # Re-raise the exception for the caller to handle
 

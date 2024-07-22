@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.conf import settings
 from django.utils import timezone
-from .logging import log_data_access, handle_query_execution_error
+from .logging import Logger
 import re
 import logging
 
@@ -71,7 +71,7 @@ class QueryValidator:
         Handle validation errors and log them.
         """
         logger.error(f"Validation error: {error_message}")
-        handle_query_execution_error(ValidationErrorDetail(error_message))
+        Logger.handle_query_execution_error(ValidationErrorDetail(error_message))
 
 class UserValidator:
     @staticmethod

@@ -1,9 +1,10 @@
 # utils/indexing.py
 from django.db import connection
 from querying.models import Query
-import logging
+from .logging import Logger  # Import your custom Logger class
 
-logger = logging.getLogger(__name__)
+# Initialize your custom logger
+logger = Logger()
 
 class IndexManager:
     """
@@ -29,7 +30,7 @@ class IndexManager:
             logger.info(f"Indexed course {course_id} successfully.")
             return True
         except Exception as e:
-            logger.error(f"Failed to index course {course_id}: {e}")
+            logger.handle_query_execution_error(query_name="Index Course", error_message=f"Failed to index course {course_id}: {e}")
             return False
 
     @staticmethod
@@ -51,7 +52,7 @@ class IndexManager:
             logger.info(f"Indexed user profile {user_id} successfully.")
             return True
         except Exception as e:
-            logger.error(f"Failed to index user profile {user_id}: {e}")
+            logger.handle_query_execution_error(query_name="Index User Profile", error_message=f"Failed to index user profile {user_id}: {e}")
             return False
 
     @staticmethod
@@ -73,7 +74,7 @@ class IndexManager:
             logger.info(f"Indexed event {event_id} successfully.")
             return True
         except Exception as e:
-            logger.error(f"Failed to index event {event_id}: {e}")
+            logger.handle_query_execution_error(query_name="Index Event", error_message=f"Failed to index event {event_id}: {e}")
             return False
 
     @staticmethod
@@ -95,7 +96,7 @@ class IndexManager:
             logger.info(f"Deleted entity {entity_id} from index {index_name} successfully.")
             return True
         except Exception as e:
-            logger.error(f"Failed to delete entity {entity_id} from index {index_name}: {e}")
+            logger.handle_query_execution_error(query_name="Delete Index", error_message=f"Failed to delete entity {entity_id} from index {index_name}: {e}")
             return False
 
     @staticmethod
@@ -131,7 +132,7 @@ class IndexManager:
             logger.info(f"Search query '{query}' returned {len(result)} results from index {index_name}.")
             return result
         except Exception as e:
-            logger.error(f"Failed to execute search query in index {index_name}: {e}")
+            logger.handle_query_execution_error(query_name="Search Index", error_message=f"Failed to execute search query in index {index_name}: {e}")
             return []
 
     @staticmethod
@@ -164,7 +165,7 @@ class IndexManager:
             return index_recommendations
 
         except Exception as e:
-            logger.error(f"Failed to recommend indexing strategy for {table_name}: {e}")
+            logger.handle_query_execution_error(query_name="Recommend Indexing Strategy", error_message=f"Failed to recommend indexing strategy for {table_name}: {e}")
             return []
 
     @staticmethod
@@ -182,7 +183,7 @@ class IndexManager:
             logger.info("Indexes optimized successfully.")
             return True
         except Exception as e:
-            logger.error(f"Failed to optimize indexes: {e}")
+            logger.handle_query_execution_error(query_name="Optimize Indexes", error_message=f"Failed to optimize indexes: {e}")
             return False
 
     @staticmethod
@@ -205,7 +206,7 @@ class IndexManager:
             logger.info(f"Batch indexed {len(entity_list)} {entity_type}s successfully.")
             return True
         except Exception as e:
-            logger.error(f"Failed to batch index {entity_type}s: {e}")
+            logger.handle_query_execution_error(query_name="Batch Indexing", error_message=f"Failed to batch index {entity_type}s: {e}")
             return False
 
     @staticmethod
@@ -228,7 +229,7 @@ class IndexManager:
             logger.info(f"Partially updated index {index_name} for entity {entity_id} successfully.")
             return True
         except Exception as e:
-            logger.error(f"Failed to partially update index {index_name} for entity {entity_id}: {e}")
+            logger.handle_query_execution_error(query_name="Update Index Partial", error_message=f"Failed to partially update index {index_name} for entity {entity_id}: {e}")
             return False
 
 def notify_admins(message):
