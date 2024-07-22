@@ -288,21 +288,6 @@ class JsonFormatter:
         """
         return json.dumps(data, indent=4, sort_keys=True)
 
-class FullNameFormatter:
-    @staticmethod
-    def format_full_name(user):
-        """
-        Format a user's full name including title and suffix if available.
-
-        Args:
-        - user: User object or dictionary containing name details.
-
-        Returns:
-        - Formatted full name string.
-        """
-        name_parts = [user.get('title', '').strip(), user['first_name'].strip(), user['last_name'].strip(), user.get('suffix', '').strip()]
-        return ' '.join(part for part in name_parts if part)
-
 class LocalizationFormatter:
     @staticmethod
     def format_localized_date(date, locale_code='en_US'):
