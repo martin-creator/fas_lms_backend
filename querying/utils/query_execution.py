@@ -1,15 +1,20 @@
 # utils/query_execution.py
-from django.core.exceptions import ObjectDoesNotExist
+import asyncio
+import logging
+import time
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db import connection, DatabaseError, transaction
 from django.utils import timezone
-from django.db import connection
-from .logging import log_query_execution, log_query_execution_error
+from .logging import log_query_execution, log_query_execution_error, handle_query_execution_error
 from .pagination import execute_paged_query
 from .caching import execute_cached_query
-from .async_execution import execute_async_query
+from .async_execution import execute_async_query, retry_async_operation
 from querying.models import Query, QueryExecutionPermission, QueryLog
 from django.contrib.auth import get_user_model
+from .validation import QueryValidator
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 class QueryExecutor:
     def __init__(self, user=None):
@@ -88,7 +93,7 @@ class QueryExecutor:
 
         return {'results': results, 'execution_time': execution_time}
 
-    def execute_async_query(self, query):
+    async def execute_async_query(self, query):
         """
         Execute an asynchronous query.
 
@@ -98,7 +103,7 @@ class QueryExecutor:
         Returns:
         - Asynchronous execution result dictionary.
         """
-        async_result = execute_async_query(query.async_execution())
+        async_result = await execute_async_query(query.async_execution())
         return async_result
 
     def has_permission(self, query):
@@ -219,7 +224,7 @@ class QueryExecutor:
         """
         try:
             permission = QueryExecutionPermission.objects.get(query=query_string)
-            return user.profile.followers.filter(id__in=permission.allowed_groups.all()).exists() or permission.allowed_users.filter(id=user.id).exists()
+            return user.groups.filter(id__in=permission.allowed_groups.all()).exists() or permission.allowed_users.filter(id=user.id).exists()
         except ObjectDoesNotExist:
             return False
 
@@ -253,3 +258,26 @@ class QueryExecutor:
                 return index_recommendations
         except Exception as e:
             raise RuntimeError(f"Failed to recommend indexing strategy: {str(e)}")
+
+    def notify_admins(self, message):
+        """
+        Notify administrators of critical errors.
+
+        Args:
+        - message: Message to send to administrators.
+
+        Returns:
+        - None
+        """
+        # Implement your notification logic here, e.g., send an email or a message to a monitoring system
+        pass
+
+    async def async_fetch_data(self, queryset):
+        """
+        Fetch data asynchronously from a queryset.
+
+        Args:
+        - queryset: Django QuerySet to fetch data from.
+
+        Returns:
+        - List of results from the queryset
