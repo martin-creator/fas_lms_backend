@@ -5,6 +5,7 @@ from utils.caching import CacheManager
 from utils.pagination import PaginatorService
 from utils.logging import Logger
 from .query_service import QueryService
+from .query_notification_service import QueryNotificationService
 from django.core.exceptions import ValidationError
 
 class AsyncQueryService:
@@ -17,6 +18,7 @@ class AsyncQueryService:
         paginator (PaginatorService): The service for handling query result pagination.
         logger (Logger): The logger for recording query execution details.
         cache (CacheManager): The manager for caching query results.
+        notification_service (QueryNotificationService): The service for handling notifications.
         user (User, optional): The user associated with query operations. Defaults to None.
     """
 
@@ -32,6 +34,7 @@ class AsyncQueryService:
         self.paginator = PaginatorService()
         self.logger = Logger()
         self.cache = CacheManager()
+        self.notification = QueryNotificationService()
         self.user = user
 
     async def execute_async_query(self, query_id, page_number=1, page_size=10):
@@ -58,6 +61,7 @@ class AsyncQueryService:
             - Caches the query results to improve performance.
             - Applies pagination to the results.
             - Logs details of the query execution, including execution time.
+            - Sends notifications about the query execution.
         """
         try:
             query = self.query_service.get_query(query_id)
@@ -69,12 +73,30 @@ class AsyncQueryService:
             paged_result = self.paginator.execute_paged_query(result['results'], page_number, page_size)
             
             self.logger.log_query_execution(query_name=query.name, executed_by=self.user.username, execution_time=result.get('execution_time', 0))
+
+            # Notify the user about the query execution
+            self.notification.notify_user(
+                user=self.user,
+                notification_type="query_executed",
+                content=f"Your query '{query.name}' has been executed successfully.",
+                url=f"/queries/{query_id}/results"
+            )
+
             return {'results': paged_result, 'execution_time': result.get('execution_time', 0)}
         except ValidationError as ve:
             self.executor.handle_query_validation_error(ve)
+            self.notification.notify_user(
+                user=self.user,
+                notification_type="query_failed",
+                content=f"Your query '{query_id}' failed due to validation errors.",
+                url=f"/queries/{query_id}"
+            )
             raise ve
         except Exception as e:
             self.executor.handle_query_execution_error(query_name=query.name, error_message=str(e))
+            self.notification.notify_admins(
+                message=f"Critical error during query '{query.name}' execution: {str(e)}"
+            )
             raise e
 
     async def execute_async_custom_query(self, query_func, query_params=None):
@@ -96,6 +118,7 @@ class AsyncQueryService:
             - Validates the query parameters asynchronously if provided.
             - Executes the custom query function asynchronously.
             - Logs details of the query execution, including execution time.
+            - Sends notifications about the custom query execution.
         """
         try:
             if query_params:
@@ -103,12 +126,30 @@ class AsyncQueryService:
             
             result = await self.executor.execute_async_query(query_func)
             self.logger.log_query_execution(query_name="Custom Async Query", executed_by=self.user.username, execution_time=result.get('execution_time', 0))
+
+            # Notify the user about the custom query execution
+            self.notification.notify_user(
+                user=self.user,
+                notification_type="custom_query_executed",
+                content="Your custom query has been executed successfully.",
+                url="/queries/custom/results"
+            )
+
             return result
         except ValidationError as ve:
             self.executor.handle_query_validation_error(ve)
+            self.notification.notify_user(
+                user=self.user,
+                notification_type="custom_query_failed",
+                content="Your custom query failed due to validation errors.",
+                url="/queries/custom"
+            )
             raise ve
         except Exception as e:
             self.executor.handle_query_execution_error(query_name="Custom Async Query", error_message=str(e))
+            self.notification.notify_admins(
+                message=f"Critical error during custom query execution: {str(e)}"
+            )
             raise e
 
     async def execute_async_query_with_retry(self, query_func, retries=3, delay=1, query_params=None):
@@ -132,6 +173,7 @@ class AsyncQueryService:
             - Validates the query parameters asynchronously if provided.
             - Retries the query execution upon failure, with configurable retry attempts and delay.
             - Logs details of the query execution, including execution time.
+            - Sends notifications about the query execution.
         """
         try:
             if query_params:
@@ -139,12 +181,30 @@ class AsyncQueryService:
             
             result = await self.executor.retry_async_operation(lambda: self.executor.execute_async_query(query_func), retries, delay)
             self.logger.log_query_execution(query_name="Async Query with Retry", executed_by=self.user.username, execution_time=result.get('execution_time', 0))
+
+            # Notify the user about the query execution with retry
+            self.notification.notify_user(
+                user=self.user,
+                notification_type="query_executed_with_retry",
+                content="Your query has been executed successfully after retries.",
+                url="/queries/results"
+            )
+
             return result
         except ValidationError as ve:
             self.executor.handle_query_validation_error(ve)
+            self.notification.notify_user(
+                user=self.user,
+                notification_type="query_failed_with_retry",
+                content="Your query failed after retries due to validation errors.",
+                url="/queries"
+            )
             raise ve
         except Exception as e:
             self.executor.handle_query_execution_error(query_name="Async Query with Retry", error_message=str(e))
+            self.notification.notify_admins(
+                message=f"Critical error during query execution with retry: {str(e)}"
+            )
             raise e
 
     async def fetch_data(self, queryset):
@@ -184,10 +244,7 @@ class AsyncQueryService:
         Args:
             model_instance (Model): The Django model instance to be deleted.
 
-        Returns:
-            bool: True if the deletion was successful, False otherwise.
-
         Notes:
             - Utilizes the `AsyncExecutor` to delete the model instance asynchronously.
         """
-        return await self.executor.async_delete_data(model_instance)
+        await self.executor.async_delete_data(model_instance)
