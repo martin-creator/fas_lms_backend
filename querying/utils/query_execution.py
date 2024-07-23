@@ -5,10 +5,10 @@ import time
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import connection, DatabaseError, transaction
 from django.utils import timezone
-from .logging import log_query_execution, log_query_execution_error, handle_query_execution_error
-from .pagination import execute_paged_query
+from .logging import Logger
 from .caching import execute_cached_query
-from .async_execution import execute_async_query, retry_async_operation
+from .async_execution import AsyncExecutor
+from .pagination import PaginatorService
 from querying.models import Query, QueryExecutionPermission, QueryLog
 from django.contrib.auth import get_user_model
 from .validation import QueryValidator
@@ -18,6 +18,9 @@ logger = logging.getLogger(__name__)
 
 class QueryExecutor:
     def __init__(self, user=None):
+        self.executor = AsyncExecutor()
+        self.logger = Logger()
+        self.paginator = PaginatorService()
         self.user = user
 
     def execute_query(self, query_id):
@@ -33,11 +36,11 @@ class QueryExecutor:
         try:
             query = Query.objects.get(pk=query_id)
         except Query.DoesNotExist:
-            log_query_execution_error(query_name=f"Query ID: {query_id}", error_message="Query does not exist.")
+            self.logger.handle_query_execution_error(query_name=f"Query ID: {query_id}", error_message="Query does not exist.")
             return None
 
         if not self.has_permission(query):
-            log_query_execution_error(query_name=query.name, error_message="Permission denied.")
+            self.logger.handle_query_execution_error(query_name=query.name, error_message="Permission denied.")
             return None
 
         try:
@@ -48,11 +51,11 @@ class QueryExecutor:
                 result = self.execute_sync_query(query)
 
             # Log successful execution
-            log_query_execution(query_name=query.name, executed_by=self.user.username, execution_time=result.get('execution_time', 0))
+            self.logger.log_query_execution(query_name=query.name, executed_by=self.user.username, execution_time=result.get('execution_time', 0))
             return result
 
         except Exception as e:
-            log_query_execution_error(query_name=query.name, error_message=str(e))
+            self.logger.handle_query_execution_error(query_name=query.name, error_message=str(e))
             return None
 
     def execute_sync_query(self, query):
@@ -75,7 +78,7 @@ class QueryExecutor:
         if query.query_params.get('paginate', False):
             page_number = query.query_params.get('page_number', 1)
             page_size = query.query_params.get('page_size', 10)
-            results = execute_paged_query(queryset, page_number, page_size)
+            results = self.paginator.execute_paged_query(queryset, page_number, page_size)
         else:
             results = list(queryset)
 
@@ -103,7 +106,7 @@ class QueryExecutor:
         Returns:
         - Asynchronous execution result dictionary.
         """
-        async_result = await execute_async_query(query.async_execution())
+        async_result = await self.executor.execute_async_query(query.async_execution())
         return async_result
 
     def has_permission(self, query):
@@ -164,7 +167,7 @@ class QueryExecutor:
                 else:
                     return None
         except Exception as e:
-            log_query_execution_error(query_string, str(e))
+            self.logger.handle_query_execution_error(query_string, str(e))
             raise
 
     @staticmethod

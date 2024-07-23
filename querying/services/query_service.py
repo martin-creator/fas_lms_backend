@@ -1,12 +1,16 @@
 # services/query_service.py
+
+from .async_query_service import AsyncQueryService
+from utils.async_execution import AsyncExecutor
 from utils.query_execution import QueryExecutor
 from utils.validation import QueryValidator
 from utils.security import sanitize_input
-from utils.cache import CacheManager, RedisCacheManager
+from utils.caching import CacheManager, RedisCacheManager
 from utils.logging import Logger
 from utils.monitoring import QueryMonitor
 from utils.analytics import UsageAnalytics
-from querying.models import Query
+from utils.pagination import PaginatorService
+from querying.models import Query, QueryLog
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.db import transaction
@@ -14,13 +18,17 @@ import asyncio
 
 class QueryService:
     def __init__(self, user=None):
+        self.async_services = AsyncQueryService()
+        self.async_executor = AsyncExecutor()
         self.executor = QueryExecutor(user=user)
         self.cache = RedisCacheManager() if user else CacheManager()
+        self.validator = QueryValidator()
         self.logger = Logger()
         self.monitor = QueryMonitor()
         self.analytics = UsageAnalytics()
+        self.paginator = PaginatorService()
         self.user = user
-    
+
     def execute_query(self, query_id):
         """
         Execute a query by its ID with logging, caching, and monitoring.
@@ -31,18 +39,19 @@ class QueryService:
 
             # Check cache first
             cache_key = f"query_result_{query_id}"
-            cached_result = self.cache.fetch(cache_key)
+            cached_result = self.cache.get_cache(cache_key)
             if cached_result:
+                self.monitor.record(query_id)
                 return cached_result
 
             # Execute and cache the query result
             result = self.executor.execute_query(query_id)
-            self.cache.store(cache_key, result)
+            self.cache.set_cache(cache_key, result)
             self.monitor.record(query_id, result)
             return result
 
         except Exception as e:
-            self.logger.log_error(query_id, str(e))
+            self.logger.error(query_id, str(e))
             raise e
 
     def execute_sync_query(self, query_id):
@@ -56,7 +65,7 @@ class QueryService:
             self.monitor.record(query_id, result)
             return result
         except Exception as e:
-            self.logger.log_error(query_id, str(e))
+            self.logger.error(query_id, str(e))
             raise e
 
     def execute_parameterized_query(self, query, params):
@@ -79,8 +88,7 @@ class QueryService:
         """
         try:
             query = self.get_query(query_id)
-            validator = QueryValidator(query.query_params)
-            validator.validate()
+            self.validator.validate_query_params(query.query_params)
             return True
         except ValidationError as ve:
             self.executor.handle_query_validation_error(ve)
@@ -93,7 +101,7 @@ class QueryService:
         try:
             return Query.objects.get(pk=query_id)
         except Query.DoesNotExist:
-            self.executor.log_query_execution_error(query_name=f"Query ID: {query_id}", error_message="Query does not exist.")
+            self.logger.error(query_id, "Query does not exist.")
             return None
 
     def has_permission(self, query_id):
@@ -161,7 +169,7 @@ class QueryService:
         query = self.get_query(query_id)
         if query and query.query_params.get('cache', False):
             cache_key = f"query_result_{query_id}"
-            self.cache.store(cache_key, result)
+            self.cache.set_cache(cache_key, result)
 
     def fetch_cached_query_result(self, query_id):
         """
@@ -170,14 +178,14 @@ class QueryService:
         query = self.get_query(query_id)
         if query and query.query_params.get('cache', False):
             cache_key = f"query_result_{query_id}"
-            return self.cache.fetch(cache_key)
+            return self.cache.get_cache(cache_key)
         return None
 
     def notify_admins(self, message):
         """
         Notify administrators of critical errors.
         """
-        self.executor.notify_admins(message)
+        self.logger.notify_admins(message)
 
     def execute_async_query(self, query_id):
         """
@@ -189,7 +197,7 @@ class QueryService:
                 raise ValidationError("Query does not exist.")
             return asyncio.run(self.executor.execute_async_query(query))
         except Exception as e:
-            self.logger.log_error(query_id, str(e))
+            self.logger.error(query_id, str(e))
             raise e
 
     def execute_async_custom_query(self, query_func, query_params=None):
@@ -199,7 +207,7 @@ class QueryService:
         try:
             return asyncio.run(self.executor.execute_async_custom_query(query_func, query_params))
         except Exception as e:
-            self.logger.log_error("Custom Async Query", str(e))
+            self.logger.error("Custom Async Query", str(e))
             raise e
 
     def execute_async_query_with_retry(self, query_func, retries=3, delay=1, query_params=None):
@@ -209,13 +217,13 @@ class QueryService:
         try:
             return asyncio.run(self.executor.execute_async_query_with_retry(query_func, retries, delay, query_params))
         except Exception as e:
-            self.logger.log_error("Async Query with Retry", str(e))
+            self.logger.error("Async Query with Retry", str(e))
             raise e
 
     async def fetch_data_async(self, queryset):
-        “””
+        """
         Asynchronously fetch data from a queryset.
-        “””
+        """
         return await self.executor.async_fetch_data(queryset)
         
     async def save_data_async(self, model_instance):
