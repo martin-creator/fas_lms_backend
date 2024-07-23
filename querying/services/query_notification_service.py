@@ -1,9 +1,12 @@
 # services/query_notification_service.py
+from utils.logging import Logger
 
 class QueryNotificationService:
+    def __init__(self):
+        self.logger = Logger()
+
     def notify_admins(self, message):
         """
         Notify administrators of critical errors.
         """
-        # Implement your notification logic here, e.g., send an email or a message to a monitoring system
-        pass
+        self.logger.notify_admins(message)

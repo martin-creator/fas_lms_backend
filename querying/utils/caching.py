@@ -1,5 +1,6 @@
 # utils/caching.py
 from django.core.cache import cache
+from django_redis import get_redis_connection
 from .logging import Logger
 import logging
 

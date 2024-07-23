@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 class QueryValidationService:
     def __init__(self, user=None):
         self.validator = QueryValidator(user=user)
+        self.user = user
     
     def validate_query_params(self, query_params):
         """
