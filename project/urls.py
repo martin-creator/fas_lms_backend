@@ -48,6 +48,7 @@ urlpatterns = [
     path('', include('loggings.urls')),
     re_path(r'^account-confirm-email/(?P<key>[-:\w]+)/$',CustomConfirmEmailView.as_view(),name='account_confirm_email',),
     
+    path('api/', include('notifications.urls')),
     
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
@@ -57,6 +58,8 @@ urlpatterns = [
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
     path('api/course/', include('courses.urls')),
+    
+    path('django-rq/', include('django_rq.urls')),
     
     # path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     # path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

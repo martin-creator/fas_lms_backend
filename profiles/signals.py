@@ -2,7 +2,8 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.db.models import F # F is used to reference a field in the database
 from .models import User, UserProfile, Skill, Experience, Education, Endorsement
-from notifications.services import NotificationService, Notification, NotificationType
+from notifications.services import NotificationService
+from notifications.models import Notification, NotificationType
 from connections.models import Connection
 from django.contrib.contenttypes.models import ContentType
 

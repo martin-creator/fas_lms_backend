@@ -1,9 +1,11 @@
+# notifications/services.py
 from django.contrib.contenttypes.models import ContentType
 from .models import Notification, NotificationType, NotificationSettings, NotificationReadStatus
-from profiles.models import User, UserProfile
 from django.utils import timezone
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+import django_rq
+from .tasks import send_email_notification, send_push_notification
 
 class NotificationService:
     @staticmethod
@@ -11,7 +13,6 @@ class NotificationService:
         notification_type, created = NotificationType.objects.get_or_create(type_name=notification_type_name)
         content_type = ContentType.objects.get_for_model(content_object)
 
-        # Check if notifications of this type are enabled for the user
         if not NotificationService.is_notification_enabled(recipient, notification_type):
             return None
 
@@ -25,17 +26,14 @@ class NotificationService:
             object_id=content_object.id,
             priority=priority,
         )
+        NotificationService.send_notification(notification)
         return notification
 
     @staticmethod
     def send_notification(notification):
-        # Logic to send notification (e.g., via email, push notification, etc.)
-        # Implement as needed, possibly using external services
-
-        # Send Web Push Notification
-        # NotificationService.send_web_push(notification)
-
-        # Send real-time notification using WebSockets
+        # Asynchronous task dispatch
+        django_rq.enqueue(send_email_notification, notification.id)
+        django_rq.enqueue(send_push_notification, notification.id)
         NotificationService.send_websocket_notification(notification)
 
     @staticmethod
@@ -75,47 +73,28 @@ class NotificationService:
     @staticmethod
     def get_unread_notifications(user):
         return Notification.objects.filter(recipient=user, is_read=False)
-    
+
     @staticmethod
-    def create_default_notification_settings(instance):
-        if not isinstance(instance, User):
-            raise ValueError("Expected instance to be a User instance.")
-
-        default_settings = NotificationType.PREDEFINED_TYPES
-
-        user = instance
-
-        for type_name in default_settings:
-            notification_type, created = NotificationType.objects.get_or_create(type_name=type_name)
-
-            # Ensure required fields are provided
-            content_type = ContentType.objects.get_for_model(Notification)
-            Notification.objects.get_or_create(
-                recipient=user,
+    def create_default_notification_settings(user):
+        default_settings = NotificationType.objects.all()
+        for notification_type in default_settings:
+            NotificationSettings.objects.get_or_create(
+                user=user,
                 notification_type=notification_type,
-                content_type=content_type,
-                object_id=user.id
+                defaults={'is_enabled': True}
             )
 
     @staticmethod
-    def add_notification_setting(user, type_name):
-        notification_type, created = NotificationType.objects.get_or_create(type_name=type_name)
-        content_type = ContentType.objects.get_for_model(Notification)
-        Notification.objects.get_or_create(
-            recipient=user,
-            notification_type=notification_type,
-            content_type=content_type,
-            object_id=user.id
-        )
-
-    @staticmethod
-    def update_notification_settings(user, notification_type_name, is_enabled):
+    def update_notification_settings(user, notification_type_name, is_enabled, channel_preferences=None):
         notification_type, created = NotificationType.objects.get_or_create(type_name=notification_type_name)
         settings, created = NotificationSettings.objects.get_or_create(
             user=user,
-            notification_type=notification_type
+            notification_type=notification_type,
+            defaults={'is_enabled': is_enabled, 'channel_preferences': channel_preferences or {}}
         )
         settings.is_enabled = is_enabled
+        if channel_preferences:
+            settings.channel_preferences = channel_preferences
         settings.save()
 
     @staticmethod
