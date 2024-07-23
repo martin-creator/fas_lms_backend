@@ -4,7 +4,15 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from activity.models import Reaction, Share
 from django.conf import settings
 
-NOTIFICATION_TYPE = [
+
+NOTIFICATION_PRIORITY = [
+    (1, 'Low'),
+    (2, 'Medium'),
+    (3, 'High'),
+    (4, 'Critical'),
+]
+
+DEFAULT_NOTIFICATION_TYPE = [
     ('job_application', 'Job Application'),
     ('job_listing', 'Job Listing'),
     ('message', 'Message'),
@@ -23,8 +31,7 @@ NOTIFICATION_TYPE = [
 ]
 
 class NotificationType(models.Model):
-    PREDEFINED_TYPES = ['type1', 'type2']
-
+    PREDEFINED_TYPES = DEFAULT_NOTIFICATION_TYPE
     type_name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
@@ -33,7 +40,7 @@ class NotificationType(models.Model):
 class Notification(models.Model):
     recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField(max_length=255, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
     content_object = GenericForeignKey('content_type', 'object_id')
     content = models.TextField()
     url = models.URLField()
@@ -41,7 +48,7 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     notification_type = models.ForeignKey(NotificationType, on_delete=models.CASCADE)
     shares = models.ManyToManyField(Share, related_name='notifications_shares', blank=True)
-    priority = models.IntegerField(default=0)
+    priority = models.IntegerField(choices=NOTIFICATION_PRIORITY, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -59,6 +66,7 @@ class NotificationSettings(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     notification_type = models.ForeignKey(NotificationType, on_delete=models.CASCADE)
     is_enabled = models.BooleanField(default=True)
+    channel_preferences = models.JSONField(default=dict)  # Stores user preferences for channels (email, SMS, push, etc.)
 
     def __str__(self):
         return f"{self.user.user.username}'s Notification Settings"
