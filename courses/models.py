@@ -4,6 +4,7 @@ from taggit.managers import TaggableManager
 from datetime import timedelta
 # from posts.models import Comment
 # from certifications.models import Certification
+from activity.models import Attachment
 from django.contrib.contenttypes.fields import GenericRelation
 
 class Course(models.Model):
@@ -28,7 +29,7 @@ class Course(models.Model):
     """
     title = models.CharField(max_length=255)
     description = models.TextField()
-    attachments = GenericRelation('Attachment')
+    attachments = GenericRelation(Attachment)
     categories = models.ManyToManyField('activity.Category', related_name='courses_categories')
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='instructed_courses', on_delete=models.CASCADE)
     students = models.ManyToManyField(settings.AUTH_USER_MODEL, through='CourseEnrollment', related_name='enrolled_courses')
@@ -66,7 +67,7 @@ class Lesson(models.Model):
     description = models.TextField(default='', blank=True, null=True)
     content = models.TextField(default='', blank=True, null=True)
     video_url = models.URLField(blank=True, null=True)
-    attachments = GenericRelation('Attachment')
+    attachments = GenericRelation(Attachment)
     tags = TaggableManager()
     order = models.PositiveIntegerField(default=0, blank=True, null=True)
 
@@ -227,19 +228,19 @@ class CourseCompletion(models.Model):
 #     def __str__(self):
 #         return self.name
 
-class Attachment(models.Model):
-    """
-    Represents an attachment that can be related to courses and lessons.
+# class Attachment(models.Model):
+#     """
+#     Represents an attachment that can be related to courses and lessons.
     
-    Attributes:
-        file (FileField): The file of the attachment.
-        uploaded_at (DateTimeField): The date and time when the attachment was uploaded.
-    """
-    file = models.FileField(upload_to='attachments/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+#     Attributes:
+#         file (FileField): The file of the attachment.
+#         uploaded_at (DateTimeField): The date and time when the attachment was uploaded.
+#     """
+#     file = models.FileField(upload_to='attachments/')
+#     uploaded_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Attachment {self.id}"
+#     def __str__(self):
+#         return f"Attachment {self.id}"
 
 
 
