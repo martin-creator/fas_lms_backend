@@ -26,7 +26,6 @@ from .alert_system_integration import send_external_alert
 from notifications.settings.config.constances import NOTIFICATION_CHANNELS
 from notifications.utils.delivery_method import DeliveryMethod
 from notifications.utils.permissions import PermissionChecker
-from notifications.utils.notification_utils import send_notification
 from notifications.utils.notification_utils import NotificationUtils
 
 logger = logging.getLogger(__name__)
