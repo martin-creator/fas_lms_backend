@@ -1,7 +1,18 @@
 # notifications/serializers.py
 
 from rest_framework import serializers
-from .models import Notification, NotificationType, NotificationTemplate, NotificationSettings, NotificationReadStatus
+from .models import (
+    Notification, 
+    NotificationType, 
+    NotificationTemplate, 
+    NotificationSettings, 
+    NotificationReadStatus,
+    UserNotificationPreference,
+    NotificationSnooze,
+    NotificationEngagement,
+    NotificationABTest,
+    NotificationLog
+)
 
 class NotificationTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,7 +22,11 @@ class NotificationTypeSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ('id', 'recipient', 'content_type', 'object_id', 'content_object', 'content', 'url', 'timestamp', 'is_read', 'notification_type', 'shares', 'priority', 'created_at', 'updated_at')
+        fields = (
+            'id', 'recipient', 'content_type', 'object_id', 'content_object', 'content', 
+            'html_content', 'url', 'timestamp', 'is_read', 'notification_type', 'delivery_method', 
+            'shares', 'priority', 'created_at', 'updated_at'
+        )
 
 class NotificationTemplateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,3 +42,28 @@ class NotificationReadStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationReadStatus
         fields = ('id', 'user', 'notification', 'is_read', 'read_at')
+
+class UserNotificationPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserNotificationPreference
+        fields = ('user', 'email_notifications', 'sms_notifications', 'push_notifications', 'notification_frequency')
+
+class NotificationSnoozeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationSnooze
+        fields = ('user', 'start_time', 'end_time')
+
+class NotificationEngagementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationEngagement
+        fields = ('notification', 'user', 'viewed_at', 'clicked_at')
+
+class NotificationABTestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationABTest
+        fields = ('test_name', 'variant', 'notification_template', 'start_date', 'end_date')
+
+class NotificationLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationLog
+        fields = ('notification', 'action', 'performed_by', 'timestamp')

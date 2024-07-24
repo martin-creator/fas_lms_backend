@@ -3,6 +3,8 @@ from django.core.mail import send_mail
 from .models import Notification
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from celery import shared_task
+from .services.notification_service import send_notification
 
 def send_email_notification(notification_id):
     notification = Notification.objects.get(id=notification_id)
@@ -12,6 +14,16 @@ def send_email_notification(notification_id):
         from_email='noreply@example.com',
         recipient_list=[notification.recipient.email],
     )
+
+
+@shared_task
+def send_bulk_notifications(notification_data_list):
+    for data in notification_data_list:
+        try:
+            send_notification(data)
+        except Exception as e:
+            logger.error(f"Failed to send bulk notification: {e}")
+
 
 def send_push_notification(notification_id):
     notification = Notification.objects.get(id=notification_id)
