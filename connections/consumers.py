@@ -26,6 +26,7 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 self.channel_name
             )
+           
 
     async def receive(self, text_data):
         data = json.loads(text_data)
