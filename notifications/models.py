@@ -55,7 +55,7 @@ class Notification(models.Model):
     content = models.CharField(max_length=100)
     html_content = models.TextField(blank=True, null=True)
     url = models.URLField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now, editable=False)
     is_read = models.BooleanField(default=False)
     read_at = models.DateTimeField(null=True, blank=True)
     notification_type = models.ForeignKey(NotificationType, on_delete=models.CASCADE)
@@ -64,8 +64,8 @@ class Notification(models.Model):
     severity = models.CharField(max_length=10, default='info', choices=SEVERITY_CHOICES)
     shares = models.ManyToManyField(Share, related_name='notifications_shares', blank=True)
     priority = models.IntegerField(choices=NOTIFICATION_PRIORITY, default=1)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(default=timezone.now, editable=False)
+    updated_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         permissions = [
@@ -199,7 +199,7 @@ class NotificationEngagement(models.Model):
     """
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    viewed_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    viewed_at = models.DateTimeField(default=timezone.now, null=True, blank=True, editable=False)
     clicked_at = models.DateTimeField(null=True, blank=True)
     interaction_type = models.CharField(max_length=20, choices=INTERACTION_TYPE, default='view')
 
@@ -226,7 +226,7 @@ class NotificationLog(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
     action = models.CharField(max_length=50)
     performed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now, null=True, blank=True, editable=False)
 
     def __str__(self):
         return f"Action: {self.action} on Notification {self.notification.id} by {self.performed_by.username if self.performed_by else 'Unknown'} at {self.timestamp}"
