@@ -11,9 +11,9 @@ User = get_user_model()
 @receiver(post_save, sender=Notification)
 def send_notification(sender, instance, created, **kwargs):
     if created:
-        NotificationService.send_notification(instance)
+        NotificationService.send_notification_service(instance)
 
 @receiver(post_save, sender=User)
 def create_default_notification_settings(sender, instance, created, **kwargs):
     if created:
-        NotificationService.create_default_notification_settings(instance)
+        NotificationService.update_notification_settings(instance)

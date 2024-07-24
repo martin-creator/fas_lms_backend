@@ -19,7 +19,7 @@ from notifications.querying.notification_query import (
 )
 from notifications.utils import (
     format_notification_content,
-    validate_notification_data,
+    # validate_notification_data,
     process_notification_data
 )
 from notifications.helpers.notification_helpers import (
@@ -46,6 +46,10 @@ from notifications.metrics import increment_notifications_sent, increment_notifi
 from .pubsub_service import PubSubService
 from .crm_integration import send_crm_alert
 from .alert_system_integration import send_external_alert
+from notifications.settings.config.constances import NOTIFICATION_CHANNELS
+from notifications.utils.delivery_method import DeliveryMethod
+from notifications.utils.permissions import PermissionChecker
+from notifications.utils.notification_utils import send_notification
 
 logger = logging.getLogger(__name__)
 
@@ -55,36 +59,11 @@ class NotificationService:
     Service for managing notifications within the application.
     """
 
-    @staticmethod
-    def user_can_manage_notifications(user):
-        """
-        Check if the user has permission to manage notifications.
-
-        Args:
-            user (User): The user to check.
-
-        Returns:
-            bool: True if the user has the permission, False otherwise.
-        """
-        return user.has_perm('notifications.can_manage_notifications')
 
     @staticmethod
-    def user_can_view_notifications(user):
+    def send_notification_service(data):
         """
-        Check if the user has permission to view notifications.
-
-        Args:
-            user (User): The user to check.
-
-        Returns:
-            bool: True if the user has the permission, False otherwise.
-        """
-        return user.has_perm('notifications.can_view_notifications')
-
-    @staticmethod
-    def send_notification(data):
-        """
-        Send a notification to a user.
+        Send a notification service to a user.
 
         Args:
             data (dict): Data for creating the notification.
@@ -97,108 +76,8 @@ class NotificationService:
             ValueError: If the notification data is invalid.
             Exception: If sending the notification fails.
         """
-        try:
-            user = UserProfile.objects.get(id=data['recipient'])
-            if not NotificationService.user_can_manage_notifications(user):
-                raise PermissionDenied("You do not have permission to send notifications.")
-            if not NotificationService.validate_notification_permissions(user, data['notification_type']):
-                raise PermissionDenied("User does not have permission to receive this notification.")
+        return send_notification(data)
 
-            serializer = NotificationSerializer(data=data)
-            if serializer.is_valid():
-                notification = serializer.save()
-                delivery_method = data.get('delivery_method', 'push')
-                if data.get('notify_crm'):
-                    send_crm_alert(user.id, data['event_type'], data['event_data'])
-                if data.get('notify_alert_system'):
-                    send_external_alert(user.id, data['alert_type'], data['message'])
-                if delivery_method == 'email':
-                    NotificationService.send_email_notification(notification)
-                elif delivery_method == 'sms':
-                    NotificationService.send_sms_notification(notification)
-                elif delivery_method == 'push':
-                    NotificationService.send_push_notification(notification)
-
-                PubSubService.publish_notification('notifications', notification.content)
-                increment_notifications_sent()
-                return notification
-            else:
-                raise ValueError(serializer.errors)
-        except Exception as e:
-            increment_notifications_failed()
-            logger.error(f"Failed to send notification: {e}")
-            NotificationService.handle_notification_failure(data, str(e))
-            raise
-
-
-    @staticmethod
-    def send_email_notification(notification):
-        """
-        Send an email notification.
-
-        Args:
-        - notification (Notification): The notification object containing email details.
-        """
-        user_email = notification.recipient.email
-        send_mail(
-            notification.title,
-            notification.content,
-            'no-reply@myapp.com',
-            [user_email],
-            fail_silently=False,
-        )
-
-    @staticmethod
-    def send_sms_notification(notification):
-        """
-        Send an SMS notification.
-
-        Args:
-        - notification (Notification): The notification object containing SMS details.
-        """
-        user_phone = notification.recipient.phone_number
-        # Implement SMS sending logic here
-        # Example:
-        # sms_client.send_message(user_phone, notification.content)
-
-    @staticmethod
-    def send_push_notification(notification):
-        """
-        Send a push notification.
-
-        Args:
-        - notification (Notification): The notification object containing push details.
-        """
-        # Implement push notification sending logic here
-        # Example:
-        # push_service.send_message(notification.recipient, notification.content)
-
-    @staticmethod
-    def validate_notification_permissions(user, notification_type):
-        """
-        Validate if a user has permission to receive a notification.
-
-        Args:
-        - user (UserProfile): The user object.
-        - notification_type (str): The type of notification.
-
-        Returns:
-        - bool: True if the user has permission, False otherwise.
-        """
-        # Implement permission check logic here
-        return True
-
-    @staticmethod
-    def handle_notification_failure(data, error_message):
-        """
-        Handle a notification failure.
-
-        Args:
-        - data (dict): The data related to the notification.
-        - error_message (str): The error message encountered.
-        """
-        # Ensure to handle data privacy in failure logs
-        logger.error(f"Failed to send notification for user {data['recipient']}: {error_message}")
                 
     @staticmethod
     def mark_notification_as_read(notification_id):
