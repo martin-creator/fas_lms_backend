@@ -1,19 +1,13 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.db.models import Count
 from courses.models import Course, CourseEnrollment, CourseCompletion, Lesson, LessonProgress, Quiz, QuizProgress, Question, Choice
 from courses.serializers import CourseSerializer, CourseEnrollmentSerializer, CourseCompletionSerializer, LessonSerializer, LessonProgressSerializer, QuizSerializer, QuizProgressSerializer, QuestionSerializer, ChoiceSerializer
-from courses.utils import DateTimeUtils, UserUtils, NotificationUtils
+from courses.utils import DateTimeUtils, UserUtils
+from notifications.utils import NotificationUtils
 from courses.helpers.course_helpers import CourseHelpers
 from courses.querying.course_query import CourseQuery
-from courses.settings.course_settings import CourseSettings
-from courses.reports.course_report import CourseReport
 import logging
-from django.http import request
-
 
 logger = logging.getLogger(__name__)
-
-# automatically save course progress and then return the updated course progress when a person logs in
 
 class CourseService:
     """
@@ -92,13 +86,8 @@ class CourseService:
         course_enrollment = CourseEnrollment(user=user, course=course)
         course_enrollment.save()
 
-        # Send notification to user
-        self.notification.send_notification(
-            user=user,
-            notification_type_name='Course Enrollment',
-            content=f'You have been enrolled in the course: {course.title}',
-            url=f'/courses/{course_id}/'
-        )
+        # Handle notification
+        self.notification.handle_course_enrollment(user_id=user_id, course_id=course_id)
 
         serializer = CourseEnrollmentSerializer(course_enrollment)
         return serializer.data
@@ -128,20 +117,15 @@ class CourseService:
         course_completion = CourseCompletion(user=user, course=course)
         course_completion.save()
 
-        # Send notification to user
-        self.notification.send_notification(
-            user=user,
-            notification_type_name='Course Completion',
-            content=f'Congratulations! You have completed the course: {course.title}',
-            url=f'/courses/{course_id}/'
-        )
+        # Handle notification
+        self.notification.handle_course_completion(user_id=user_id, course_id=course_id)
 
         serializer = CourseCompletionSerializer(course_completion)
         return serializer.data
 
     def add_lesson_to_course(self, course_id, lesson_data):
         """
-        Add a new lesson to a specific course and send a notification.
+        Add a new lesson to a specific course and send notifications.
         """
         course = CourseQuery.get_course_by_id_without_serializer(course_id)
         lesson, tags = CourseHelpers.process_lesson_data(course_id, lesson_data)
@@ -150,13 +134,13 @@ class CourseService:
         if tags:
             lesson.tags.add(*tags)
 
-        # Send notification to all users enrolled in the course
+        # Notify all users enrolled in the course
         enrollments = CourseEnrollment.objects.filter(course=course)
         for enrollment in enrollments:
             self.notification.send_notification(
                 user=enrollment.user,
                 notification_type_name='New Lesson Added',
-                content=f'A new lesson has been added to the course: {course.title}',
+                content=f'A new lesson has been added to the course: {course.title}.',
                 url=f'/courses/{course_id}/lessons/{lesson.id}/'
             )
 
@@ -230,11 +214,11 @@ class CourseService:
             lesson_progress.completed_at = DateTimeUtils.now()
             lesson_progress.save()
 
-        # Send notification to user
+        # Handle notification
         self.notification.send_notification(
             user=user,
             notification_type_name='Lesson Progress',
-            content=f'You have made progress in the lesson: {lesson.title}',
+            content=f'You have made progress in the lesson: {lesson.title}.',
             url=f'/courses/{course_id}/lessons/{lesson_id}/'
         )
 
@@ -249,22 +233,19 @@ class CourseService:
         quiz = CourseHelpers.process_quiz_data(lesson, quiz_data)
         quiz.save()
 
-        # Notify users about the new quiz
-        enrollments = CourseEnrollment.objects.filter(course=lesson.course)
-        for enrollment in enrollments:
-            self.notification.send_notification(
-                user=enrollment.user,
-                notification_type_name='New Quiz Added',
-                content=f'A new quiz has been added to the lesson: {lesson.title}',
-                url=f'/courses/{course_id}/lessons/{lesson_id}/quizzes/{quiz.id}/'
-            )
+        # Notify all users enrolled in the course
+        self.notification.notify_all_users(
+            notification_type_name='New Quiz Added',
+            content=f'A new quiz has been added to the lesson: {lesson.title}.',
+            url=f'/courses/{course_id}/lessons/{lesson_id}/quizzes/{quiz.id}/'
+        )
 
         serializer = QuizSerializer(quiz)
         return serializer.data
 
     def add_question_to_quiz(self, quiz_id, question_data):
         """
-        Add a question to a specific quiz and notify users.
+        Add a question to a specific quiz and notify admins.
         """
         quiz = CourseQuery.get_quiz_by_id_without_serializer(quiz_id)
         question, choices, correct_choice = CourseHelpers.process_question_data(quiz, question_data)
@@ -279,76 +260,69 @@ class CourseService:
 
         # Notify admins about the new question
         self.notification.notify_admins(
-            notification_type_name='New Question Added',
-            content=f'A new question has been added to quiz: {quiz.title}',
+            notification_type_name='Question Added/Updated',
+            content=f'A question has been added or updated in quiz: {quiz.title}.',
             url=f'/quizzes/{quiz_id}/questions/{question.id}/'
         )
 
         serializer = QuestionSerializer(question)
         return serializer.data
 
-    def update_quiz_question(self, quiz_id, question_id, question_data):
-        """
-        Update a specific question in a quiz and notify admins.
-        """
-        quiz = CourseQuery.get_quiz_by_id_without_serializer(quiz_id)
-        question = CourseQuery.get_quiz_question_by_id_without_serializer(quiz_id, question_id)
-        question, choices, correct_choice = CourseHelpers.process_question_update_data(question, question_data)
-        
-        question.save()
-        question.choices.set(choices)
-        question.correct_choice = correct_choice
-        question.save()
-
-        # Notify admins about the question update
-        self.notification.notify_admins(
-            notification_type_name='Question Updated',
-            content=f'The question in quiz: {quiz.title} has been updated.',
-            url=f'/quizzes/{quiz_id}/questions/{question_id}/'
-        )
-
-        serializer = QuestionSerializer(question)
-        return serializer.data
-
-    def get_quiz_question(self, quiz_id, question_id):
-        """
-        Retrieve a specific question in a quiz.
-        """
-        return CourseQuery.get_quiz_question_by_id(quiz_id, question_id)
-
-    def get_all_quiz_questions(self, quiz_id):
-        """
-        Retrieve all questions in a specific quiz.
-        """
-        return CourseQuery.get_all_quiz_questions(quiz_id)
-
-    def submit_quiz(self, user_id, quiz_id, answers):
-        """
-        Submit quiz answers for a user and return the quiz progress.
-        """
-        quiz = CourseQuery.get_quiz_by_id_without_serializer(quiz_id)
-        user = UserUtils.get_user_by_id(user_id)
-        score = sum(
-            1 for answer in answers
-            if CourseQuery.get_quiz_question_by_id_without_serializer(quiz_id, answer['question']).correct_choice == 
-               CourseQuery.get_choice_by_id_without_serializer(answer['choice'])
-        )
-
-        quiz_progress = QuizProgress(user=user, quiz=quiz, score=score)
-        quiz_progress.save()
-
-        # Send notification to user
-        self.notification.send_notification(
-            user=user,
-            notification_type_name='Quiz Submitted',
-            content=f'Your quiz results for: {quiz.title} are now available.',
-            url=f'/quizzes/{quiz_id}/results/'
-        )
-
-        serializer = QuizProgressSerializer(quiz_progress)
-        return serializer.data
-
+def update_quiz_question(self, quiz_id, question_id, question_data):
+    """
+    Update a specific question in a quiz and notify admins.
+    """
+    quiz = CourseQuery.get_quiz_by_id_without_serializer(quiz_id)
+    question = CourseQuery.get_quiz_question_by_id_without_serializer(quiz_id, question_id)
+    question, choices, correct_choice = CourseHelpers.process_question_update_data(question, question_data)
     
+    question.save()
+    question.choices.set(choices)
+    question.correct_choice = correct_choice
+    question.save()
+
+    # Notify admins about the question update
+    self.notification.notify_admins(
+        notification_type_name='Question Added/Updated',
+        content=f'A question has been added or updated in quiz: {quiz.title}.',
+        url=f'/quizzes/{quiz_id}/questions/{question.id}/'
+    )
+
+    serializer = QuestionSerializer(question)
+    return serializer.data
+
+def get_quiz_question(self, quiz_id, question_id):
+    """
+    Retrieve a specific question in a quiz.
+    """
+    return CourseQuery.get_quiz_question_by_id(quiz_id, question_id)
+
+def get_all_quiz_questions(self, quiz_id):
+    """
+    Retrieve all questions in a specific quiz.
+    """
+    return CourseQuery.get_all_quiz_questions(quiz_id)
+
+def submit_quiz(self, user_id, quiz_id, answers):
+    """
+    Submit quiz answers for a user and return the quiz progress.
+    """
+    quiz = CourseQuery.get_quiz_by_id_without_serializer(quiz_id)
+    user = UserUtils.get_user_by_id(user_id)
+    score = sum(
+        1 for answer in answers
+        if CourseQuery.get_quiz_question_by_id_without_serializer(quiz_id, answer['question']).correct_choice == 
+           CourseQuery.get_choice_by_id_without_serializer(answer['choice'])
+    )
+
+    quiz_progress = QuizProgress(user=user, quiz=quiz, score=score)
+    quiz_progress.save()
+
+    # Handle notification
+    self.notification.handle_quiz_submission(user_id=user_id, quiz_id=quiz_id, answers=answers)
+
+    serializer = QuizProgressSerializer(quiz_progress)
+    return serializer.data
     
     
     
