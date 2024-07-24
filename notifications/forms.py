@@ -1,5 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from .models import (
     NotificationType,
     Notification,
@@ -12,9 +14,6 @@ from .models import (
     NotificationABTest,
     NotificationLog
 )
-from django.utils.translation import gettext_lazy as _
-from django.utils import timezone
-
 
 class NotificationTypeForm(forms.ModelForm):
     predefined_types = forms.ChoiceField(
@@ -60,11 +59,8 @@ class NotificationTypeForm(forms.ModelForm):
 class NotificationForm(forms.ModelForm):
     class Meta:
         model = Notification
-        fields = (
-            'recipient', 'content_type', 'object_id', 'content_object', 'content',
-            'html_content', 'url', 'timestamp', 'is_read', 'notification_type',
-            'language', 'delivery_method', 'severity', 'shares', 'priority'
-        )
+        # Exclude non-editable fields and handle GenericForeignKey
+        exclude = ['timestamp', 'created_at', 'updated_at', 'content_object']
 
     def clean_content(self):
         content = self.cleaned_data.get('content')
@@ -146,11 +142,11 @@ class NotificationSnoozeForm(forms.ModelForm):
 class NotificationEngagementForm(forms.ModelForm):
     class Meta:
         model = NotificationEngagement
-        fields = ['notification', 'user', 'viewed_at', 'clicked_at', 'interaction_type']
+        fields = ['notification', 'user', 'clicked_at', 'interaction_type']
 
     def clean_clicked_at(self):
         clicked_at = self.cleaned_data.get('clicked_at')
-        viewed_at = self.cleaned_data.get('viewed_at')
+        viewed_at = self.instance.viewed_at
 
         if clicked_at and viewed_at and clicked_at < viewed_at:
             raise ValidationError(_('Clicked at time cannot be before viewed at time.'))
@@ -177,10 +173,10 @@ class NotificationABTestForm(forms.ModelForm):
 class NotificationLogForm(forms.ModelForm):
     class Meta:
         model = NotificationLog
-        fields = ['notification', 'action', 'performed_by', 'timestamp']
+        fields = ['notification', 'action', 'performed_by']  # Removed 'timestamp'
 
-    def clean_timestamp(self):
-        timestamp = self.cleaned_data.get('timestamp')
-        if timestamp and timestamp > timezone.now():
-            raise forms.ValidationError(_('Timestamp cannot be in the future.'))
-        return timestamp
+    def clean(self):
+        cleaned_data = super().clean()
+        # Add any custom validation here if needed
+
+        return cleaned_data
