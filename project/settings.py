@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'drf_spectacular_sidecar',
     'django_rq', 
+    'encrypted_model_fields',
     
     # my apps
     'activity',
@@ -94,6 +95,8 @@ MIDDLEWARE = [
 ]
 
 AUTH_USER_MODEL = 'profiles.User'
+
+# FIELD_ENCRYPTION_KEY = os.environ.get('FIELD_ENCRYPTION_KEY', '')
 
 # Allauth
 AUTHENTICATION_BACKENDS = (
