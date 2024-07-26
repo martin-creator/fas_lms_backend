@@ -3,7 +3,7 @@ from django.dispatch import receiver
 from .models import Message, ChatRoom
 from notifications.models import Notification
 from activity.models import Reaction, Share
-
+from .utils.notification_utils import MessageUtils
 
 @receiver(post_save, sender=Message)
 def send_chat_message_notification(sender, instance, created, **kwargs):
@@ -12,7 +12,7 @@ def send_chat_message_notification(sender, instance, created, **kwargs):
         message = instance
         sender_user = instance.sender
         for member in chat.members.exclude(id=sender_user.id):
-            create_chat_notification(chat, member, message)
+            MessageUtils.send_message_notification(chat, member, message)
 
 # Signal to send notifications when a new message is sent
 @receiver(post_save, sender=Message)
