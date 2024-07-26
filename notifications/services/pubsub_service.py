@@ -1,3 +1,5 @@
+# notifications/utils/pubsub_service.py
+
 import redis
 import json
 from channels.layers import get_channel_layer
@@ -7,26 +9,59 @@ from django.core.mail import send_mail
 import logging
 from .models import Notification
 
-# Set up logger
 logger = logging.getLogger(__name__)
 
 class PubSubService:
     def __init__(self, host='localhost', port=6379, db=0):
         self.redis_client = redis.Redis(host=host, port=port, db=db)
 
-    def publish_notification(self, channel, message):
+    def publish_notification(self, channel, notification):
         """
-        Publish a notification to a Redis channel.
+        Publish the notification to a Redis channel.
 
         Args:
-        - channel (str): The channel to publish to.
-        - message (dict): The message to publish.
+        - channel (str): The Redis channel name.
+        - notification (Notification): The notification object.
         """
         try:
-            self.redis_client.publish(channel, json.dumps(message))
-            logger.info(f"Notification published to channel {channel}: {message}")
+            notification_data = {
+                'user': notification.recipient.username,
+                'type': notification.notification_type.type_name,
+                'content': notification.decrypt_content(),
+                'url': notification.url,
+                'timestamp': notification.timestamp.isoformat(),
+            }
+            self.redis_client.publish(channel, json.dumps(notification_data))
+            logger.info(f"Notification published to Redis channel {channel}")
         except Exception as e:
-            logger.error(f"Error publishing notification to channel {channel}: {e}")
+            logger.error(f"Error publishing to Redis: {e}")
+
+    @staticmethod
+    def send_websocket_notification(notification):
+        """
+        Send a WebSocket notification.
+
+        Args:
+        - notification (Notification): The notification object.
+        """
+        try:
+            channel_layer = get_channel_layer()
+            notification_data = {
+                'type': notification.notification_type.type_name,
+                'content': notification.decrypt_content(),
+                'url': notification.url,
+                'timestamp': notification.timestamp.isoformat(),
+            }
+            async_to_sync(channel_layer.group_send)(
+                f"notifications_{notification.recipient.username}",
+                {
+                    'type': 'send_notification',
+                    'notification': notification_data
+                }
+            )
+            logger.info(f"WebSocket notification sent to notifications_{notification.recipient.username}")
+        except Exception as e:
+            logger.error(f"Error sending WebSocket notification: {e}")
 
     @staticmethod
     def send_notification(notification):
@@ -37,13 +72,20 @@ class PubSubService:
         - notification (Notification): The notification object.
         """
         try:
+            # Enqueue email, SMS, and push notification tasks to be processed asynchronously
             django_rq.enqueue(PubSubService.send_email_notification, notification)
             django_rq.enqueue(PubSubService.send_sms_notification, notification)
             django_rq.enqueue(PubSubService.send_push_notification, notification.id)
+            
+            # Send in-app notification directly
             PubSubService.send_in_app_notification(notification)
+            
+            # Publish to Redis and send WebSocket notification
+            PubSubService().publish_notification('notifications', notification)
+            PubSubService.send_websocket_notification(notification)
         except Exception as e:
             logger.error(f"Error dispatching notification: {e}")
-
+            
     @staticmethod
     def send_email_notification(notification):
         """
@@ -87,50 +129,26 @@ class PubSubService:
         Send a push notification.
 
         Args:
-        - notification_id (int): The ID of the notification.
+        - notification_id (int): The ID of the notification object.
         """
         try:
-            # Implement push notification logic here
-            logger.info(f"Push notification sent for notification ID: {notification_id}")
+            notification = Notification.objects.get(id=notification_id)
+            # Implement push notification sending logic here
+            # Example: push_service.send_message(notification.recipient, notification.content)
+            logger.info(f"Push notification sent to {notification.recipient.username}")
         except Exception as e:
             logger.error(f"Error sending push notification: {e}")
-
-    @staticmethod
-    def send_websocket_notification(notification):
-        """
-        Send a WebSocket notification.
-
-        Args:
-        - notification (Notification): The notification object.
-        """
-        try:
-            channel_layer = get_channel_layer()
-            group_name = f"notifications_{notification.recipient.username}"
-            async_to_sync(channel_layer.group_send)(
-                group_name,
-                {
-                    'type': 'send_notification',
-                    'notification': {
-                        'type': notification.notification_type.type_name,
-                        'content': notification.content,
-                        'url': notification.url,
-                        'timestamp': str(notification.timestamp),
-                    }
-                }
-            )
-            logger.info(f"WebSocket notification sent to {group_name}")
-        except Exception as e:
-            logger.error(f"Error sending WebSocket notification: {e}")
-
+    
     @staticmethod
     def send_in_app_notification(notification):
         """
-        Send an in-app notification by saving it to the database and triggering a WebSocket notification.
+        Send an in-app notification.
 
         Args:
-        - notification (Notification): The notification object.
+        - notification (Notification): The notification object containing in-app details.
         """
         try:
+            # Save the notification to the database
             notification = Notification.objects.create(
                 recipient=notification.recipient,
                 notification_type=notification.notification_type,
@@ -140,6 +158,6 @@ class PubSubService:
             )
             # Trigger WebSocket notification after saving to the database
             PubSubService.send_websocket_notification(notification)
-            logger.info(f"In-app notification saved and WebSocket notification triggered for {notification.recipient.username}")
+            logger.info(f"In-app notification sent to {notification.recipient.username}")
         except Exception as e:
             logger.error(f"Error sending in-app notification: {e}")
