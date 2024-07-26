@@ -37,40 +37,49 @@ class NotificationUtils:
         try:
             user = UserProfile.objects.get(id=data['recipient'])
             if not PermissionChecker.user_can_manage_notifications(user):
-                raise PermissionDenied("You do not have permission to send notifications.")
+                raise PermissionDenied(_("You do not have permission to send notifications."))
             if not NotificationsValidator.validate_notification_permissions(user, data['notification_type']):
-                raise PermissionDenied("User does not have permission to receive this notification.")
+                raise PermissionDenied(_("User does not have permission to receive this notification."))
 
             serializer = NotificationSerializer(data=data)
             if serializer.is_valid():
                 notification = serializer.save()
                 delivery_method = data.get('delivery_method', DeliveryMethod.PUSH.value)
-                delivery_function = getattr(DeliveryMethod, f'send_{delivery_method.lower()}_notification')
-                delivery_function(notification)
+                NotificationUtils._dispatch_notification(notification, delivery_method)
 
                 if data.get('notify_crm'):
                     send_crm_alert(user.id, data['event_type'], data['event_data'])
                 if data.get('notify_alert_system'):
                     send_external_alert(user.id, data['alert_type'], data['message'])
 
-                PubSubService.publish_notification('notifications', notification.content)
+                PubSubService.publish_notification(notification)
                 increment_notifications_sent()
                 return notification
             else:
                 raise ValueError(serializer.errors)
         except ValueError as e:
-            increment_notifications_failed()
-            logger.error(f"Validation error: {e}")
-            NotificationsValidator.handle_notification_failure(data, str(e))
-            raise
+            NotificationUtils._handle_error(e, data)
         except PermissionDenied as e:
             logger.error(f"Permission error: {e}")
             raise
         except Exception as e:
-            increment_notifications_failed()
-            logger.error(f"Unexpected error: {e}")
-            NotificationsValidator.handle_notification_failure(data, str(e))
-            raise
+            NotificationUtils._handle_error(e, data)
+
+    @staticmethod
+    def _dispatch_notification(notification, delivery_method):
+        try:
+            delivery_function = getattr(DeliveryMethod, f'send_{delivery_method.lower()}_notification')
+            delivery_function(notification)
+        except AttributeError:
+            logger.error(f"Invalid delivery method: {delivery_method}")
+            raise ValueError(_("Invalid delivery method."))
+
+    @staticmethod
+    def _handle_error(e, data):
+        increment_notifications_failed()
+        logger.error(f"Error: {e}")
+        NotificationsValidator.handle_notification_failure(data, str(e))
+        raise
 
     @staticmethod
     def mark_notification_as_read(notification_id):
