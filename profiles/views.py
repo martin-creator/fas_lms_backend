@@ -1,14 +1,21 @@
 from profiles.models import UserProfile, Skill, Experience, Education, Endorsement
 from rest_framework import viewsets, permissions
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .serializers import UserProfileSerializer, ExperienceSerializer, EducationSerializer, SkillSerializer, EndorsementSerializer
 from profiles.actions.profile_actions import ProfileActions
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
+    search_fields = ['user__username', 'bio', 'headline']
+    ordering_fields = ['joined_date', 'location']
+    filterset_fields = ['is_private', 'location']
 
     def get_queryset(self):
         if self.request.user.is_superuser:
