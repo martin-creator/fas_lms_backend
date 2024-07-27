@@ -6,221 +6,211 @@ from rest_framework.decorators import api_view
 from notifications.models import Notification, NotificationSettings
 from notifications.controllers.notification_controller import NotificationController
 
-notification_controller = NotificationController()
 
-@api_view(['POST'])
-def create_notification(request):
-    """
-    Create a new notification.
-    """
-    notification_data = request.data
-    try:
-        notification = notification_controller.create_notification(notification_data)
-        return Response(notification, status=status.HTTP_201_CREATED)
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def get_notification(request, notification_id):
+class NotificationViewSet(viewsets.ViewSet):
     """
-    Retrieve a specific notification by its ID.
+    A viewset for viewing and editing notifications.
     """
-    try:
-        notification = notification_controller.get_notification(notification_id)
-        return Response(notification, status=status.HTTP_200_OK)
-    except Notification.DoesNotExist:
-        return Response({"error": "Notification not found"}, status=status.HTTP_404_NOT_FOUND)
+    controller = NotificationController()
 
-@api_view(['PUT', 'PATCH'])
-def update_notification(request, notification_id):
-    """
-    Update an existing notification.
-    """
-    notification_data = request.data
-    try:
-        notification = notification_controller.update_notification(notification_id, notification_data)
-        return Response(notification, status=status.HTTP_200_OK)
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-    except Notification.DoesNotExist:
-        return Response({"error": "Notification not found"}, status=status.HTTP_404_NOT_FOUND)
+    def create(self, request):
+        data = request.data
+        notification = self.controller.create_notification(data)
+        serializer = NotificationSerializer(notification)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-@api_view(['DELETE'])
-def delete_notification(request, notification_id):
-    """
-    Delete a notification.
-    """
-    try:
-        notification_controller.delete_notification(notification_id)
+    def retrieve(self, request, pk=None):
+        notification = self.controller.get_notification(pk)
+        serializer = NotificationSerializer(notification)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        data = request.data
+        notification = self.controller.update_notification(pk, data)
+        serializer = NotificationSerializer(notification)
+        return Response(serializer.data)
+
+    def destroy(self, request, pk=None):
+        self.controller.delete_notification(pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
-    except Notification.DoesNotExist:
-        return Response({"error": "Notification not found"}, status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['GET'])
-def get_user_notifications(request):
-    """
-    Retrieve all notifications for the authenticated user.
-    """
-    user = request.user  # Assuming authenticated user
-    notifications = notification_controller.get_user_notifications(user.id)
-    return Response(notifications, status=status.HTTP_200_OK)
+    @action(detail=False, methods=['get'])
+    def user_notifications(self, request, user_id=None):
+        notifications = self.controller.get_user_notifications(user_id)
+        serializer = NotificationSerializer(notifications, many=True)
+        return Response(serializer.data)
 
-@api_view(['POST'])
-def mark_notification_as_read(request, notification_id):
-    """
-    Mark a notification as read.
-    """
-    try:
-        notification_controller.mark_notification_as_read(notification_id)
-        return Response(status=status.HTTP_200_OK)
-    except Notification.DoesNotExist:
-        return Response({"error": "Notification not found"}, status=status.HTTP_404_NOT_FOUND)
+    @action(detail=False, methods=['get'])
+    def user_report(self, request, user_id=None):
+        report = self.controller.generate_user_report(user_id)
+        return Response(report)
 
-@api_view(['POST'])
-def update_notification_settings(request):
-    """
-    Update notification settings for the authenticated user.
-    """
-    user = request.user  # Assuming authenticated user
-    settings_data = request.data
-    try:
-        settings = notification_controller.update_notification_settings(user.id, settings_data)
-        return Response(settings, status=status.HTTP_200_OK)
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=False, methods=['get'])
+    def summary_report(self, request):
+        report = self.controller.generate_summary_report()
+        return Response(report)
 
-@api_view(['GET'])
-def get_notification_settings(request):
-    """
-    Retrieve notification settings for the authenticated user.
-    """
-    user = request.user  # Assuming authenticated user
-    try:
-        settings = notification_controller.get_notification_settings(user.id)
-        return Response(settings, status=status.HTTP_200_OK)
-    except NotificationSettings.DoesNotExist:
-        return Response({"error": "Notification settings not found"}, status=status.HTTP_404_NOT_FOUND)
+    @action(detail=True, methods=['post'])
+    def mark_as_read(self, request, pk=None):
+        self.controller.mark_notification_as_read(pk)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-@api_view(['GET'])
-def generate_user_report(request, user_id):
-    """
-    Generate a notification report for a specific user.
-    """
-    try:
-        report = notification_controller.generate_user_report(user_id)
-        return Response(report, status=status.HTTP_200_OK)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=False, methods=['put'])
+    def update_settings(self, request, user_id=None):
+        data = request.data
+        settings = self.controller.update_notification_settings(user_id, data)
+        serializer = NotificationSettingsSerializer(settings)
+        return Response(serializer.data)
 
-@api_view(['GET'])
-def generate_summary_report(request):
-    """
-    Generate a summary report of notifications.
-    """
-    try:
-        summary = notification_controller.generate_summary_report()
-        return Response(summary, status=status.HTTP_200_OK)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=False, methods=['get'])
+    def settings(self, request, user_id=None):
+        settings = self.controller.get_notification_settings(user_id)
+        serializer = NotificationSettingsSerializer(settings)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def unread_count(self, request, user_id=None):
+        count = self.controller.get_unread_notifications_count(user_id)
+        return Response({'unread_count': count})
+
+    @action(detail=False, methods=['post'])
+    def create_template(self, request):
+        data = request.data
+        template = self.controller.create_notification_template(data['notification_type'], data['template'])
+        serializer = NotificationTemplateSerializer(template)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'])
+    def template(self, request, notification_type=None):
+        template = self.controller.get_notification_template(notification_type)
+        return Response({'template': template})
+
+    @action(detail=False, methods=['get'])
+    def types(self, request):
+        types = self.controller.get_notification_types()
+        serializer = NotificationTypeSerializer(types, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def create_type(self, request):
+        data = request.data
+        notification_type = self.controller.create_notification_type(data)
+        serializer = NotificationTypeSerializer(notification_type)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['put'])
+    def update_type(self, request, notification_type_id=None):
+        data = request.data
+        notification_type = self.controller.update_notification_type(notification_type_id, data)
+        serializer = NotificationTypeSerializer(notification_type)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['delete'])
+    def delete_type(self, request, notification_type_id=None):
+        self.controller.delete_notification_type(notification_type_id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'])
+    def subscribe(self, request):
+        user = request.user
+        notification_types = request.data.get('notification_types', [])
+        self.controller.subscribe_to_notifications(user, notification_types)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'])
+    def unsubscribe(self, request):
+        user = request.user
+        notification_types = request.data.get('notification_types', [])
+        self.controller.unsubscribe_from_notifications(user, notification_types)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'])
+    def notify_followers(self, request):
+        data = request.data
+        self.controller.notify_followers(data['user_profile'], data['notification_type'], data.get('content_object'), data.get('content'), data.get('url'))
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'])
+    def notify_all(self, request):
+        data = request.data
+        self.controller.notify_all_users(data['notification_type'], data.get('content_object'), data.get('content'), data.get('url'))
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['get'])
+    def user_preferences(self, request, user_id=None):
+        preferences = self.controller.get_user_preferences(user_id)
+        serializer = UserNotificationPreferenceSerializer(preferences)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['put'])
+    def update_preferences(self, request, user_id=None):
+        data = request.data
+        preferences = self.controller.update_user_preferences(user_id, data)
+        serializer = UserNotificationPreferenceSerializer(preferences)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def snooze_notifications(self, request):
+        data = request.data
+        self.controller.snooze_notifications(request.user, data['start_time'], data['end_time'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'])
+    def snooze_notification(self, request, notification_id=None):
+        data = request.data
+        self.controller.snooze_notification(notification_id, data['snooze_until'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['get'])
+    def snoozed_notifications(self, request, user_id=None):
+        snoozed_notifications = self.controller.get_snoozed_notifications(user_id)
+        serializer = NotificationSerializer(snoozed_notifications, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def log_engagement(self, request, notification_id=None):
+        data = request.data
+        self.controller.log_notification_engagement(notification_id, data['engagement_type'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'])
+    def record_engagement(self, request, notification_id=None):
+        data = request.data
+        log_entry = self.controller.record_engagement(notification_id, data['engagement_type'])
+        serializer = NotificationLogSerializer(log_entry)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def log_event(self, request, notification_id=None):
+        data = request.data
+        log_entry = self.controller.log_notification_event(notification_id, data['event_type'])
+        serializer = NotificationLogSerializer(log_entry)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def assign_test(self, request):
+        data = request.data
+        test_group = self.controller.assign_user_to_test(data['user_id'], data['test_name'])
+        return Response({'test_group': test_group})
+
+    @action(detail=False, methods=['get'])
+    def analyze_test(self, request, test_name=None):
+        results = self.controller.analyze_ab_test_results(test_name)
+        return Response(results)
+
+    @action(detail=False, methods=['post'])
+    def send_test_notification(self, request):
+        data = request.data
+        self.controller.send_test_notification(data)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'])
+    def send_test_multi_notification(self, request):
+        data = request.data
+        self.controller.send_test_multi_notification(data)
+        return Response(status=status.HTTP_204_NO_CONTENT)
         
-
-@api_view(['GET'])
-def get_unread_notifications_count(request):
-    """
-    Retrieve the count of unread notifications for the authenticated user.
-    """
-    user = request.user
-    count = notification_controller.get_unread_notifications_count(user)
-    return Response({'unread_count': count}, status=status.HTTP_200_OK)
-
-@api_view(['POST'])
-def create_notification_template(request):
-    """
-    Create or update a notification template for a notification type.
-    """
-    notification_type = request.data.get('notification_type')
-    template = request.data.get('template')
-    try:
-        template_obj = notification_controller.create_notification_template(notification_type, template)
-        return Response({'template': template_obj.template}, status=status.HTTP_201_CREATED)
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET'])
-def get_notification_template(request, notification_type):
-    """
-    Retrieve the notification template for a notification type.
-    """
-    try:
-        template = notification_controller.get_notification_template(notification_type)
-        return Response({'template': template}, status=status.HTTP_200_OK)
-    except ValueError:
-        return Response({'error': 'Template not found'}, status=status.HTTP_404_NOT_FOUND)
-
-@api_view(['GET'])
-def get_notification_types(request):
-    """
-    Retrieve all notification types available in the system.
-    """
-    types = notification_controller.get_notification_types()
-    return Response({'notification_types': [type_.name for type_ in types]}, status=status.HTTP_200_OK)
-
-@api_view(['POST'])
-def subscribe_to_notifications(request):
-    """
-    Subscribe a user to receive notifications of specific types.
-    """
-    user = request.user
-    notification_types = request.data.get('notification_types')
-    try:
-        notification_controller.subscribe_to_notifications(user, notification_types)
-        return Response({'message': 'Subscribed successfully'}, status=status.HTTP_200_OK)
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['POST'])
-def unsubscribe_from_notifications(request):
-    """
-    Unsubscribe a user from receiving notifications of specific types.
-    """
-    user = request.user
-    notification_types = request.data.get('notification_types')
-    try:
-        notification_controller.unsubscribe_from_notifications(user, notification_types)
-        return Response({'message': 'Unsubscribed successfully'}, status=status.HTTP_200_OK)
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['POST'])
-def notify_followers(request):
-    """
-    Notify followers of a user profile about an action.
-    """
-    user_profile = request.data.get('user_profile')
-    notification_type = request.data.get('notification_type')
-    content_object = request.data.get('content_object', None)
-    content = request.data.get('content', '')
-    url = request.data.get('url', '')
-    try:
-        notification_controller.notify_followers(user_profile, notification_type, content_object, content, url)
-        return Response({'message': 'Followers notified successfully'}, status=status.HTTP_200_OK)
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['POST'])
-def notify_all_users(request):
-    """
-    Notify all users about an action.
-    """
-    notification_type = request.data.get('notification_type')
-    content_object = request.data.get('content_object', None)
-    content = request.data.get('content', '')
-    url = request.data.get('url', '')
-    try:
-        notification_controller.notify_all_users(notification_type, content_object, content, url)
-        return Response({'message': 'All users notified successfully'}, status=status.HTTP_200_OK)
-    except ValueError as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @ratelimit(key='user', rate='5/m', method='POST', block=True)
 def send_notification_view(request):
