@@ -18,6 +18,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = '__all__'
+        
+    def __init__(self, *args, **kwargs):
+        # Fetch the 'fields' parameter if it exists
+        fields = kwargs.pop('fields', None)
+        super(UserProfileSerializer, self).__init__(*args, **kwargs)
+
+        if fields is not None:
+            # Remove fields not specified in 'fields' parameter
+            allowed = set(fields)
+            existing = set(self.fields.keys())
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
 
     def get_user(self, obj):
         return UserSerializer(obj.user, context=self.context).data

@@ -131,5 +131,3 @@ class ProfileConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event))
 
 
-#database_sync_to_async
-# This 

@@ -4,6 +4,7 @@ from profiles.models import Follower, FollowRequest
 from profiles.actions.follower_actions import FollowerActions
 from profiles.actions.education_experience_actions import EducationExperienceActions
 from profiles.actions.job_actions import JobActions
+from profiles.utils.profiles_utils import ProfileUtils
 
 class ProfileActions:
 
@@ -103,3 +104,59 @@ class ProfileActions:
         if not job_id:
             return {'error': 'Job ID not provided'}, 400
         return JobActions.remove_job_listing(profile, job_id)
+
+    @staticmethod
+    def add_achievement(request, profile):
+        title = request.data.get('title')
+        description = request.data.get('description')
+        date_achieved = request.data.get('date_achieved')
+        
+        if not all([title, description, date_achieved]):
+            return {'error': 'Missing required fields'}, 400
+
+        try:
+            achievement = ProfileUtils.add_achievement(
+                profile.user, title, description, date_achieved
+            )
+            return {'status': 'Achievement added', 'achievement': achievement.id}, 200
+        except Exception as e:
+            return {'error': str(e)}, 400
+
+    @staticmethod
+    def remove_achievement(request, profile):
+        achievement_id = request.data.get('achievement_id')
+        if not achievement_id:
+            return {'error': 'Achievement ID not provided'}, 400
+        try:
+            ProfileUtils.remove_achievement(profile.user, achievement_id)
+            return {'status': 'Achievement removed'}, 200
+        except Exception as e:
+            return {'error': str(e)}, 400
+
+    @staticmethod
+    def add_portfolio(request, profile):
+        project_name = request.data.get('project_name')
+        description = request.data.get('description')
+        project_url = request.data.get('project_url')
+        
+        if not all([project_name, description, project_url]):
+            return {'error': 'Missing required fields'}, 400
+
+        try:
+            portfolio = ProfileUtils.add_portfolio(
+                profile.user, project_name, description, project_url
+            )
+            return {'status': 'Portfolio added', 'portfolio': portfolio.id}, 200
+        except Exception as e:
+            return {'error': str(e)}, 400
+
+    @staticmethod
+    def remove_portfolio(request, profile):
+        portfolio_id = request.data.get('portfolio_id')
+        if not portfolio_id:
+            return {'error': 'Portfolio ID not provided'}, 400
+        try:
+            ProfileUtils.remove_portfolio(profile.user, portfolio_id)
+            return {'status': 'Portfolio removed'}, 200
+        except Exception as e:
+            return {'error': str(e)}, 400

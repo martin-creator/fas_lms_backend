@@ -6,6 +6,8 @@ from followers.models import Follower, FollowRequest, FollowNotification
 # from notifications.models import Notification
 from shortuuidfield import ShortUUIDField
 # from messaging.models import Reaction, Share
+from profiles.actions.profile_actions import ProfileActions
+
 
 class User(AbstractUser):
     userId = ShortUUIDField()
@@ -39,59 +41,66 @@ class UserProfile(models.Model):
         return self.user.username
 
     def follow(self, profile):
-        if not self.is_following(profile):
-            if profile.is_private:
-                FollowRequest.objects.create(from_user=self, to_user=profile)
-            else:
-                Follower.objects.create(user=profile, follower=self)
+        data = {'profile': profile, 'user_profile': self}
+        return ProfileActions.follow_profile(None, data)
 
     def unfollow(self, profile):
-        Follower.objects.filter(user=profile, follower=self).delete()
+        data = {'profile': profile, 'user_profile': self}
+        return ProfileActions.unfollow_profile(None, data)
 
     def is_following(self, profile):
-        return Follower.objects.filter(user=profile, follower=self).exists()
+        data = {'profile': profile, 'user_profile': self}
+        return ProfileActions.is_following(None, data)
 
     def has_follow_request(self, profile):
-        return FollowRequest.objects.filter(from_user=self, to_user=profile).exists()
+        data = {'profile': profile, 'user_profile': self}
+        return ProfileActions.has_follow_request(None, data)
 
     def accept_follow_request(self, profile):
-        follow_request = FollowRequest.objects.filter(from_user=profile, to_user=self).first()
-        if follow_request:
-            follow_request.accept()
+        data = {'profile': profile, 'user_profile': self}
+        return ProfileActions.accept_follow_request(None, data)
 
     def reject_follow_request(self, profile):
-        follow_request = FollowRequest.objects.filter(from_user=profile, to_user=self).first()
-        if follow_request:
-            follow_request.reject()
-            
+        data = {'profile': profile, 'user_profile': self}
+        return ProfileActions.reject_follow_request(None, data)
+
     def endorse_skill(self, skill, endorsed_by):
-        if not self.has_endorsed(skill):
-            Endorsement.objects.create(skill=skill, endorsed_by=endorsed_by, endorsed_user=self)
+        data = {'skill': skill, 'endorsed_by': endorsed_by}
+        return ProfileActions.endorse_skill(None, self, data)
 
     def has_endorsed(self, skill):
-        return Endorsement.objects.filter(skill=skill, endorsed_user=self).exists()
+        data = {'skill': skill}
+        return ProfileActions.has_endorsed(None, self, data)
 
     def add_experience(self, title, company, description, start_date, end_date=None, is_current=False):
-        return Experience.objects.create(
-            user_profile=self,
-            title=title,
-            company=company,
-            description=description,
-            start_date=start_date,
-            end_date=end_date,
-            is_current=is_current
-        )
+        data = {
+            'title': title,
+            'company': company,
+            'description': description,
+            'start_date': start_date,
+            'end_date': end_date,
+            'is_current': is_current
+        }
+        return ProfileActions.add_experience(None, self, data)
+
+    def remove_experience(self, experience_id):
+        data = {'experience_id': experience_id}
+        return ProfileActions.remove_experience(None, self, data)
 
     def add_education(self, institution, degree, field_of_study, start_date, end_date=None, is_current=False):
-        return Education.objects.create(
-            user_profile=self,
-            institution=institution,
-            degree=degree,
-            field_of_study=field_of_study,
-            start_date=start_date,
-            end_date=end_date,
-            is_current=is_current
-        )
+        data = {
+            'institution': institution,
+            'degree': degree,
+            'field_of_study': field_of_study,
+            'start_date': start_date,
+            'end_date': end_date,
+            'is_current': is_current
+        }
+        return ProfileActions.add_education(None, self, data)
+
+    def remove_education(self, education_id):
+        data = {'education_id': education_id}
+        return ProfileActions.remove_education(None, self, data)
 
 class Experience(models.Model):
     user = models.ForeignKey(UserProfile, related_name='user_experiences', on_delete=models.CASCADE, db_index=True)
