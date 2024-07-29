@@ -7,7 +7,7 @@ from followers.models import Follower, FollowRequest, FollowNotification
 from shortuuidfield import ShortUUIDField
 # from messaging.models import Reaction, Share
 from profiles.actions.profile_actions import ProfileActions
-
+from profiles.utils.permissions import ProfilePermissionChecker
 
 class User(AbstractUser):
     userId = ShortUUIDField()
@@ -54,8 +54,8 @@ class UserProfile(models.Model):
             PermissionDenied: If the user does not have permission for the action.
             ValueError: If the action is unknown.
         """
-        PermissionChecker.check_permission_for_action(user, action)
-        
+        ProfilePermissionChecker.check_permission_for_action(user, action)
+
         action_methods = {
             'follow': ProfileActions.follow_profile,
             'unfollow': ProfileActions.unfollow_profile,
