@@ -40,68 +40,80 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+    def perform_action(self, user, action, *args, **kwargs):
+        """
+        Perform an action on the UserProfile instance with permission checks.
+
+        Args:
+            user (User): The user performing the action.
+            action (str): The action to perform (e.g., 'follow', 'unfollow', 'endorse_skill').
+            *args: Additional arguments for the action.
+            **kwargs: Additional keyword arguments for the action.
+
+        Raises:
+            PermissionDenied: If the user does not have permission for the action.
+            ValueError: If the action is unknown.
+        """
+        PermissionChecker.check_permission_for_action(user, action)
+        
+        action_methods = {
+            'follow': ProfileActions.follow_profile,
+            'unfollow': ProfileActions.unfollow_profile,
+            'is_following': ProfileActions.is_following,
+            'has_follow_request': ProfileActions.has_follow_request,
+            'accept_follow_request': ProfileActions.accept_follow_request,
+            'reject_follow_request': ProfileActions.reject_follow_request,
+            'endorse_skill': ProfileActions.endorse_skill,
+            'has_endorsed': ProfileActions.has_endorsed,
+            'add_experience': ProfileActions.add_experience,
+            'remove_experience': ProfileActions.remove_experience,
+            'add_education': ProfileActions.add_education,
+            'remove_education': ProfileActions.remove_education,
+        }
+
+        action_method = action_methods.get(action)
+        if action_method:
+            return action_method(user, self, *args, **kwargs)
+        else:
+            raise ValueError(f"Unknown action: {action}")
+
+    # Existing methods can be updated to use perform_action
     def follow(self, profile):
-        data = {'profile': profile, 'user_profile': self}
-        return ProfileActions.follow_profile(None, data)
+        return self.perform_action(self.user, 'follow', profile)
 
     def unfollow(self, profile):
-        data = {'profile': profile, 'user_profile': self}
-        return ProfileActions.unfollow_profile(None, data)
+        return self.perform_action(self.user, 'unfollow', profile)
 
     def is_following(self, profile):
-        data = {'profile': profile, 'user_profile': self}
-        return ProfileActions.is_following(None, data)
+        return self.perform_action(self.user, 'is_following', profile)
 
     def has_follow_request(self, profile):
-        data = {'profile': profile, 'user_profile': self}
-        return ProfileActions.has_follow_request(None, data)
+        return self.perform_action(self.user, 'has_follow_request', profile)
 
     def accept_follow_request(self, profile):
-        data = {'profile': profile, 'user_profile': self}
-        return ProfileActions.accept_follow_request(None, data)
+        return self.perform_action(self.user, 'accept_follow_request', profile)
 
     def reject_follow_request(self, profile):
-        data = {'profile': profile, 'user_profile': self}
-        return ProfileActions.reject_follow_request(None, data)
+        return self.perform_action(self.user, 'reject_follow_request', profile)
 
     def endorse_skill(self, skill, endorsed_by):
-        data = {'skill': skill, 'endorsed_by': endorsed_by}
-        return ProfileActions.endorse_skill(None, self, data)
+        return self.perform_action(self.user, 'endorse_skill', skill, endorsed_by)
 
     def has_endorsed(self, skill):
-        data = {'skill': skill}
-        return ProfileActions.has_endorsed(None, self, data)
+        return self.perform_action(self.user, 'has_endorsed', skill)
 
     def add_experience(self, title, company, description, start_date, end_date=None, is_current=False):
-        data = {
-            'title': title,
-            'company': company,
-            'description': description,
-            'start_date': start_date,
-            'end_date': end_date,
-            'is_current': is_current
-        }
-        return ProfileActions.add_experience(None, self, data)
+        return self.perform_action(self.user, 'add_experience', title, company, description, start_date, end_date, is_current)
 
     def remove_experience(self, experience_id):
-        data = {'experience_id': experience_id}
-        return ProfileActions.remove_experience(None, self, data)
+        return self.perform_action(self.user, 'remove_experience', experience_id)
 
     def add_education(self, institution, degree, field_of_study, start_date, end_date=None, is_current=False):
-        data = {
-            'institution': institution,
-            'degree': degree,
-            'field_of_study': field_of_study,
-            'start_date': start_date,
-            'end_date': end_date,
-            'is_current': is_current
-        }
-        return ProfileActions.add_education(None, self, data)
+        return self.perform_action(self.user, 'add_education', institution, degree, field_of_study, start_date, end_date, is_current)
 
     def remove_education(self, education_id):
-        data = {'education_id': education_id}
-        return ProfileActions.remove_education(None, self, data)
-
+        return self.perform_action(self.user, 'remove_education', education_id)
+        
 class Experience(models.Model):
     user = models.ForeignKey(UserProfile, related_name='user_experiences', on_delete=models.CASCADE, db_index=True)
     title = models.CharField(max_length=255)
