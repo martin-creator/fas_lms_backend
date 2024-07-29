@@ -77,7 +77,6 @@ class UserProfile(models.Model):
         else:
             raise ValueError(f"Unknown action: {action}")
 
-    # Existing methods can be updated to use perform_action
     def follow(self, profile):
         return self.perform_action(self.user, 'follow', profile)
 
