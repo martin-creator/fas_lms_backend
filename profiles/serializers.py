@@ -22,41 +22,55 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         # Fetch the 'fields' parameter if it exists
         fields = kwargs.pop('fields', None)
-        super(UserProfileSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
+        # Remove fields not specified in 'fields' parameter
         if fields is not None:
-            # Remove fields not specified in 'fields' parameter
             allowed = set(fields)
             existing = set(self.fields.keys())
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
 
+        # Conditionally add SerializerMethodFields based on context flags
+        context = self.context
+        include_flags = {
+            'user': context.get('include_user'),
+            'skills': context.get('include_skills'),
+            'experiences': context.get('include_experiences'),
+            'educations': context.get('include_educations'),
+            'endorsements': context.get('include_endorsements'),
+            'achievements': context.get('include_achievements'),
+            'portfolio': context.get('include_portfolio')
+        }
+        for field_name, include_flag in include_flags.items():
+            if not include_flag:
+                self.fields.pop(field_name, None)
+
     def get_user(self, obj):
         return UserSerializer(obj.user, context=self.context).data
 
+    def get_related_field(self, obj, related_name, serializer_class):
+        related_objects = getattr(obj, related_name).all()
+        return serializer_class(related_objects, many=True, context=self.context).data
+
     def get_skills(self, obj):
-        skills = obj.skills.all()
-        return SkillSerializer(skills, many=True, context=self.context).data
+        return self.get_related_field(obj, 'skills', SkillSerializer)
 
     def get_experiences(self, obj):
-        experiences = obj.experiences.all()
-        return ExperienceSerializer(experiences, many=True, context=self.context).data
+        return self.get_related_field(obj, 'experiences', ExperienceSerializer)
 
     def get_educations(self, obj):
-        educations = obj.educations.all()
-        return EducationSerializer(educations, many=True, context=self.context).data
+        return self.get_related_field(obj, 'educations', EducationSerializer)
 
     def get_endorsements(self, obj):
-        endorsements = obj.endorsements.all()
-        return EndorsementSerializer(endorsements, many=True, context=self.context).data
+        return self.get_related_field(obj, 'endorsements', EndorsementSerializer)
 
     def get_achievements(self, obj):
-        achievements = obj.achievements.all()
-        return AchievementSerializer(achievements, many=True, context=self.context).data
+        return self.get_related_field(obj, 'achievements', AchievementSerializer)
 
     def get_portfolio(self, obj):
-        portfolio = obj.portfolio.all()
-        return PortfolioSerializer(portfolio, many=True, context=self.context).data
+        return self.get_related_field(obj, 'portfolio', PortfolioSerializer)
+        
 
 class SkillSerializer(serializers.ModelSerializer):
     endorsement_count = serializers.SerializerMethodField()
