@@ -7,6 +7,10 @@ from .serializers import UserProfileSerializer, ExperienceSerializer, EducationS
 from profiles.actions.profile_actions import ProfileActions
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from django.core.exceptions import PermissionDenied
+import logging
+
+logger = logging.getLogger(__name__)
 
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
@@ -24,15 +28,14 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context.update({
-            'include_user': self.request.query_params.get('include_user', 'false').lower() == 'true',
-            'include_skills': self.request.query_params.get('include_skills', 'false').lower() == 'true',
-            'include_experiences': self.request.query_params.get('include_experiences', 'false').lower() == 'true',
-            'include_educations': self.request.query_params.get('include_educations', 'false').lower() == 'true',
-            'include_endorsements': self.request.query_params.get('include_endorsements', 'false').lower() == 'true',
-            'include_achievements': self.request.query_params.get('include_achievements', 'false').lower() == 'true',
-            'include_portfolio': self.request.query_params.get('include_portfolio', 'false').lower() == 'true'
-        })
+        query_params = self.request.query_params
+        flags = [
+            'include_user', 'include_skills', 
+            'include_experiences', 'include_educations',
+            'include_endorsements', 'include_achievements', 
+            'include_portfolio'
+        ]
+        context.update({flag: query_params.get(flag, 'false').lower() == 'true' for flag in flags})
         return context
 
     def get_serializer(self, *args, **kwargs):
@@ -40,67 +43,52 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         kwargs['context'] = self.get_serializer_context()
         fields = self.request.query_params.get('fields')
         if fields:
-            fields = fields.split(',')
-            kwargs['fields'] = fields
+            kwargs['fields'] = fields.split(',')
         return serializer_class(*args, **kwargs)
 
-    def perform_action(self, action_method, request, pk=None):
-        profile = self.get_object()
-        user_profile = request.user.profile
-        result = action_method(request, profile, user_profile)
-        return Response(result, status=result[1])
+    def perform_action(self, request, action_name):
+        try:
+            profile = self.get_object()
+            user_profile = request.user.profile
+            action_method = getattr(ProfileActions, action_name, None)
+            if not action_method:
+                raise ValueError(f"Unknown action: {action_name}")
 
-    @action(detail=True, methods=['post'])
-    def follow(self, request, pk=None):
-        return self.perform_action(ProfileActions.follow_profile, request, pk)
+            result = action_method(request, profile, user_profile)
+            return Response(result[0], status=result[1])
+        except PermissionDenied as e:
+            logger.warning(f"Permission denied: {e}")
+            return Response({'detail': str(e)}, status=403)
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            return Response({'detail': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+            return Response({'detail': 'An unexpected error occurred.'}, status=500)
 
-    @action(detail=True, methods=['post'])
-    def unfollow(self, request, pk=None):
-        return self.perform_action(ProfileActions.unfollow_profile, request, pk)
+    def create_action(method_name):
+        @action(detail=True, methods=['post'])
+        def action_method(self, request, pk=None):
+            return self.perform_action(request, method_name)
+        return action_method
 
-    @action(detail=True, methods=['post'])
-    def endorse_skill(self, request, pk=None):
-        return self.perform_action(ProfileActions.endorse_skill, request, pk)
-
-    @action(detail=True, methods=['post'])
-    def add_skill(self, request, pk=None):
-        return self.perform_action(ProfileActions.add_skill, request, pk)
-
-    @action(detail=True, methods=['post'])
-    def remove_skill(self, request, pk=None):
-        return self.perform_action(ProfileActions.remove_skill, request, pk)
-
-    @action(detail=True, methods=['post'])
-    def add_experience(self, request, pk=None):
-        return self.perform_action(ProfileActions.add_experience, request, pk)
-
-    @action(detail=True, methods=['post'])
-    def remove_experience(self, request, pk=None):
-        return self.perform_action(ProfileActions.remove_experience, request, pk)
-
-    @action(detail=True, methods=['post'])
-    def add_education(self, request, pk=None):
-        return self.perform_action(ProfileActions.add_education, request, pk)
-
-    @action(detail=True, methods=['post'])
-    def remove_education(self, request, pk=None):
-        return self.perform_action(ProfileActions.remove_education, request, pk)
-
-    @action(detail=True, methods=['post'])
-    def add_job_application(self, request, pk=None):
-        return self.perform_action(ProfileActions.add_job_application, request, pk)
-
-    @action(detail=True, methods=['post'])
-    def remove_job_application(self, request, pk=None):
-        return self.perform_action(ProfileActions.remove_job_application, request, pk)
-
-    @action(detail=True, methods=['post'])
-    def add_job_listing(self, request, pk=None):
-        return self.perform_action(ProfileActions.add_job_listing, request, pk)
-
-    @action(detail=True, methods=['post'])
-    def remove_job_listing(self, request, pk=None):
-        return self.perform_action(ProfileActions.remove_job_listing, request, pk)
+    follow = create_action('follow_profile')
+    unfollow = create_action('unfollow_profile')
+    endorse_skill = create_action('endorse_skill')
+    add_skill = create_action('add_skill')
+    remove_skill = create_action('remove_skill')
+    add_experience = create_action('add_experience')
+    remove_experience = create_action('remove_experience')
+    add_education = create_action('add_education')
+    remove_education = create_action('remove_education')
+    add_job_application = create_action('add_job_application')
+    remove_job_application = create_action('remove_job_application')
+    add_job_listing = create_action('add_job_listing')
+    remove_job_listing = create_action('remove_job_listing')
+    add_achievement = create_action('add_achievement')
+    remove_achievement = create_action('remove_achievement')
+    add_portfolio = create_action('add_portfolio')
+    remove_portfolio = create_action('remove_portfolio')
 
 
 class ExperienceViewSet(viewsets.ModelViewSet):
