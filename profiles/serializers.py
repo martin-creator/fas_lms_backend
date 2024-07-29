@@ -20,18 +20,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
     def __init__(self, *args, **kwargs):
-        # Fetch the 'fields' parameter if it exists
         fields = kwargs.pop('fields', None)
         super().__init__(*args, **kwargs)
 
-        # Remove fields not specified in 'fields' parameter
         if fields is not None:
             allowed = set(fields)
             existing = set(self.fields.keys())
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
 
-        # Conditionally add SerializerMethodFields based on context flags
         context = self.context
         include_flags = {
             'user': context.get('include_user'),
@@ -70,7 +67,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_portfolio(self, obj):
         return self.get_related_field(obj, 'portfolio', PortfolioSerializer)
-        
 
 class SkillSerializer(serializers.ModelSerializer):
     endorsement_count = serializers.SerializerMethodField()
