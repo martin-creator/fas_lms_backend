@@ -58,6 +58,25 @@ class EventQuery:
         events = Event.objects.filter(attendees=attendee_id)
         serializer = EventSerializer(events, many=True)
         return serializer.data
+    
+    @staticmethod
+    def get_event_registrations_by_attendee(attendee_id):
+        """
+        Get all event registrations by a specific attendee.
+        """
+        registrations = EventRegistration.objects.filter(attendee_id=attendee_id)
+        serializer = EventRegistrationSerializer(registrations, many=True)
+        return serializer.data
+    
+    @staticmethod
+    def get_event_feedbacks_by_attendee(attendee_id):
+        """
+        Get all event feedbacks by a specific attendee.
+        """
+        feedbacks = EventFeedback.objects.filter(attendee_id=attendee_id)
+        serializer = EventFeedbackSerializer(feedbacks, many=True)
+        return serializer.data
+
 
     @staticmethod
     def get_events_by_category(category_id):
@@ -112,4 +131,3 @@ class EventQuery:
         return True
     
 
-    
