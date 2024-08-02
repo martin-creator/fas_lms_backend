@@ -106,8 +106,81 @@ class EventService:
         registration.save()
 
         return True
+
+
+    @staticmethod
+    def unregister_from_event(event_id, attendee_id):
+        """
+        Unregister from an event.
+        """
+        registration = EventQuery.get_event_registration(event_id, attendee_id)
+        registration.delete()
+
+        return True
+    
+
+    @staticmethod
+    def provide_event_feedback(event_id, attendee_id, feedback_data):
+        """
+        Provide feedback for an event.
+        """
+        event = EventQuery.get_event(event_id)
+        attendee = UserUtils.get_current_user(attendee_id)
+
+        feedback = EventFeedback(event=event, attendee=attendee, **feedback_data)
+        feedback.save()
+
+        return True
+
+    
+    @staticmethod
+    def get_events_by_organizer(organizer_id):
+        """
+        Get all events organized by a specific organizer.
+        """
+        events = EventQuery.get_events_by_organizer(organizer_id)
+        return events
+    
+
+    @staticmethod
+    def get_events_by_attendee(attendee_id):
+        """
+        Get all events attended by a specific attendee.
+        """
+        events = EventQuery.get_events_by_attendee(attendee_id)
+        return events
+
+
+    @staticmethod
+    def get_event_registrations(event_id):
+        """
+        Get all registrations for a specific event.
+        """
+        registrations = EventQuery.get_event_registrations(event_id)
+        return registrations
+    
+
+    @staticmethod
+    def get_event_feedbacks(event_id):
+        """
+        Get all feedbacks for a specific event.
+        """
+        feedbacks = EventQuery.get_event_feedbacks(event_id)
+        return feedbacks
+    
+
+    @staticmethod
+    def get_events_monthly_report():
+        """
+        Get a monthly report for all events.
+        """
+        report = EventReport.get_events_monthly_report()
+        return report
     
     
+
+    
+
     
 
 

@@ -130,4 +130,11 @@ class EventQuery:
         registration.delete()
         return True
     
+    @staticmethod
+    def get_event_registration(event_id, attendee_id):
+        """
+        Get a specific event registration.
+        """
+        registration = EventRegistration.objects.get(event_id=event_id, attendee_id=attendee_id)
+        return registration
 
