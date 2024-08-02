@@ -72,6 +72,17 @@ class EventService:
 
         return True
     
+    
+    @staticmethod
+    def delete_all_events():
+        """
+        Delete all events.
+        """
+        events = EventQuery.get_events()
+        events.delete()
+
+        return True
+    
 
     @staticmethod
     def get_event_report(event_id):
@@ -149,6 +160,15 @@ class EventService:
         """
         events = EventQuery.get_events_by_attendee(attendee_id)
         return events
+    
+
+    @staticmethod   
+    def get_event_attendees(event_id):
+        """
+        Get all attendees for an event.
+        """
+        attendees = EventQuery.get_event_attendees(event_id)
+        return attendees
 
 
     @staticmethod
@@ -176,6 +196,9 @@ class EventService:
         """
         report = EventReport.get_events_monthly_report()
         return report
+    
+
+    
     
     
 

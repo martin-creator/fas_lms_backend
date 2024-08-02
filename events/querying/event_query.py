@@ -59,6 +59,16 @@ class EventQuery:
         serializer = EventSerializer(events, many=True)
         return serializer.data
     
+
+    @staticmethod
+    def get_event_attendees(event_id):
+        """
+        Get all attendees for a specific event.
+        """
+        registrations = EventRegistration.objects.filter(event_id=event_id)
+        serializer = EventRegistrationSerializer(registrations, many=True)
+        return serializer.data
+    
     @staticmethod
     def get_event_registrations_by_attendee(attendee_id):
         """
