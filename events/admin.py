@@ -17,7 +17,7 @@ class EventAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Event Information', {
-            'fields': ('title', 'description', 'organizer', 'categories', 'location', 'start_time', 'end_time', 'capacity', 'category')
+            'fields': ('title', 'description', 'organizer', 'categories', 'location', 'start_time', 'end_time', 'capacity')
         }),
     )
 
