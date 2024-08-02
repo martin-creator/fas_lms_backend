@@ -1,150 +1,138 @@
 from django.db.models import Count, Q
-from events.models import Event, EventRegistration, EventFeedback
-from events.serializers import EventSerializer, EventRegistrationSerializer, EventFeedbackSerializer
+from companies.models import Company, CompanyUpdate
+from companies.serializers import CompanySerializer, CompanyUpdateSerializer
 from django.utils import timezone
 
-# ther serializer should be stored in serializer variable and then return the data
-class EventQuery:
+
+class CompanyQuery:
     @staticmethod
-    def get_events():
+    def get_companies():
         """
-        Get all events.
+        Get all companies.
         """
-        events = Event.objects.all()
-        serializer = EventSerializer(events, many=True)
+        companies = Company.objects.all()
+        serializer = CompanySerializer(companies, many=True)
         return serializer.data
 
     @staticmethod
-    def get_event(event_id):
+    def get_company(company_id):
         """
-        Get a specific event.
+        Get a specific company.
         """
-        event = Event.objects.get(id=event_id)
-        serializer = EventSerializer(event)
+        company = Company.objects.get(id=company_id)
+        serializer = CompanySerializer(company)
         return serializer.data
 
     @staticmethod
-    def get_event_registrations(event_id):
+    def get_company_updates(company_id):
         """
-        Get all registrations for a specific event.
+        Get all updates for a specific company.
         """
-        registrations = EventRegistration.objects.filter(event_id=event_id)
-        serializer = EventRegistrationSerializer(registrations, many=True)
+        updates = CompanyUpdate.objects.filter(company_id=company_id)
+        serializer = CompanyUpdateSerializer(updates, many=True)
         return serializer.data
 
     @staticmethod
-    def get_event_feedbacks(event_id):
+    def get_companies_by_owner(owner_id):
         """
-        Get all feedbacks for a specific event.
+        Get all companies owned by a specific owner.
         """
-        feedbacks = EventFeedback.objects.filter(event_id=event_id)
-        serializer = EventFeedbackSerializer(feedbacks, many=True)
+        companies = Company.objects.filter(owner_id=owner_id)
+        serializer = CompanySerializer(companies, many=True)
         return serializer.data
 
     @staticmethod
-    def get_events_by_organizer(organizer_id):
+    def get_companies_by_employee(employee_id):
         """
-        Get all events organized by a specific organizer.
+        Get all companies where a specific employee works.
         """
-        events = Event.objects.filter(organizer_id=organizer_id)
-        serializer = EventSerializer(events, many=True)
-        return serializer.data
-
-    @staticmethod
-    def get_events_by_attendee(attendee_id):
-        """
-        Get all events attended by a specific attendee.
-        """
-        events = Event.objects.filter(attendees=attendee_id)
-        serializer = EventSerializer(events, many=True)
-        return serializer.data
-    
-
-    @staticmethod
-    def get_event_attendees(event_id):
-        """
-        Get all attendees for a specific event.
-        """
-        registrations = EventRegistration.objects.filter(event_id=event_id)
-        serializer = EventRegistrationSerializer(registrations, many=True)
+        companies = Company.objects.filter(employees=employee_id)
+        serializer = CompanySerializer(companies, many=True)
         return serializer.data
     
     @staticmethod
-    def get_event_registrations_by_attendee(attendee_id):
+    def get_companies_by_location(location):
         """
-        Get all event registrations by a specific attendee.
+        Get all companies in a specific location.
         """
-        registrations = EventRegistration.objects.filter(attendee_id=attendee_id)
-        serializer = EventRegistrationSerializer(registrations, many=True)
+        companies = Company.objects.filter(location=location)
+        serializer = CompanySerializer(companies, many=True)
         return serializer.data
     
     @staticmethod
-    def get_event_feedbacks_by_attendee(attendee_id):
+    def get_companies_by_industry(industry):
         """
-        Get all event feedbacks by a specific attendee.
+        Get all companies in a specific industry.
         """
-        feedbacks = EventFeedback.objects.filter(attendee_id=attendee_id)
-        serializer = EventFeedbackSerializer(feedbacks, many=True)
+        companies = Company.objects.filter(industry=industry)
+        serializer = CompanySerializer(companies, many=True)
         return serializer.data
-
-
+    
     @staticmethod
-    def get_events_by_category(category_id):
+    def get_companies_by_size(size):
         """
-        Get all events in a specific category.
+        Get all companies of a specific size.
         """
-        events = Event.objects.filter(categories=category_id)
-        serializer = EventSerializer(events, many=True)
+        companies = Company.objects.filter(size=size)
+        serializer = CompanySerializer(companies, many=True)
         return serializer.data
-
+    
     @staticmethod
-    def get_events_by_tag(tag_name):
+    def get_companies_by_founded(founded):
         """
-        Get all events with a specific tag.
+        Get all companies founded in a specific year.
         """
-        events = Event.objects.filter(tags__name=tag_name)
-        serializer = EventSerializer(events, many=True)
+        companies = Company.objects.filter(founded=founded)
+        serializer = CompanySerializer(companies, many=True)
         return serializer.data
-
+    
     @staticmethod
-    def get_upcoming_events():
+    def get_companies_by_funding(funding):
         """
-        Get all upcoming events.
+        Get all companies that have received a specific amount of funding.
         """
-        events = Event.objects.filter(start_time__gte=timezone.now())
-        serializer = EventSerializer(events, many=True)
+        companies = Company.objects.filter(funding=funding)
+        serializer = CompanySerializer(companies, many=True)
         return serializer.data
-
+    
     @staticmethod
-    def get_past_events():
+    def get_companies_by_status(status):
         """
-        Get all past events.
+        Get all companies with a specific status.
         """
-        events = Event.objects
-
+        companies = Company.objects.filter(status=status)
+        serializer = CompanySerializer(companies, many=True)
+        return serializer.data
+    
     @staticmethod
-    def delete_event(event_id):
+    def delete_company(company_id):
         """
-        Delete a specific event.
+        Delete a company.
         """
-        event = Event.objects.get(id=event_id)
-        event.delete()
+        company = Company.objects.get(id=company_id)
+        company.delete()
+
         return True
     
     @staticmethod
-    def delete_event_registration(event_id, attendee_id):
+    def delete_company_update(update_id):
         """
-        Delete a specific event registration.
+        Delete a company update.
         """
-        registration = EventRegistration.objects.get(event_id=event_id, attendee_id=attendee_id)
-        registration.delete()
+        update = CompanyUpdate.objects.get(id=update_id)
+        update.delete()
+
         return True
     
     @staticmethod
-    def get_event_registration(event_id, attendee_id):
+    def delete_all_companies():
         """
-        Get a specific event registration.
+        Delete all companies.
         """
-        registration = EventRegistration.objects.get(event_id=event_id, attendee_id=attendee_id)
-        return registration
+        companies = Company.objects.all()
+        companies.delete()
+
+        return True
+    
+    
 
