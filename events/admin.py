@@ -12,12 +12,12 @@ class AttachmentInline(GenericTabularInline):
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
     list_display = ('title', 'organizer', 'location', 'start_time', 'end_time', 'get_attendees_count')
-    list_filter = ('organizer', 'location', 'start_time', 'end_time', 'event_date')
+    list_filter = ('organizer', 'location', 'start_time', 'end_time',)
     search_fields = ('title', 'organizer__user__username', 'location')
 
     fieldsets = (
         ('Event Information', {
-            'fields': ('title', 'description', 'organizer', 'categories', 'location', 'start_time', 'end_time', 'event_date', 'capacity', 'category')
+            'fields': ('title', 'description', 'organizer', 'categories', 'location', 'start_time', 'end_time', 'capacity', 'category')
         }),
     )
 
