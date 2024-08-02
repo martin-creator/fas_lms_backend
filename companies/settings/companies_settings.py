@@ -1,25 +1,21 @@
 from django.conf import settings
-# ettings:
 
-# EventSettings: Manages app-specific settings for events.
-# Functions:
-# get_event_settings, update_event_settings.
 
-class EventSettings:
+class CompanySettings:
     """
-    EventSettings: Manages app-specific settings for events.
+    CompanySettings: Manages app-specific settings for companies.
     """
 
     @staticmethod
-    def get_event_settings():
+    def get_company_settings():
         """
-        Get all event settings.
+        Get all company settings.
         """
-        return settings.EVENT_SETTINGS
+        return settings.COMPANY_SETTINGS
 
     @staticmethod
-    def update_event_settings(event_settings):
+    def update_company_settings(company_settings):
         """
-        Update event settings.
+        Update company settings.
         """
-        settings.EVENT_SETTINGS = event_settings
+        settings.COMPANY_SETTINGS = company_settings
