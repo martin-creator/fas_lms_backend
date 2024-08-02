@@ -1,47 +1,89 @@
 from django.db.models import Count, Q, Sum, Avg, F, ExpressionWrapper, fields
-from events.models import Event, EventRegistration, EventFeedback
-from events.serializers import EventSerializer, EventRegistrationSerializer, EventFeedbackSerializer
-from events.querying.event_query import EventQuery
+from companies.models import Company, CompanyUpdate
+from companies.serializers import CompanySerializer, CompanyUpdateSerializer
+from companies.querying.companies_query import CompanyQuery
 
-class EventReport:
+
+class CompanyReport:
     @staticmethod
-    def get_event_report(event):
+    def get_company_report(company):
         """
-        Get a report for a specific event.
+        Get a report for a specific company.
         """
-        event_data = EventSerializer(event).data
-        event_registrations = EventRegistration.objects.filter(event=event)
-        event_data['registrations'] = EventRegistrationSerializer(event_registrations, many=True).data
-        event_feedbacks = EventFeedback.objects.filter(event=event)
-        event_data['feedbacks'] = EventFeedbackSerializer(event_feedbacks, many=True).data
+        company_data = CompanySerializer(company).data
+        company_updates = CompanyUpdate.objects.filter(company=company)
+        company_data['updates'] = CompanyUpdateSerializer(company_updates, many=True).data
 
         # return json data
 
         json_data = {
-            'event': event_data,
-            'registrations': event_data['registrations'],
-            'feedbacks': event_data['feedbacks']
+            'company': company_data,
+            'updates': company_data['updates']
         }
 
         return json_data
 
     @staticmethod
-    def get_attendee_report(attendee):
+    def get_owner_report(owner):
         """
-        Get a report for a specific attendee.
+        Get a report for a specific owner.
         """
-        attendee_data = {}
-        attendee_data['events'] = EventQuery.get_events_by_attendee(attendee).count()
-        attendee_data['registrations'] = EventQuery.get_event_registrations_by_attendee(attendee).count()
-        attendee_data['feedbacks'] = EventQuery.get_event_feedbacks_by_attendee(attendee).count()
+        owner_data = {}
+        owner_data['companies'] = CompanyQuery.get_companies_by_owner(owner).count()
+        owner_data['updates'] = CompanyQuery.get_company_updates_by_owner(owner).count()
 
-        return attendee_data
+        return owner_data
 
     @staticmethod
-    def get_events_monthly_report():
+    def get_employees_report():
         """
-        Get a monthly report for all events.
+        Get a report for all employees.
         """
-        events = Event.objects.all()
-        serializer = EventSerializer(events, many=True)
+        employees = Company.objects.all()
+        serializer = CompanySerializer(employees, many=True)
+        return serializer.data
+    
+    @staticmethod
+    def get_companies_location_report():
+        """
+        Get a location report for all companies.
+        """
+        companies = Company.objects.all()
+        serializer = CompanySerializer(companies, many=True)
+        return serializer.data
+    
+    @staticmethod
+    def get_companies_monthly_report():
+        """
+        Get a monthly report for all companies.
+        """
+        companies = Company.objects.all()
+        serializer = CompanySerializer(companies, many=True)
+        return serializer.data
+    
+    @staticmethod
+    def get_companies_industry_report():
+        """
+        Get an industry report for all companies.
+        """
+        companies = Company.objects.all()
+        serializer = CompanySerializer(companies, many=True)
+        return serializer.data
+    
+    @staticmethod
+    def get_companies_employees_report():
+        """
+        Get an employees report for all companies.
+        """
+        companies = Company.objects.all()
+        serializer = CompanySerializer(companies, many=True)
+        return serializer.data
+    
+    @staticmethod
+    def get_companies_owners_report():
+        """
+        Get an owners report for all companies.
+        """
+        companies = Company.objects.all()
+        serializer = CompanySerializer(companies, many=True)
         return serializer.data
