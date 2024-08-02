@@ -26,7 +26,7 @@ User = get_user_model()
 #     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 #     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
-class EventUtils:
+class EventQuery:
     
     @staticmethod
     def process_event_data(event_data):
