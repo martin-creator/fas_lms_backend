@@ -30,6 +30,7 @@ course_controller = CourseController()
             value={}
         )
     ],
+    request=CourseSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='List of courses')}
 )
 @api_view(['GET'])
@@ -57,6 +58,7 @@ def get_courses(request):
             value={}
         )
     ],
+    request=CourseSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['GET'])
@@ -97,7 +99,7 @@ def get_specific_course(request, course_id):
             }
         )
     ],
-
+    request=CourseCreateSerializer,
     responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 
 )
@@ -174,6 +176,7 @@ def create_course(request):
             }
         )
     ],
+    request=CourseCreateSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['PUT','GET'])
@@ -234,6 +237,7 @@ def update_course(request, course_id):
             value={}
         )
     ],
+    request=CourseSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['DELETE'])
@@ -258,6 +262,7 @@ def delete_specific_course(request, course_id):
             value={}
         )
     ],
+    request=CourseSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['DELETE'])
@@ -285,6 +290,7 @@ def delete_all_courses(request):
             value={}
         )
     ],
+    request=CourseEnrollmentSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['POST'])
@@ -312,6 +318,7 @@ def enroll_course(request, course_id, user_id):
             value={}
         )
     ],
+    request=CourseCompletionSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['GET'])
@@ -339,6 +346,7 @@ def update_course_progress(request, course_id, user_id):
             value={}
         )
     ],
+    request=CourseCompletionSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['POST'])
@@ -381,6 +389,7 @@ def complete_course(request, course_id, user_id):
             value={}
         )
     ],
+    request=LessonSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['POST'])
@@ -408,6 +417,7 @@ def add_lesson_to_course(request, course_id):
             value={}
         )
     ],
+    request=LessonSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['GET'])
@@ -435,6 +445,7 @@ def get_lessons_by_course(request, course_id):
             value={}
         )
     ],
+    request=LessonSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['GET'])
@@ -462,6 +473,7 @@ def get_specific_lesson_by_order(request, course_id, lesson_order):
             value={}
         )
     ],
+    request=LessonSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['PUT','GET'])
@@ -492,6 +504,7 @@ def update_lesson(request, course_id, lesson_id):
             value={}
         )
     ],
+    request=LessonSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['DELETE'])
@@ -519,6 +532,7 @@ def delete_all_course_lessons(request, course_id):
             value={}
         )
     ],
+    request=LessonSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['DELETE'])
@@ -546,6 +560,7 @@ def delete_specific_lesson(request, course_id, lesson_id):
             value={}
         )
     ],
+    request=LessonProgressSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['POST'])
@@ -574,6 +589,7 @@ def register_lesson_progress(request, course_id, lesson_id, user_id):
             value={}
         )
     ],
+    request=QuizSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['POST'])
@@ -607,6 +623,7 @@ def create_lesson_quiz(request, course_id, lesson_id):
             }
         )
     ],
+    request=QuestionSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['POST'])
@@ -636,6 +653,7 @@ def add_question_to_quiz(request, quiz_id):
             value={}
         )
     ],
+    request=QuestionSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['PUT','GET'])
@@ -666,6 +684,8 @@ def update_question(request, quiz_id, question_id):
             value={}
         )
     ],
+    request=QuestionSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['GET'])
 def get_all_questions_for_quiz(request, quiz_id):
@@ -692,6 +712,7 @@ def get_all_questions_for_quiz(request, quiz_id):
             value={}
         )
     ],
+    request=QuizProgressSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['POST'])
