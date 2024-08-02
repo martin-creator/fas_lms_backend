@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Event
+from .models import Event, EventRegistration, EventFeedback
 from profiles.models import UserProfile
 from activity.models import Attachment, Category
 from django.contrib.contenttypes.admin import GenericTabularInline
@@ -53,3 +53,31 @@ class EventAdmin(admin.ModelAdmin):
                 inline.request = request
             inline_instances.append(inline)
         return inline_instances
+
+
+@admin.register(EventRegistration)
+class EventRegistrationAdmin(admin.ModelAdmin):
+    list_display = ('event', 'attendee', 'registration_date')
+    list_filter = ('event', 'attendee', 'registration_date')
+    search_fields = ('event__title', 'attendee__user__username')
+
+    def save_model(self, request, obj, form, change):
+        """Override save_model to associate the current user with the EventRegistration."""
+        if not obj.pk:
+            obj.attendee = UserProfile.objects.get(user=request.user)
+
+        obj.save()
+
+    
+@admin.register(EventFeedback)
+class EventFeedbackAdmin(admin.ModelAdmin):
+    list_display = ('event', 'attendee', 'rating', 'feedback', 'feedback_date')
+    list_filter = ('event', 'attendee', 'rating', 'feedback_date')
+    search_fields = ('event__title', 'attendee__user__username')
+
+    def save_model(self, request, obj, form, change):
+        """Override save_model to associate the current user with the EventFeedback."""
+        if not obj.pk:
+            obj.attendee = UserProfile.objects.get(user=request.user)
+
+        obj.save()
