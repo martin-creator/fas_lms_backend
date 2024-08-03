@@ -58,3 +58,121 @@ class CompanyHelpers:
         revenue = data.get('revenue')
         services = data.get('services')
         logo = data.get('logo')
+        categories = data.get('categories')
+        members = data.get('members')
+        followers = data.get('followers')
+
+        company = Company(
+            name=name,
+            website=website,
+            location=location,
+            industry=industry,
+            description=description,
+            founded_date=founded_date,
+            employee_count=employee_count,
+            revenue=revenue,
+            services=services,
+            logo=logo
+        )
+
+        return company, categories, members, followers
+    
+
+    @staticmethod
+    def process_company_data_update(company_id, data):
+        """
+        Process company data before updating it in the database.
+        """
+        
+        company = Company.objects.get(id=company_id)
+        
+        name = data.get('name')
+        website = data.get('website')
+        location = data.get('location')
+        industry = data.get('industry')
+        description = data.get('description')
+        founded_date = data.get('founded_date')
+        employee_count = data.get('employee_count')
+        revenue = data.get('revenue')
+        services = data.get('services')
+        logo = data.get('logo')
+        categories = data.get('categories')
+        members = data.get('members')
+        followers = data.get('followers')
+
+        if name is not None:
+            company.name = name
+
+        if website is not None:
+            company.website = website
+
+        if location is not None:
+            company.location = location
+
+        if industry is not None:
+            company.industry = industry
+
+        if description is not None:
+            company.description = description
+
+        if founded_date is not None:
+            company.founded_date = founded_date
+
+        if employee_count is not None:
+            company.employee_count = employee_count
+
+        if revenue is not None:
+            company.revenue = revenue
+
+        if services is not None:
+            company.services = services
+
+        if logo is not None:
+            company.logo = logo
+
+        if categories is not None:
+            company.categories.set(categories)
+
+        if members is not None:
+            company.members.set(members)
+
+        if followers is not None:
+            company.followers.set(followers)
+
+        return company, categories, members, followers
+    
+    
+
+
+    @staticmethod
+    def process_company_update_data(data):
+        """
+        Process company update data before saving it to the database.
+        """
+        title = data.get('title')
+        content = data.get('content')
+        attachments = data.get('attachments')
+        company_id = data.get('company_id')
+
+        if not company_id:
+            raise ValidationError('Company ID is required.')
+        
+        company = Company.objects.filter(id=company_id)
+
+        company_update = CompanyUpdate(
+            title=title,
+            content=content,
+            attachments=attachments,
+            company=company
+        )
+
+        return company_update
+
+
+
+
+
+
+
+
+
