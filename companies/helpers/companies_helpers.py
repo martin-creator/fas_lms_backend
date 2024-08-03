@@ -1,128 +1,60 @@
 from django.core.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
-from events.models import Event, EventRegistration, EventFeedback
+from companies.models import Company, CompanyUpdate
 # from profiles.models import UserProfile
-from  events.serializers import EventSerializer, EventRegistrationSerializer, EventFeedbackSerializer
+from companies.serializers import CompanySerializer, CompanyUpdateSerializer
 from django.contrib.auth import get_user_model
 from datetime import timedelta
 
 User = get_user_model()
 
-# class Event(models.Model):
-#     organizer = models.ForeignKey(UserProfile, related_name='organized_events', on_delete=models.CASCADE)
-#     title = models.CharField(max_length=255)
-#     description = models.TextField()
+
+# class Company(models.Model):
+#     name = models.CharField(max_length=255)
+#     website = models.URLField(blank=True)
+#     location = models.CharField(max_length=255, blank=True)
+#     industry = models.CharField(max_length=255, blank=True)
+#     description = models.TextField(blank=True)
 #     attachments = GenericRelation(Attachment)
-#     categories = models.ManyToManyField(Category, related_name='events')
-#     location = models.CharField(max_length=255)
-#     start_time = models.DateTimeField()
-#     end_time = models.DateTimeField()
-#     capacity = models.PositiveIntegerField()
-#     attendees = models.ManyToManyField(UserProfile, related_name='events', blank=True)
-#     tags = TaggableManager()
-#     registration_required = models.BooleanField(default=True)
-#     is_online = models.BooleanField(default=False)
-#     online_link = models.URLField(blank=True, null=True)
-#     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-#     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+#     categories = models.ManyToManyField(Category, related_name='companies_categories')
+#     logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
+#     founded_date = models.DateField(null=True, blank=True)
+#     employee_count = models.IntegerField(default=0)
+#     revenue = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+#     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='member_companies')
+#     followers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='followed_companies')
+#     services = models.TextField(blank=True)  # New field for listing services provided by the company
 
-class EventQuery:
+#     def __str__(self):
+#         return self.name
     
-    @staticmethod
-    def process_event_data(event_data):
-        """
-        Process event data.
-        """
-        title = event_data.get('title')
-        description = event_data.get('description')
-        location = event_data.get('location')
-        start_time = event_data.get('start_time')
-        end_time = event_data.get('end_time')
-        capacity = event_data.get('capacity')
-        registration_required = event_data.get('registration_required')
-        is_online = event_data.get('is_online')
-        online_link = event_data.get('online_link')
-        organizer_id = event_data.get('organizer_id')
-        categories = event_data.get('categories')
-        event_tags = event_data.get('tags')
-        attachments = event_data.get('attachments')
-
-        try:
-            organizer = User.objects.get(id=organizer_id)
-        except ObjectDoesNotExist:
-            raise ValidationError('Invalid organizer ID.')
-        
-        event = Event(
-            title=title,
-            description=description,
-            location=location,
-            start_time=start_time,
-            end_time=end_time,
-            capacity=capacity,
-            registration_required=registration_required,
-            is_online=is_online,
-            online_link=online_link,
-            organizer=organizer
-        )
-
-        return event,event_tags
     
+# class CompanyUpdate(models.Model):
+#     company = models.ForeignKey(Company, related_name='company_updates', on_delete=models.CASCADE)
+#     title = models.CharField(max_length=255)
+#     content = models.TextField()
+#     attachments = GenericRelation(Attachment)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"{self.company.name} Update: {self.title}"
+
+
+
+class CompanyHelpers:
+
     @staticmethod
-    def process_event_update_data(event_id, event_data):
+    def process_company_data(data):
         """
-        Process event update data.
+        Process company data before saving it to the database.
         """
-        title = event_data.get('title')
-        description = event_data.get('description')
-        location = event_data.get('location')
-        start_time = event_data.get('start_time')
-        end_time = event_data.get('end_time')
-        capacity = event_data.get('capacity')
-        registration_required = event_data.get('registration_required')
-        is_online = event_data.get('is_online')
-        online_link = event_data.get('online_link')
-        organizer_id = event_data.get('organizer_id')
-        categories = event_data.get('categories')
-        event_tags = event_data.get('tags')
-        attachments = event_data.get('attachments')
-        
-        event = Event.objects.get(id=event_id)
-
-        if title is not None:
-            event.title = title
-
-        if description is not None:
-            event.description = description
-
-        if location is not None:
-            event.location = location
-
-        if start_time is not None:
-            event.start_time = start_time
-
-        if end_time is not None:
-            event.end_time = end_time
-
-        if capacity is not None:
-            event.capacity = capacity
-
-        if registration_required is not None:
-            event.registration_required = registration_required
-
-        if is_online is not None:
-            event.is_online = is_online
-
-        if online_link is not None:
-            event.online_link = online_link
-
-        if organizer is not None:
-            try:
-                organizer = User.objects.get(id=organizer_id)
-                event.organizer = organizer
-            except ObjectDoesNotExist:
-                raise ValidationError('Invalid organizer ID.')
-            
-        return event,event_tags
-
-
-
+        name = data.get('name')
+        website = data.get('website')
+        location = data.get('location')
+        industry = data.get('industry')
+        description = data.get('description')
+        founded_date = data.get('founded_date')
+        employee_count = data.get('employee_count')
+        revenue = data.get('revenue')
+        services = data.get('services')
+        logo = data.get('logo')
