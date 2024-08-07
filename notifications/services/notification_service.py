@@ -382,8 +382,7 @@ class NotificationService:
         Returns:
             bool: True if the user has active snoozed notifications, False otherwise.
         """
-        snooze = NotificationSnooze.objects.filter(user=user, end_time__gte=timezone.now()).exists()
-        return snooze
+        return NotificationUtils.is_user_snoozed(user)
 
     @staticmethod
     def get_snoozed_notifications(user):
@@ -396,8 +395,7 @@ class NotificationService:
         Returns:
             list: Serialized data of the snoozed notifications.
         """
-        snoozed_notifications = NotificationSnooze.objects.filter(user=user, end_time__gte=timezone.now())
-        return NotificationSerializer([snooze.notification for snooze in snoozed_notifications], many=True).data
+        return NotificationUtils.get_snoozed_notifications(user)
 
     @staticmethod
     def log_notification_engagement(notification_id, engagement_type):
@@ -408,8 +406,7 @@ class NotificationService:
             notification_id (int): ID of the notification to log engagement for.
             engagement_type (str): The type of engagement to log.
         """
-        notification = Notification.objects.get(id=notification_id)
-        NotificationEngagement.objects.create(notification=notification, engagement_type=engagement_type)
+        NotificationUtils.log_notification_engagement(notification_id, engagement_type)
 
     @staticmethod
     def record_engagement(notification_id, engagement_type):
@@ -423,10 +420,7 @@ class NotificationService:
         Returns:
             NotificationLog: The created log entry.
         """
-        notification = Notification.objects.get(id=notification_id)
-        log_entry = NotificationLog(notification=notification, engagement_type=engagement_type, timestamp=timezone.now())
-        log_entry.save()
-        return log_entry
+        return NotificationUtils.record_engagement(notification_id, engagement_type)
 
     @staticmethod
     def log_notification_event(notification_id, event_type):
@@ -440,10 +434,7 @@ class NotificationService:
         Returns:
             NotificationLog: The created log entry.
         """
-        notification = Notification.objects.get(id=notification_id)
-        log_entry = NotificationLog(notification=notification, event_type=event_type, timestamp=timezone.now())
-        log_entry.save()
-        return log_entry
+        return NotificationUtils.log_notification_event(notification_id, event_type)
 
     @staticmethod
     def assign_user_to_test(user_id, test_name):
