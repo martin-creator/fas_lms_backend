@@ -57,7 +57,7 @@ class NotificationService:
         Args:
             notification_id (int): ID of the notification to mark as read.
         """
-        NotificationUtils.mark_as_read(notification_id)
+        NotificationUtils.mark_notification_as_read(notification_id)
 
     @staticmethod
     def delete(notification_id):
@@ -67,7 +67,7 @@ class NotificationService:
         Args:
             notification_id (int): ID of the notification to delete.
         """
-        NotificationUtils.delete(notification_id)
+        NotificationUtils.delete_notification(notification_id)
 
     @staticmethod
     def get(notification_id):
@@ -80,7 +80,7 @@ class NotificationService:
         Returns:
             dict: Serialized data of the notification.
         """
-        return NotificationUtils.get(notification_id)
+        return NotificationUtils.get_notification(notification_id)
 
     @staticmethod
     def update(notification_id, data):
@@ -94,7 +94,7 @@ class NotificationService:
         Returns:
             dict: Serialized data of the updated notification.
         """
-        return NotificationUtils.update(notification_id, data)
+        return NotificationUtils.update_notification(notification_id, data)
 
     @staticmethod
     def get_user_notifications(user_id):
@@ -144,7 +144,7 @@ class NotificationService:
         Returns:
             dict: Serialized data of the updated settings.
         """
-        return NotificationUtils.update_settings(user_id, settings_data)
+        return NotificationUtils.update_notification_settings(user_id, settings_data)
 
     @staticmethod
     def get_settings(user_id):
@@ -157,7 +157,7 @@ class NotificationService:
         Returns:
             dict: Serialized data of the notification settings.
         """
-        return NotificationUtils.get_settings(user_id)
+        return NotificationUtils.get_notification_settings(user_id)
 
     @staticmethod
     def get_unread_count(user):
@@ -170,7 +170,7 @@ class NotificationService:
         Returns:
             dict: The count of unread notifications.
         """
-        return NotificationUtils.get_unread_count(user)
+        return NotificationUtils.get_unread_notifications_count(user)
 
     @staticmethod
     def create_template(notification_type, template):
@@ -184,7 +184,7 @@ class NotificationService:
         Returns:
             dict: Serialized data of the created template.
         """
-        return NotificationUtils.create_template(notification_type, template)
+        return NotificationUtils.create_notification_template(notification_type, template)
 
     @staticmethod
     def update_template(template_id, data):
@@ -198,7 +198,7 @@ class NotificationService:
         Returns:
             dict: Serialized data of the updated template.
         """
-        return NotificationUtils.update_template(template_id, data)
+        return NotificationUtils.update_notification_template(template_id, data)
 
     @staticmethod
     def get_template(notification_type):
@@ -211,7 +211,7 @@ class NotificationService:
         Returns:
             dict: Serialized data of the template.
         """
-        return NotificationUtils.get_template(notification_type)
+        return NotificationUtils.get_notification_template(notification_type)
 
     @staticmethod
     def get_types():
@@ -221,7 +221,7 @@ class NotificationService:
         Returns:
             dict: Serialized data of all notification types.
         """
-        return NotificationUtils.get_types()
+        return NotificationUtils.get_notification_types()
 
     @staticmethod
     def create_type(data):
@@ -234,7 +234,7 @@ class NotificationService:
         Returns:
             dict: Serialized data of the created notification type.
         """
-        return NotificationUtils.create_type(data)
+        return NotificationUtils.create_notification_type(data)
 
     @staticmethod
     def update_type(notification_type_id, data):
@@ -248,7 +248,7 @@ class NotificationService:
         Returns:
             dict: Serialized data of the updated notification type.
         """
-        return NotificationUtils.update_type(notification_type_id, data)
+        return NotificationUtils.update_notification_type(notification_type_id, data)
 
     @staticmethod
     def delete_type(notification_type_id):
@@ -258,7 +258,7 @@ class NotificationService:
         Args:
             notification_type_id (int): ID of the notification type to delete.
         """
-        NotificationUtils.delete_type(notification_type_id)
+        NotificationUtils.delete_notification_type(notification_type_id)
 
     @staticmethod
     def subscribe(user, notification_types):
@@ -272,7 +272,7 @@ class NotificationService:
         Returns:
             list: Serialized data of the subscribed settings.
         """
-        return NotificationUtils.subscribe(user, notification_types)
+        return NotificationUtils.subscribe_to_notifications(user, notification_types)
 
     @staticmethod
     def unsubscribe(user, notification_types):
@@ -286,7 +286,7 @@ class NotificationService:
         Returns:
             list: Serialized data of the unsubscribed settings.
         """
-        return NotificationUtils.unsubscribe(user, notification_types)
+        return NotificationUtils.unsubscribe_from_notifications(user, notification_types)
 
     @staticmethod
     def notify_followers(user_profile, notification_type, content_object=None, content='', url=''):

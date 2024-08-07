@@ -13,7 +13,7 @@ from notifications.serializers import (
     NotificationSettingsSerializer, NotificationTypeSerializer,
     UserNotificationPreferenceSerializer
 )
-from notifications.querying.notification_query import get_notifications_by_user
+from notifications.querying.notification_query import NotificationQueryService
 from notifications.reports.notification_report import generate_user_notification_report, generate_notification_summary
 from notifications.utils.delivery_method import DeliveryMethod
 from notifications.utils.permissions import PermissionChecker
@@ -110,7 +110,7 @@ class NotificationUtils:
 
     @staticmethod
     def get_user_notifications(user_id):
-        notifications = get_notifications_by_user(user_id)
+        notifications = NotificationQueryService.get_notifications_by_user(user_id)
         serializer = NotificationSerializer(notifications, many=True)
         return serializer.data
 
@@ -145,7 +145,7 @@ class NotificationUtils:
 
     @staticmethod
     def get_unread_notifications_count(user):
-        count = Notification.objects.filter(recipient=user, is_read=False).count()
+        count = NotificationQueryService.get_unread_notifications_count(user.id)
         return {'unread_count': count}
 
     @staticmethod

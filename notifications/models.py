@@ -16,7 +16,8 @@ from notifications.settings.config.constances import(
 from notifications.utils.delivery_method import DeliveryMethod
 from activity.models import Reaction, Share
 from notifications.utils.permissions import PermissionChecker
-from .utils.notification_actions import ActionChecker
+from notifications.utils.notification_actions import ActionChecker
+from .managers import NotificationManager
 # from encrypted_model_fields.fields import EncryptedCharField
 from cryptography.fernet import Fernet
 import base64
@@ -66,6 +67,7 @@ class Notification(models.Model):
     priority = models.IntegerField(choices=NOTIFICATION_PRIORITY, default=1)
     created_at = models.DateTimeField(default=timezone.now, editable=False)
     updated_at = models.DateTimeField(default=timezone.now)
+    objects = NotificationManager()
 
     class Meta:
         permissions = [
