@@ -1,7 +1,7 @@
 # notifications/managers.py
 
 from django.db import models
-from querying.querysets import NotificationQuerySet
+from notifications.querying.querysets import NotificationQuerySet
 
 class NotificationManager(models.Manager):
     def get_queryset(self):

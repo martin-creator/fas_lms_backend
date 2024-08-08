@@ -1,10 +1,15 @@
 from django.shortcuts import render
 from django_ratelimit.decorators import ratelimit
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from notifications.models import Notification, NotificationSettings
 from notifications.controllers.notification_controller import NotificationController
+from notifications.serializers import (
+    NotificationSerializer, NotificationTemplateSerializer,
+    NotificationSettingsSerializer, NotificationTypeSerializer,
+    UserNotificationPreferenceSerializer, NotificationLogSerializer
+)
 
 
 

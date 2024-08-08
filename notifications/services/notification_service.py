@@ -2,30 +2,7 @@
 import logging
 import random
 from django.utils import timezone
-from django.core.mail import send_mail
-from notifications.models import (
-    Notification, NotificationType, NotificationTemplate, NotificationSettings, 
-    NotificationReadStatus, NotificationLog, NotificationEngagement, NotificationSnooze,
-    UserNotificationPreference,
-)
-from notifications.serializers import (
-    NotificationSerializer, NotificationTypeSerializer,
-    NotificationTemplateSerializer, NotificationSettingsSerializer,
-    NotificationReadStatusSerializer, UserNotificationPreferenceSerializer,
-    NotificationSnoozeSerializer, NotificationEngagementSerializer,
-    NotificationABTestSerializer
-)
 from django.utils.translation import activate, gettext as _
-from django.core.exceptions import PermissionDenied
-from notifications.tasks import send_bulk_notifications
-from django.core.cache import cache
-from notifications.metrics import increment_notifications_sent, increment_notifications_failed
-from .pubsub_service import PubSubService
-from .crm_integration import send_crm_alert
-from .alert_system_integration import send_external_alert
-from notifications.settings.config.constances import NOTIFICATION_CHANNELS
-from notifications.utils.delivery_method import DeliveryMethod
-from notifications.utils.permissions import PermissionChecker
 from notifications.utils.notification_utils import NotificationUtils
 
 

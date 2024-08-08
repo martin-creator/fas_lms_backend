@@ -1,7 +1,6 @@
 # notifications/utils/delivery_method.py
 
 from enum import Enum
-from notifications.services.pubsub_service import PubSubService
 import logging
 
 logger = logging.getLogger(__name__)
@@ -14,6 +13,8 @@ class DeliveryMethod(Enum):
     
     @staticmethod
     def notify(notification):
+        from notifications.services.pubsub_service import PubSubService
+        
         method = notification.delivery_method
         if method == DeliveryMethod.EMAIL.name:
             PubSubService.send_email_notification(notification)

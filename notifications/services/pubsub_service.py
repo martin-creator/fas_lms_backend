@@ -1,4 +1,4 @@
-# notifications/utils/pubsub_service.py
+# notifications/services/pubsub_service.py
 
 import redis
 import json
@@ -7,7 +7,7 @@ from asgiref.sync import async_to_sync
 import django_rq
 from django.core.mail import send_mail
 import logging
-from .models import Notification
+from django.apps import apps
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +18,6 @@ class PubSubService:
     def publish_notification(self, channel, notification):
         """
         Publish the notification to a Redis channel.
-
-        Args:
-        - channel (str): The Redis channel name.
-        - notification (Notification): The notification object.
         """
         try:
             notification_data = {
@@ -40,9 +36,6 @@ class PubSubService:
     def send_websocket_notification(notification):
         """
         Send a WebSocket notification.
-
-        Args:
-        - notification (Notification): The notification object.
         """
         try:
             channel_layer = get_channel_layer()
@@ -67,10 +60,9 @@ class PubSubService:
     def send_notification(notification):
         """
         Send a notification through various channels.
-
-        Args:
-        - notification (Notification): The notification object.
         """
+        from notifications.utils.delivery_method import DeliveryMethod  # Local import to avoid circular import issues
+
         try:
             # Enqueue email, SMS, and push notification tasks to be processed asynchronously
             django_rq.enqueue(PubSubService.send_email_notification, notification)
@@ -90,9 +82,6 @@ class PubSubService:
     def send_email_notification(notification):
         """
         Send an email notification.
-
-        Args:
-        - notification (Notification): The notification object containing email details.
         """
         try:
             user_email = notification.recipient.email
@@ -111,14 +100,10 @@ class PubSubService:
     def send_sms_notification(notification):
         """
         Send an SMS notification.
-
-        Args:
-        - notification (Notification): The notification object containing SMS details.
         """
         try:
             user_phone = notification.recipient.phone_number
             # Implement SMS sending logic here
-            # Example: sms_client.send_message(user_phone, notification.content)
             logger.info(f"SMS sent to {user_phone}")
         except Exception as e:
             logger.error(f"Error sending SMS: {e}")
@@ -127,14 +112,11 @@ class PubSubService:
     def send_push_notification(notification_id):
         """
         Send a push notification.
-
-        Args:
-        - notification_id (int): The ID of the notification object.
         """
         try:
+            Notification = apps.get_model('notifications', 'Notification')  # Use apps.get_model to avoid circular imports
             notification = Notification.objects.get(id=notification_id)
             # Implement push notification sending logic here
-            # Example: push_service.send_message(notification.recipient, notification.content)
             logger.info(f"Push notification sent to {notification.recipient.username}")
         except Exception as e:
             logger.error(f"Error sending push notification: {e}")
@@ -143,11 +125,9 @@ class PubSubService:
     def send_in_app_notification(notification):
         """
         Send an in-app notification.
-
-        Args:
-        - notification (Notification): The notification object containing in-app details.
         """
         try:
+            Notification = apps.get_model('notifications', 'Notification')  # Use apps.get_model to avoid circular imports
             # Save the notification to the database
             notification = Notification.objects.create(
                 recipient=notification.recipient,
