@@ -12,6 +12,7 @@ urlpatterns = [
     path('/<int:update_id>/', views.get_specific_company_update, name='get_specific_company_update'),
     path('companies/updates/create/<int:company_id>/', views.create_company_update, name='create_company_update'),
     path('companies/updates/update/<int:company_id>/<int:update_id>/', views.update_company_update, name='update_company_update'),
+    path('companies/updates/delete/<int:update_id>/', views.delete_company_update, name='delete_company_update'),
     # path('events/', views.get_events),
     # path('events/<int:event_id>/', views.get_event),
     # path('events/create/', views.create_event),
