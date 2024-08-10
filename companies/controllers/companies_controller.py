@@ -27,7 +27,7 @@ class CompanyController:
         return self.company_service.get_companies()
 
 
-    def get_company(self, company_id):
+    def get_company_by_id(self, company_id):
         """
         Get a specific company.
         """

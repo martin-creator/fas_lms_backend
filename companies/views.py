@@ -85,6 +85,48 @@ def get_companies(request):
         return Response(companies, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get a specific company',
+            description='Get a specific company',
+            value={
+                'name': 'name',
+                'website': 'website',
+                'location': 'location',
+                'industry': 'industry',
+                'description': 'description',
+                'attachments': 'attachments',
+                'categories': 'categories',
+                'logo': 'logo',
+                'founded_date': 'founded_date',
+                'employee_count': 'employee_count',
+                'revenue': 'revenue',
+                'members': 'members',
+                'followers': 'followers',
+                'services': 'services'
+            }
+        )
+    ],
+    request=CompanySerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Company data')}
+)
+@api_view(['GET'])
+def get_specific_company(request, company_id):
+    """
+    API endpoint that allows a specific company to be retrieved.
+    """
+    if request.method == 'GET':
+        company = company_controller.get_company_by_id(company_id)
+        return Response(company, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 # @extend_schema(
