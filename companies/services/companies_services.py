@@ -81,6 +81,28 @@ class CompanyService:
         company.delete()
 
         return True
+    
+
+    @staticmethod
+    def delete_all_companies():
+        """
+        Delete all companies.
+        """
+        companies = CompanyQuery.get_companies()
+        companies.delete()
+
+        return True
+    
+
+    @staticmethod
+    def get_company_updates(company_id):
+        """
+        Get all updates for a specific company.
+        """
+        updates = CompanyQuery.get_company_updates(company_id)
+        return updates
+    
+
 
 
 # class EventService:

@@ -271,6 +271,65 @@ def delete_company(request, company_id):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
+@extend_schema(
+    parameters=[],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete all companies',
+            description='Delete all companies',
+            value={}
+        )
+    ],
+    request=CompanySerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Company data')}
+
+)
+@api_view(['DELETE'])
+def delete_all_companies(request):
+    """
+    API endpoint that allows all companies to be deleted.
+    """
+    if request.method == 'DELETE':
+        companies = company_controller.delete_all_companies()
+        return Response(companies, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get all updates for a specific company',
+            description='Get all updates for a specific company',
+            value={
+                'company': 'company',
+                'title': 'title',
+                'content': 'content',
+                'attachments': 'attachments',
+                'created_at': 'created_at'
+            }
+        )
+    ],
+    request=CompanyUpdateSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='List of updates')}
+)
+@api_view(['GET'])
+def get_company_updates(request, company_id):
+    """
+    API endpoint that allows all updates for a specific company to be retrieved.
+    """
+    if request.method == 'GET':
+        updates = company_controller.get_company_updates(company_id)
+        return Response(updates, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
 
 # @extend_schema(
 #     parameters=[],

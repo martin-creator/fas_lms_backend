@@ -53,6 +53,21 @@ class CompanyController:
         Delete a company.
         """
         return self.company_service.delete_company(company_id)
+    
+
+    def delete_all_companies(self):
+        """
+        Delete all companies.
+        """
+        return self.company_service.delete_all_companies()
+    
+
+    def get_company_updates(self, company_id):
+        """
+        Get all updates for a company.
+        """
+        return self.company_service.get_company_updates(company_id)
+
 
 
 # class EventController:
