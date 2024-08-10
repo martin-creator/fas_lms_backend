@@ -4,6 +4,7 @@ from companies.models import Company, CompanyUpdate
 from companies.serializers import CompanySerializer, CompanyUpdateSerializer
 from companies.settings.companies_settings import CompanySettings
 from companies.querying.companies_query import CompanyQuery
+from companies.helpers.companies_helpers import CompanyHelpers
 from companies.utils import UserUtils, DateTimeUtils
 from companies.reports.companies_report import CompanyReport
 
@@ -26,6 +27,60 @@ class CompanyService:
         """
         company = CompanyQuery.get_company(company_id)
         return company
+    
+    @staticmethod
+    def create_company(company_data):
+        """
+        Create a new company.
+        """
+        company, categories, members, followers = CompanyHelpers.process_company_data(company_data)
+        company.save()
+
+        if categories:
+            company.categories.set(categories)
+        
+        if members:
+            company.members.set(members)
+
+        if followers:
+            company.followers.set(followers)
+
+        serializer = CompanySerializer(company)
+
+        return serializer.data
+    
+
+    @staticmethod
+    def update_company(company_id, company_data):
+        """
+        Update a company.
+        """
+        company, categories, members, followers =  CompanyHelpers.process_company_data_update(company_id, company_data)
+        company.save()
+
+        if categories:
+            company.categories.set(categories)
+        
+        if members:
+            company.members.set(members)
+
+        if followers:
+            company.followers.set(followers)
+
+        serializer = CompanySerializer(company)
+
+        return serializer.data
+    
+
+    @staticmethod
+    def delete_company(company_id):
+        """
+        Delete a company.
+        """
+        company = CompanyQuery.get_company(company_id)
+        company.delete()
+
+        return True
 
 
 # class EventService:

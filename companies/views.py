@@ -127,6 +127,149 @@ def get_specific_company(request, company_id):
         return Response(company, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='name', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='website', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='location', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='industry', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='founded_date', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='employee_count', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='revenue', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='services', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='logo', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='categories', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='members', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='followers', type=str, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Create a new company',
+            description='Create a new company',
+            value={
+                'name': 'name',
+                'website': 'website',
+                'location': 'location',
+                'industry': 'industry',
+                'description': 'description',
+                'founded_date': 'founded_date',
+                'employee_count': 'employee_count',
+                'revenue': 'revenue',
+                'services': 'services',
+                'logo': 'logo',
+                'categories': 'categories',
+                'members': 'members',
+                'followers': 'followers'
+            }
+        )
+    ],
+    request=CompanySerializer,
+    responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Company data')}
+
+)
+@api_view(['POST'])
+def create_company(request):
+    """
+    API endpoint that allows a new company to be created.
+    """
+    if request.method == 'POST':
+        company = company_controller.create_company(request.data)
+        return Response(company, status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='name', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='website', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='location', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='industry', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='founded_date', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='employee_count', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='revenue', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='services', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='logo', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='categories', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='members', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='followers', type=str, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update a company',
+            description='Update a company',
+            value={
+                'name': 'name',
+                'website': 'website',
+                'location': 'location',
+                'industry': 'industry',
+                'description': 'description',
+                'founded_date': 'founded_date',
+                'employee_count': 'employee_count',
+                'revenue': 'revenue',
+                'services': 'services',
+                'logo': 'logo',
+                'categories': 'categories',
+                'members': 'members',
+                'followers': 'followers'
+            }
+        )
+    ],
+    request=CompanySerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Company data')}
+
+)
+@api_view(['PUT','GET'])
+def update_company(request, company_id):
+    """
+    API endpoint that allows a company to be updated.
+    """
+    if request.method == 'PUT':
+        company = company_controller.update_company(company_id, request.data)
+        return Response(company, status=status.HTTP_200_OK)
+    elif request.method == 'GET':
+        company = company_controller.get_company_by_id(company_id)
+        return Response(company, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete a company',
+            description='Delete a company',
+            value={}
+        )
+    ],
+    request=CompanySerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Company data')}
+
+)
+@api_view(['DELETE'])
+def delete_company(request, company_id):
+    """
+    API endpoint that allows a company to be deleted.
+    """
+    if request.method == 'DELETE':
+        company = company_controller.delete_company(company_id)
+        return Response(company, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
 
 
 # @extend_schema(

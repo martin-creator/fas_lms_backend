@@ -34,6 +34,26 @@ class CompanyController:
         return self.company_service.get_company(company_id)
 
 
+    def create_company(self, company_data):
+        """
+        Create a new company.
+        """
+        return self.company_service.create_company(company_data)
+    
+
+    def update_company(self, company_id, company_data):
+        """
+        Update a company.
+        """
+        return self.company_service.update_company(company_id, company_data)
+    
+
+    def delete_company(self, company_id):
+        """
+        Delete a company.
+        """
+        return self.company_service.delete_company(company_id)
+
 
 # class EventController:
     
