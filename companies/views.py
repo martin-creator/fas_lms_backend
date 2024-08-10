@@ -328,6 +328,148 @@ def get_company_updates(request, company_id):
         return Response(updates, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='update_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get a specific update for a company',
+            description='Get a specific update for a company',
+            value={
+                'company': 'company',
+                'title': 'title',
+                'content': 'content',
+                'attachments': 'attachments',
+                'created_at': 'created_at'
+            }
+        )
+    ],
+    request=CompanyUpdateSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Update data')}
+
+)
+@api_view(['GET'])
+def get_specific_company_update(request, company_id, update_id):
+    """
+    API endpoint that allows a specific update for a company to be retrieved.
+    """
+    if request.method == 'GET':
+        update = company_controller.get_company_update_by_id(update_id)
+        return Response(update, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='content', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='attachments', type=str, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Create a new update for a company',
+            description='Create a new update for a company',
+            value={
+                'company': 'company',
+                'title': 'title',
+                'content': 'content',
+                'attachments': 'attachments',
+                'created_at': 'created_at'
+            }
+        )
+    ],
+    request=CompanyUpdateSerializer,
+    responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Update data')}
+
+)
+@api_view(['POST'])
+def create_company_update(request, company_id):
+    """
+    API endpoint that allows a new update for a company to be created.
+    """
+    if request.method == 'POST':
+        update = company_controller.create_company_update(company_id, request.data)
+        return Response(update, status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='update_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='content', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='attachments', type=str, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update an update for a company',
+            description='Update an update for a company',
+            value={
+                'company': 'company',
+                'title': 'title',
+                'content': 'content',
+                'attachments': 'attachments',
+                'created_at': 'created_at'
+            }
+        )
+    ],
+    request=CompanyUpdateSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Update data')}
+
+)
+@api_view(['PUT'])
+def update_company_update(request, company_id, update_id):
+    """
+    API endpoint that allows an update for a company to be updated.
+    """
+    if request.method == 'PUT':
+        update = company_controller.update_company_update(company_id, update_id, request.data)
+        return Response(update, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='update_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete an update for a company',
+            description='Delete an update for a company',
+            value={}
+        )
+    ],
+    request=CompanyUpdateSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Update data')}
+
+)
+@api_view(['DELETE'])
+def delete_company_update(request, update_id):
+    """
+    API endpoint that allows an update for a company to be deleted.
+    """
+    if request.method == 'DELETE':
+        update = company_controller.delete_company_update(update_id)
+        return Response(update, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
     
 
 

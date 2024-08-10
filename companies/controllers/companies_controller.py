@@ -67,6 +67,34 @@ class CompanyController:
         Get all updates for a company.
         """
         return self.company_service.get_company_updates(company_id)
+    
+
+    def get_company_update_by_id(self, update_id):
+        """
+        Get a specific company update.
+        """
+        return self.company_service.get_company_update_by_id(update_id)
+    
+
+    def create_company_update(self, company_id, update_data):
+        """
+        Create an update for a company.
+        """
+        return self.company_service.create_company_update(company_id, update_data)
+    
+
+    def update_company_update(self, company_id, update_id, update_data):
+        """
+        Update an update for a company.
+        """
+        return self.company_service.update_company_update(company_id, update_id, update_data)
+    
+
+    def delete_company_update(self, update_id):
+        """
+        Delete a company update.
+        """
+        return self.company_service.delete_company_update(update_id)
 
 
 

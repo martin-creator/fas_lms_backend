@@ -100,7 +100,55 @@ class CompanyService:
         Get all updates for a specific company.
         """
         updates = CompanyQuery.get_company_updates(company_id)
+        
         return updates
+    
+
+    @staticmethod
+    def get_company_update_by_id(update_id):
+        """
+        Get a specific update for a company.
+        """
+        update = CompanyQuery.get_company_update(update_id)
+        return update
+    
+
+
+    @staticmethod
+    def create_company_update(company_id, update_data):
+        """
+        Create a new update for a company.
+        """
+        company_update = CompanyHelpers.process_company_update_data(company_id, update_data)
+        company_update.save()
+
+        serializer = CompanyUpdateSerializer(company_update)
+
+        return serializer.data
+    
+
+    @staticmethod
+    def update_company_update(company_id, update_id, update_data):
+        """
+        Update an update for a company.
+        """
+        company_update = CompanyHelpers.process_company_update_data_update(update_id, update_data)
+        company_update.save()
+
+        serializer = CompanyUpdateSerializer(company_update)
+
+        return serializer.data
+    
+
+    @staticmethod
+    def delete_company_update(update_id):
+        """
+        Delete an update for a company.
+        """
+        company_update = CompanyQuery.get_company_update(update_id)
+        company_update.delete()
+
+        return True
     
 
 

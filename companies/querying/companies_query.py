@@ -134,5 +134,14 @@ class CompanyQuery:
 
         return True
     
+
+    @staticmethod
+    def get_company_update(update_id):
+        """
+        Get a specific company update.
+        """
+        update = CompanyUpdate.objects.get(id=update_id)
+        serializer = CompanyUpdateSerializer(update)
+        return serializer.data
     
 

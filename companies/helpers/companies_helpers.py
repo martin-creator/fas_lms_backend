@@ -145,7 +145,7 @@ class CompanyHelpers:
 
 
     @staticmethod
-    def process_company_update_data(data):
+    def process_company_update_data(company_id, data):
         """
         Process company update data before saving it to the database.
         """
@@ -165,6 +165,33 @@ class CompanyHelpers:
             attachments=attachments,
             company=company
         )
+
+        return company_update
+    
+
+    @staticmethod
+    def process_company_update_data_update(update_id, data):
+        """
+        Process company update data before updating it in the database.
+        """
+        title = data.get('title')
+        content = data.get('content')
+        attachments = data.get('attachments')
+        update_id = data.get('update_id')
+
+        if not update_id:
+            raise ValidationError('Update ID is required.')
+        
+        company_update = CompanyUpdate.objects.filter(id=update_id)
+
+        if title is not None:
+            company_update.title = title
+
+        if content is not None:
+            company_update.content = content
+
+        if attachments is not None:
+            company_update.attachments = attachments
 
         return company_update
 
