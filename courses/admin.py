@@ -143,6 +143,3 @@ class QuizProgressAdmin(admin.ModelAdmin):
         """Disable deleting QuizProgress objects."""
         return False
     
-
-
-

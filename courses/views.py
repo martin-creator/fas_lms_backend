@@ -1,3 +1,4 @@
+# create api views for courses
 from django.shortcuts import render
 from rest_framework import generics
 from django.views.decorators.csrf import csrf_exempt
@@ -100,6 +101,7 @@ def get_specific_course(request, course_id):
         )
     ],
     request=CourseCreateSerializer,
+
     responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 
 )
@@ -684,8 +686,6 @@ def update_question(request, quiz_id, question_id):
             value={}
         )
     ],
-    request=QuestionSerializer,
-    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['GET'])
 def get_all_questions_for_quiz(request, quiz_id):

@@ -384,4 +384,3 @@ class CourseHelpers:
         return question, choices, correct_choice
 
     
-
