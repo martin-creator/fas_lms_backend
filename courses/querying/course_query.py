@@ -357,8 +357,3 @@ class CourseQuery:
         """
         return Choice.objects.get(id=choice_id)
     
-    
-        
-        
-    
-    

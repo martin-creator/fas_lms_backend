@@ -1,3 +1,4 @@
+# create api views for courses
 from django.shortcuts import render
 from rest_framework import generics
 from django.views.decorators.csrf import csrf_exempt
@@ -100,6 +101,7 @@ def get_specific_course(request, course_id):
         )
     ],
     request=CourseCreateSerializer,
+
     responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 
 )
@@ -560,7 +562,10 @@ def delete_specific_lesson(request, course_id, lesson_id):
             value={}
         )
     ],
+<<<<<<< HEAD
     request=LessonProgressSerializer,
+=======
+>>>>>>> b1ad751f06a724ce1903030e25db3f1e8c6ccfd6
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['POST'])
@@ -589,7 +594,10 @@ def register_lesson_progress(request, course_id, lesson_id, user_id):
             value={}
         )
     ],
+<<<<<<< HEAD
     request=QuizSerializer,
+=======
+>>>>>>> b1ad751f06a724ce1903030e25db3f1e8c6ccfd6
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['POST'])

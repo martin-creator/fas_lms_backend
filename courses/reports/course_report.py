@@ -87,4 +87,3 @@ class CourseReport:
 
         return top_courses_data, top_students_data
     
-

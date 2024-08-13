@@ -4,6 +4,7 @@ from taggit.managers import TaggableManager
 from datetime import timedelta
 # from posts.models import Comment
 # from certifications.models import Certification
+from activity.models import Attachment
 from django.contrib.contenttypes.fields import GenericRelation
 
 class Course(models.Model):
@@ -66,7 +67,11 @@ class Lesson(models.Model):
     description = models.TextField(default='', blank=True, null=True)
     content = models.TextField(default='', blank=True, null=True)
     video_url = models.URLField(blank=True, null=True)
+<<<<<<< HEAD
     attachments = GenericRelation('Attachment')
+=======
+    attachments = GenericRelation(Attachment)
+>>>>>>> b1ad751f06a724ce1903030e25db3f1e8c6ccfd6
     tags = TaggableManager()
     order = models.PositiveIntegerField(default=0, blank=True, null=True)
 
@@ -227,19 +232,19 @@ class CourseCompletion(models.Model):
 #     def __str__(self):
 #         return self.name
 
-class Attachment(models.Model):
-    """
-    Represents an attachment that can be related to courses and lessons.
+# class Attachment(models.Model):
+#     """
+#     Represents an attachment that can be related to courses and lessons.
     
-    Attributes:
-        file (FileField): The file of the attachment.
-        uploaded_at (DateTimeField): The date and time when the attachment was uploaded.
-    """
-    file = models.FileField(upload_to='attachments/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+#     Attributes:
+#         file (FileField): The file of the attachment.
+#         uploaded_at (DateTimeField): The date and time when the attachment was uploaded.
+#     """
+#     file = models.FileField(upload_to='attachments/')
+#     uploaded_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Attachment {self.id}"
+#     def __str__(self):
+#         return f"Attachment {self.id}"
 
 
 
