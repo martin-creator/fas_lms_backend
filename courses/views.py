@@ -419,6 +419,7 @@ def add_lesson_to_course(request, course_id):
             value={}
         )
     ],
+
     request=LessonSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
@@ -475,6 +476,7 @@ def get_specific_lesson_by_order(request, course_id, lesson_order):
             value={}
         )
     ],
+
     request=LessonSerializer,
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )

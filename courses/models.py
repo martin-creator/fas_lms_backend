@@ -67,11 +67,7 @@ class Lesson(models.Model):
     description = models.TextField(default='', blank=True, null=True)
     content = models.TextField(default='', blank=True, null=True)
     video_url = models.URLField(blank=True, null=True)
-<<<<<<< HEAD
-    attachments = GenericRelation('Attachment')
-=======
     attachments = GenericRelation(Attachment)
->>>>>>> b1ad751f06a724ce1903030e25db3f1e8c6ccfd6
     tags = TaggableManager()
     order = models.PositiveIntegerField(default=0, blank=True, null=True)
 
