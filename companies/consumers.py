@@ -53,7 +53,7 @@ class CompanyConsumer(AsyncWebsocketConsumer):
         update = await self.db_create_update(company_id, title, content)
         
         # Notify all followers
-        followers = company.followers.all()
+        followers = Company.followers.all()
         for follower in followers:
             follower_group_name = f"company_updates_{follower.id}"
             await self.channel_layer.group_send(
