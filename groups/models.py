@@ -30,11 +30,10 @@ class Group(models.Model):
     shares = models.ManyToManyField(Share, related_name='group_shares', blank=True, db_index=True)
 
     # Advanced project management and collaboration features
-    projects = models.ManyToManyField('Project', related_name='group_projects', blank=True)
-    meetings = models.ManyToManyField('Meeting', related_name='group_meetings', blank=True)
-    discussions = models.ManyToManyField('Discussion', related_name='group_discussions', blank=True)
-    announcements = models.ManyToManyField('Announcement', related_name='group_announcements', blank=True)
-
+    projects = models.ManyToManyField('Project', related_name='groups_projects', blank=True)
+    meetings = models.ManyToManyField('Meeting', related_name='groups_meetings', blank=True)
+    discussions = models.ManyToManyField('Discussion', related_name='groups_discussions', blank=True)
+    announcements = models.ManyToManyField('Announcement', related_name='groups_announcements', blank=True)
     def __str__(self):
         return self.name
 
@@ -81,8 +80,8 @@ class Project(models.Model):
         related_name='created_projects'
     )
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='project_members')
-    tasks = models.ManyToManyField('Task', related_name='project_tasks', blank=True)
-    milestones = models.ManyToManyField('Milestone', related_name='project_milestones', blank=True)
+    tasks = models.ManyToManyField('Task', related_name='related_project_tasks', blank=True)
+    milestones = models.ManyToManyField('Milestone', related_name='related_project_milestones', blank=True)
 
     def __str__(self):
         return self.name
@@ -118,7 +117,7 @@ class Task(models.Model):
         on_delete=models.CASCADE, 
         related_name='created_tasks'
     )
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks_in_project')
 
     def __str__(self):
         return f"{self.title} ({self.status})"
@@ -132,7 +131,7 @@ class Milestone(models.Model):
     description = models.TextField()
     due_date = models.DateTimeField()
     is_achieved = models.BooleanField(default=False)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='milestones')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='milestones_in_project')
 
     def __str__(self):
         return f"{self.name} ({'Achieved' if self.is_achieved else 'Pending'})"
@@ -147,7 +146,7 @@ class Meeting (models.Model):
         related_name='created_meetings'
     )
     participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='meeting_participants')
-    related_group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='meetings')
+    related_group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='related_meetings')
 
     def __str__(self):
         return self.name
@@ -161,7 +160,7 @@ class Discussion(models.Model):
         on_delete=models.CASCADE, 
         related_name='created_discussions'
     )
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='discussions')
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='related_discussions')
     messages = models.ManyToManyField('Message', related_name='discussion_messages', blank=True)
 
     def __str__(self):
@@ -175,7 +174,7 @@ class Message(models.Model):
         on_delete=models.CASCADE, 
         related_name='created_messages'
     )
-    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name='messages')
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name='discussion_messages')
 
     def __str__(self):
         return f"Message by {self.created_by.username} on {self.created_at}"
@@ -190,7 +189,7 @@ class Announcement(models.Model):
         on_delete=models.CASCADE, 
         related_name='created_announcements'
     )
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='announcements')
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='related_announcements')
 
     def __str__(self):
         return self.title

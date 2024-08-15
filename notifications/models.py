@@ -59,7 +59,7 @@ class Notification(models.Model):
         choices=[('en', _('English')), ('es', _('Spanish')), ('fr', _('French'))])
     delivery_method = models.CharField(
         max_length=10,
-        choices=[('push', 'Push'), ('email', 'Email'), ('sms', 'SMS')]
+        choices=[('push', 'Push'), ('email', 'Email'), ('sms', 'SMS')], blank=True, null=True
     )
     shares = models.ManyToManyField(Share, related_name='notifications_shares', blank=True)
     priority = models.IntegerField(choices=NOTIFICATION_PRIORITY, default=1)
