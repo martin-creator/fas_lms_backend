@@ -1,6 +1,6 @@
 from django.db.models import Count, Q
 from groups.models import Group, GroupMembership, Discussion, Message, Announcement, Meeting, Task, Project, Milestone
-from groups.serializers import GroupSerializer, GroupMembershipSerializer, DiscussionSerializer, MessageSerializer, AnnouncementSerializer, MeetingSerializer, TaskSerializer, ProjectSerializer
+from groups.serializers import GroupSerializer, GroupMembershipSerializer, DiscussionSerializer, MessageSerializer, AnnouncementSerializer, MeetingSerializer, TaskSerializer, ProjectSerializer, MilestoneSerializer
 
 
 class GroupQuery:
@@ -112,6 +112,17 @@ class GroupQuery:
         discussion = group.related_discussions.get(id=discussion_id)
         serializer = DiscussionSerializer(discussion)
         return serializer.data
+    
+    @staticmethod
+    def get_all_tasks_in_group(group_id):
+        """
+        Get all tasks in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        tasks = group.related_tasks.all()
+        serializer = TaskSerializer(tasks, many=True)
+        return serializer.data
+    
     
 
     
