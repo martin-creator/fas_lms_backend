@@ -1,24 +1,21 @@
 from django.conf import settings
 
-# CourseSettings: Manages app-specific settings for courses.
+# GroupSettings: Manages app-specific settings for groups.
 # Functions:
-# get_course_settings, update_course_settings.
+# get_group_settings, update_group_settings.
 
-class CourseSettings:
-    """
-    CourseSettings: Manages app-specific settings for courses.
-    """
 
-    @staticmethod
-    def get_course_settings():
-        """
-        Get all course settings.
-        """
-        return settings.COURSE_SETTINGS
+class GroupSettings:
+    # get_group_settings: Get the group settings for the given group.
+    # group: The group for which to get the settings.
+    # Returns: The group settings for the given group.
+    def get_group_settings(group):
+        return group.group_settings
 
-    @staticmethod
-    def update_course_settings(course_settings):
-        """
-        Update course settings.
-        """
-        settings.COURSE_SETTINGS = course_settings
+    # update_group_settings: Update the group settings for the given group.
+    # group: The group for which to update the settings.
+    # settings: The new settings to apply.
+    def update_group_settings(group, settings):
+        group.group_settings = settings
+        group.save()
+        return group.group_settings
