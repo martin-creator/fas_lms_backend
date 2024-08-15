@@ -1,359 +1,251 @@
 from django.db.models import Count, Q
-from courses.models import Course, CourseEnrollment, CourseCompletion, Lesson, LessonProgress, Quiz, QuizProgress, Question, Choice
-from courses.serializers import CourseSerializer, CourseEnrollmentSerializer, CourseCompletionSerializer, LessonSerializer, LessonProgressSerializer, QuizSerializer, QuizProgressSerializer, QuestionSerializer, ChoiceSerializer
+from groups.models import Group, GroupMembership, Discussion, Message, Announcement, Meeting, Task, Project, Milestone
+from groups.serializers import GroupSerializer, GroupMembershipSerializer, DiscussionSerializer, MessageSerializer, AnnouncementSerializer, MeetingSerializer, TaskSerializer, ProjectSerializer
 
 
-class CourseQuery:
-
+class GroupQuery:
     @staticmethod
-    def get_all_courses():
+    def get_all_groups():
         """
-        Get all courses.
+        Get all groups.
         """
-        courses = Course.objects.all()
-        serializer = CourseSerializer(courses, many=True)
-        return serializer.data
-    
-
-    @staticmethod
-    def get_course_by_id(course_id):
-        """
-        Get a course by its ID.
-        """
-        course = Course.objects.get(id=course_id)
-        serializer = CourseSerializer(course)
+        groups = Group.objects.all()
+        serializer = GroupSerializer(groups, many=True)
         return serializer.data
     
     @staticmethod
-    def get_course_by_id_without_serializer(course_id):
+    def get_group_by_id(group_id):
         """
-        Get a course by its ID without using a serializer.
+        Get a group by its ID.
         """
-        return Course.objects.get(id=course_id)
+        group = Group.objects.get(id=group_id)
+        serializer = GroupSerializer(group)
+        return serializer.data
     
     @staticmethod
-    def delete_course(course_id):
+    def get_group_by_id_without_serializer(group_id):
         """
-        Delete a course by its ID.
+        Get a group by its ID without using a serializer.
         """
-        course = Course.objects.get(id=course_id)
-        course.delete()
+        return Group.objects.get(id=group_id)
+    
+    @staticmethod
+    def delete_group(group_id):
+        """
+        Delete a group by its ID.
+        """
+        group = Group.objects.get(id=group_id)
+        group.delete()
         return True
     
     @staticmethod
-    def delete_all_courses():
+    def delete_all_groups():
         """
-        Delete all courses.
+        Delete all groups.
         """
-        Course.objects.all().delete()
+        Group.objects.all().delete()
         return True
     
     @staticmethod
-    def get_lessons_by_course(course_id):
+    def get_group_members(group_id):
         """
-        Get all lessons in a specific course.
+        Get all members in a specific group.
         """
-        lessons = Lesson.objects.filter(course=course_id)
-        serializer = LessonSerializer(lessons, many=True)
+        group = Group.objects.get(id=group_id)
+        members = group.members.all()
+        serializer = GroupMembershipSerializer(members, many=True)
         return serializer.data
     
     @staticmethod
-    def get_course_lesson_by_id(course_id, lesson_id):
+    def get_group_member_by_id(group_id, member_id):
         """
-        Get a lesson in a specific course by its ID.
+        Get a member in a specific group by their ID.
         """
-        lesson = Lesson.objects.get(course=course_id, id=lesson_id)
-        serializer = LessonSerializer(lesson)
+        group = Group.objects.get(id=group_id)
+        member = group.members.get(id=member_id)
+        serializer = GroupMembershipSerializer(member)
         return serializer.data
     
     @staticmethod
-    def get_course_lesson_by_id_without_serializer(course_id, lesson_id):
+    def get_group_member_by_id_without_serializer(group_id, member_id):
         """
-        Get a lesson in a specific course by its ID without using a serializer.
+        Get a member in a specific group by their ID without using a serializer.
         """
-        return Lesson.objects.get(course=course_id, id=lesson_id)
+        group = Group.objects.get(id=group_id)
+        return group.members.get(id=member_id)
     
     @staticmethod
-    def get_course_lessons_by_order(course_id, lesson_order):
+    def delete_all_group_members(group_id):
         """
-        Get a specific lesson in a specific course.
+        Delete all members in a specific group.
         """
-        lessons =  Lesson.objects.get(course=course_id, order=lesson_order)
-        serializer = LessonSerializer(lessons)
-        return serializer.data
-    
-    @staticmethod
-    def delete_all_course_lessons(course_id):
-        """
-        Delete all lessons in a specific course.
-        """
-        Lesson.objects.filter(course=course_id).delete()
+        group = Group.objects.get(id=group_id)
+        group.members.clear()
         return True
     
     @staticmethod
-    def delete_course_lesson(course_id, lesson_id):
+    def delete_group_member(group_id, member_id):
         """
-        Delete a lesson in a specific course.
+        Delete a member in a specific group.
         """
-        Lesson.objects.get(course=course_id, id=lesson_id).delete()
+        group = Group.objects.get(id=group_id)
+        member = group.members.get(id=member_id)
+        group.members.remove(member)
         return True
     
     @staticmethod
-    def make_lesson_progress(lesson_id, user):
+    def get_group_discussions(group_id):
         """
-        Make a lesson progress.
+        Get all discussions in a specific group.
         """
-        lesson = Lesson.objects.get(id=lesson_id)
-        lesson_progress = LessonProgress(lesson=lesson, user=user)
-        lesson_progress.save()
-        return True
-    
-    @staticmethod
-    def get_quiz_by_id_without_serializer(quiz_id):
-        """
-        Get a quiz by its ID without using a serializer.
-        """
-        return Quiz.objects.get(id=quiz_id)
-    
-    @staticmethod
-    def get_quiz_question_by_id_without_serializer(quiz_id, question_id):
-        """
-        Get a question in a specific quiz by its ID without using a serializer.
-        """
-        return Question.objects.get(quiz=quiz_id, id=question_id)
-    
-    @staticmethod
-    def get_quiz_question_by_id(quiz_id, question_id):
-        """
-        Get a question in a specific quiz by its ID.
-        """
-        question = Question.objects.get(quiz=quiz_id, id=question_id)
-        serializer = QuestionSerializer(question)
+        group = Group.objects.get(id=group_id)
+        discussions = group.related_discussions.all()
+        serializer = DiscussionSerializer(discussions, many=True)
         return serializer.data
     
     @staticmethod
-    def get_all_quiz_questions(quiz_id):
+    def get_group_discussion_by_id(group_id, discussion_id):
         """
-        Get all questions in a specific quiz.
+        Get a discussion in a specific group by its ID.
         """
-        questions = Question.objects.filter(quiz=quiz_id)
-        serializer = QuestionSerializer(questions, many=True)
+        group = Group.objects.get(id=group_id)
+        discussion = group.related_discussions.get(id=discussion_id)
+        serializer = DiscussionSerializer(discussion)
         return serializer.data
     
 
-    @staticmethod
-    def get_choice_by_id_without_serializer(choice_id):
-        """
-        Get a choice by its ID without using a serializer.
-        """
-        return Choice.objects.get(id=choice_id)
-    
     
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# class CourseQuery:
+
+#     @staticmethod
+#     def get_all_courses():
+#         """
+#         Get all courses.
+#         """
+#         courses = Course.objects.all()
+#         serializer = CourseSerializer(courses, many=True)
+#         return serializer.data
     
 
-    @staticmethod
-    def get_courses_by_instructor(instructor):
-        """
-        Get all courses taught by a specific instructor.
-        """
-        return Course.objects.filter(instructor=instructor)
-
-    @staticmethod
-    def get_courses_by_student(student):
-        """
-        Get all courses enrolled by a specific student.
-        """
-        return Course.objects.filter(courseenrollment__student=student)
-
-    @staticmethod
-    def get_course_enrollments_by_student(student):
-        """
-        Get all course enrollments by a specific student.
-        """
-        return CourseEnrollment.objects.filter(student=student)
-
-    @staticmethod
-    def get_course_completions_by_student(student):
-        """
-        Get all course completions by a specific student.
-        """
-        return CourseCompletion.objects.filter(student=student)
-
-
-    @staticmethod
-    def get_lessons_by_student(student):
-        """
-        Get all lessons completed by a specific student.
-        """
-        return LessonProgress.objects.filter(student=student)
-
-    @staticmethod
-    def get_quizzes_by_course(course):
-        """
-        Get all quizzes in a specific course.
-        """
-        return Quiz.objects.filter(course=course)
-
-    @staticmethod
-    def get_quizzes_by_student(student):
-        """
-        Get all quizzes completed by a specific student.
-        """
-        return QuizProgress.objects.filter(student=student)
-
-    @staticmethod
-    def get_questions_by_quiz(quiz):
-        """
-        Get all questions in a specific quiz.
-        """
-        return Question.objects.filter(quiz=quiz)
-
-    @staticmethod
-    def get_choices_by_question(question):
-        """
-        Get all choices in a specific question.
-        """
-        return Choice.objects.filter(question=question)
-
-    @staticmethod
-    def get_courses_with_completions():
-        """
-        Get all courses with completions.
-        """
-        return Course.objects.annotate(completions_count=Count('coursecompletion')).filter(completions_count__gt=0)
-
-    @staticmethod
-    def get_courses_with_enrollments():
-        """
-        Get all courses with enrollments.
-        """
-        return Course.objects.annotate(enrollments_count=Count('courseenrollment')).filter(enrollments_count__gt=0)
-
-    @staticmethod
-    def get_courses_with_lessons():
-        """
-        Get all courses with lessons.
-        """
-        return Course
+#     @staticmethod
+#     def get_course_by_id(course_id):
+#         """
+#         Get a course by its ID.
+#         """
+#         course = Course.objects.get(id=course_id)
+#         serializer = CourseSerializer(course)
+#         return serializer.data
     
-    @staticmethod
-    def get_courses_with_quizzes():
-        """
-        Get all courses with quizzes.
-        """
-        return Course.objects.annotate(quizzes_count=Count('quiz')).filter(quizzes_count__gt=0)
+#     @staticmethod
+#     def get_course_by_id_without_serializer(course_id):
+#         """
+#         Get a course by its ID without using a serializer.
+#         """
+#         return Course.objects.get(id=course_id)
     
-    @staticmethod
-    def get_courses_with_lessons_and_quizzes():
-        """
-        Get all courses with lessons and quizzes.
-        """
-        return Course.objects.annotate(lessons_count=Count('lesson'), quizzes_count=Count('quiz')).filter(Q(lessons_count__gt=0) | Q(quizzes_count__gt=0))
+#     @staticmethod
+#     def delete_course(course_id):
+#         """
+#         Delete a course by its ID.
+#         """
+#         course = Course.objects.get(id=course_id)
+#         course.delete()
+#         return True
     
-    @staticmethod
-    def get_courses_with_lessons_and_quizzes_completed_by_student(student):
-        """
-        Get all courses with lessons and quizzes completed by a specific student.
-        """
-        return Course.objects.filter(Q(lesson__lessonprogress__student=student, quiz__quizprogress__student=student)).distinct()
+#     @staticmethod
+#     def delete_all_courses():
+#         """
+#         Delete all courses.
+#         """
+#         Course.objects.all().delete()
+#         return True
     
-    @staticmethod
-    def get_courses_with_lessons_completed_by_student(student):
-        """
-        Get all courses with lessons completed by a specific student.
-        """
-        return Course.objects.filter(lesson__lessonprogress__student=student).distinct()
+#     @staticmethod
+#     def get_lessons_by_course(course_id):
+#         """
+#         Get all lessons in a specific course.
+#         """
+#         lessons = Lesson.objects.filter(course=course_id)
+#         serializer = LessonSerializer(lessons, many=True)
+#         return serializer.data
     
-    @staticmethod
-    def get_courses_with_quizzes_completed_by_student(student):
-        """
-        Get all courses with quizzes completed by a specific student.
-        """
-        return Course.objects.filter(quiz__quizprogress__student=student).distinct()
+#     @staticmethod
+#     def get_course_lesson_by_id(course_id, lesson_id):
+#         """
+#         Get a lesson in a specific course by its ID.
+#         """
+#         lesson = Lesson.objects.get(course=course_id, id=lesson_id)
+#         serializer = LessonSerializer(lesson)
+#         return serializer.data
     
-    @staticmethod
-    def get_courses_with_lessons_and_quizzes_not_completed_by_student(student):
-        """
-        Get all courses with lessons and quizzes not completed by a specific student.
-        """
-        return Course.objects.exclude(Q(lesson__lessonprogress__student=student, quiz__quizprogress__student=student)).distinct()
+#     @staticmethod
+#     def get_course_lesson_by_id_without_serializer(course_id, lesson_id):
+#         """
+#         Get a lesson in a specific course by its ID without using a serializer.
+#         """
+#         return Lesson.objects.get(course=course_id, id=lesson_id)
     
-    @staticmethod
-    def get_courses_with_lessons_not_completed_by_student(student):
-        """
-        Get all courses with lessons not completed by a specific student.
-        """
-        return Course.objects.exclude(lesson__lessonprogress__student=student).distinct()
+#     @staticmethod
+#     def get_course_lessons_by_order(course_id, lesson_order):
+#         """
+#         Get a specific lesson in a specific course.
+#         """
+#         lessons =  Lesson.objects.get(course=course_id, order=lesson_order)
+#         serializer = LessonSerializer(lessons)
+#         return serializer.data
     
-    @staticmethod
-    def get_courses_with_quizzes_not_completed_by_student(student):
-        """
-        Get all courses with quizzes not completed by a specific student.
-        """
-        return Course.objects.exclude(quiz__quizprogress__student=student).distinct()
+#     @staticmethod
+#     def delete_all_course_lessons(course_id):
+#         """
+#         Delete all lessons in a specific course.
+#         """
+#         Lesson.objects.filter(course=course_id).delete()
+#         return True
     
-        
-
-    @staticmethod
-    def get_course_enrollment_by_id(enrollment_id):
-        """
-        Get a course enrollment by its ID.
-        """
-        return CourseEnrollment.objects.get(id=enrollment_id)
+#     @staticmethod
+#     def delete_course_lesson(course_id, lesson_id):
+#         """
+#         Delete a lesson in a specific course.
+#         """
+#         Lesson.objects.get(course=course_id, id=lesson_id).delete()
+#         return True
     
-    @staticmethod
-    def get_course_completion_by_id(completion_id):
-        """
-        Get a course completion by its ID.
-        """
-        return CourseCompletion.objects.get(id=completion_id)
-        
-
-    # @staticmethod
-    # def get_lesson_by_id(lesson_id):
-    #     """
-    #     Get a lesson by its ID.
-    #     """
-      
-    #     return Lesson.objects.get(id=lesson_id)
-       
-    @staticmethod
-    def get_lesson_progress_by_id(progress_id):
-        """
-        Get a lesson progress by its ID.
-        """
-      
-        return LessonProgress.objects.get(id=progress_id)
-        
-
-    @staticmethod
-    def get_quiz_by_id(quiz_id):
-        """
-        Get a quiz by its ID.
-        """
-       
-        return Quiz.objects.get(id=quiz_id)
-       
-    @staticmethod
-    def get_quiz_progress_by_id(progress_id):
-        """
-        Get a quiz progress by its ID.
-        """
-        return QuizProgress.objects.get(id=progress_id)
-        
-    @staticmethod
-    def get_question_by_id(question_id):
-        """
-        Get a question by its ID.
-        """
-        return Question.objects.get(id=question_id)
-
-    @staticmethod
-    def get_choice_by_id(choice_id):
-        """
-        Get a choice by its ID.
-        """
-        return Choice.objects.get(id=choice_id)
-    
+#     @staticmethod
+#     def make_lesson_progress(lesson_id, user):
+#         """
+#         Make a lesson progress.
+#         """
+#         lesson = Lesson.objects.get(id=lesson_id)
+#         lesson_progress = LessonProgress(lesson=lesson, user=user)
+#         lesson_progress.save()
+#         return True
