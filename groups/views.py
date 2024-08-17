@@ -466,7 +466,7 @@ def get_group_projects(request, group_id):
 
 
 
-@extend(
+@extend_schema(
     parameters=[
         OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
     ],
