@@ -14,6 +14,31 @@ from drf_spectacular.types import OpenApiTypes
 group_controller = GroupController()
 
 
+@extend_schema(
+    parameters=[],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get all groups',
+            description='Get all groups',
+            value={}
+        )
+    ],
+    request=GroupSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='List of groups')}
+)
+@api_view(['GET'])
+def get_groups(request):
+    """
+    API endpoint that allows all groups to be retrieved.
+    """
+    if request.method == 'GET':
+        groups = group_controller.get_all_groups()
+        return Response(groups, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
 # course_controller = CourseController()
 
 # # Create your views here.
