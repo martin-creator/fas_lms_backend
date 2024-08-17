@@ -1,4 +1,5 @@
 import json
+import redis
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 
@@ -19,3 +20,16 @@ class NotificationConsumer(WebsocketConsumer):
             'url': notification['url'],
             'timestamp': notification['timestamp'],
         }))
+        
+
+class NotificationSubscriber:
+    def __init__(self):
+        self.r = redis.Redis()
+        self.pubsub = self.r.pubsub()
+        self.pubsub.subscribe('notifications')
+
+    def listen(self):
+        for message in self.pubsub.listen():
+            if message['type'] == 'message':
+                # Process message
+                pass
