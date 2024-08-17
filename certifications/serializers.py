@@ -1,14 +1,14 @@
 from rest_framework import serializers
-from .models import Company, CompanyUpdate
+from .models import Certification, LinkedInBadge
 
-class CompanySerializer(serializers.ModelSerializer):
+class CertificationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Company
+        model = Certification
         fields = '__all__'
 
 
-class CompanyUpdateSerializer(serializers.ModelSerializer):
+class LinkedInBadgeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CompanyUpdate
+        model = LinkedInBadge
         fields = '__all__'
 
