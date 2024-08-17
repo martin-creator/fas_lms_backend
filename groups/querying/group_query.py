@@ -287,6 +287,7 @@ class GroupQuery:
         group = Group.objects.get(id=group_id)
         return group.related_announcements.get(id=announcement_id)
     
+    
 
     @staticmethod
     def delete_group_announcement(group_id, announcement_id):
@@ -418,12 +419,13 @@ class GroupQuery:
 
 
     @staticmethod
-    def get_milestone_by_id_in_group(group_id, milestone_id):
+    def get_milestone_by_id_in_group(group_id, milestone_id, project_id):
         """
         Get a milestone in a specific group by its ID.
         """
         group = Group.objects.get(id=group_id)
-        milestone = Milestone.objects.get(project__group=group, id=milestone_id)
+        project = Project.objects.get(group=group, id=project_id)
+        milestone = Milestone.objects.get(project=project, id=milestone_id)
         serializer = MilestoneSerializer(milestone)
         return serializer.data
     

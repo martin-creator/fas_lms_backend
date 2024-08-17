@@ -143,6 +143,14 @@ class GroupService:
     
 
     @staticmethod
+    def get_specific_discussion(group_id, discussion_id):
+        """
+        Retrieve a specific discussion in a specific group.
+        """
+        return GroupQuery.get_group_discussion_by_id(group_id, discussion_id)
+    
+
+    @staticmethod
     def create_discussion(group_id, discussion_data):
         """
         Create a new discussion in a specific group.
@@ -188,6 +196,15 @@ class GroupService:
         Delete all discussions in a specific group.
         """
         return GroupQuery.delete_all_group_discussions(group_id)
+    
+
+
+    @staticmethod
+    def get_specific_message(group_id, discussion_id, message_id):
+        """
+        Retrieve a specific message in a specific discussion in a specific group.
+        """
+        return GroupQuery.get_group_message_by_id(group_id, discussion_id, message_id)
     
 
     @staticmethod
@@ -265,6 +282,22 @@ class GroupService:
     
 
     @staticmethod
+    def get_group_announcements(group_id):
+        """
+        Retrieve all announcements in a specific group.
+        """
+        return GroupQuery.get_all_announcements_in_group(group_id)
+    
+
+    @staticmethod
+    def get_specific_announcement(group_id, announcement_id):
+        """
+        Retrieve a specific announcement in a specific group.
+        """
+        return GroupQuery.get_announcement_by_id_in_group(group_id, announcement_id)
+    
+
+    @staticmethod
     def delete_announcement(group_id, announcement_id):
         """
         Delete a specific announcement in a group.
@@ -278,6 +311,22 @@ class GroupService:
         Delete all announcements in a specific group.
         """
         return GroupQuery.delete_all_group_announcements(group_id)
+    
+
+    @staticmethod
+    def get_group_meetings(group_id):
+        """
+        Retrieve all meetings in a specific group.
+        """
+        return GroupQuery.get_all_meetings_in_group(group_id)
+    
+
+    @staticmethod
+    def get_specific_meeting(group_id, meeting_id):
+        """
+        Retrieve a specific meeting in a specific group.
+        """
+        return GroupQuery.get_meeting_by_id_in_group(group_id, meeting_id)
     
 
     @staticmethod
@@ -381,6 +430,38 @@ class GroupService:
     
 
     @staticmethod
+    def get_group_tasks(group_id):
+        """
+        Retrieve all tasks in a specific group.
+        """
+        return GroupQuery.get_all_tasks_in_group(group_id)
+    
+
+    @staticmethod
+    def get_specific_task(group_id, task_id):
+        """
+        Retrieve a specific task in a specific group.
+        """
+        return GroupQuery.get_task_by_id_in_group(group_id, task_id)
+    
+
+    @staticmethod
+    def get_group_projects(group_id):
+        """
+        Retrieve all projects in a specific group.
+        """
+        return GroupQuery.get_all_projects_in_group(group_id)
+    
+
+    @staticmethod
+    def get_specific_project(group_id, project_id):
+        """
+        Retrieve a specific project in a specific group.
+        """
+        return GroupQuery.get_project_by_id_in_group(group_id, project_id)
+    
+
+    @staticmethod
     def create_project(group_id, project_data):
         """
         Create a new project in a specific group.
@@ -426,6 +507,22 @@ class GroupService:
         Delete all projects in a specific group.
         """
         return GroupQuery.delete_all_group_projects(group_id)
+    
+
+    @staticmethod
+    def get_group_milestones(group_id):
+        """
+        Retrieve all milestones in a specific group.
+        """
+        return GroupQuery.get_milestones_in_group(group_id)
+    
+
+    @staticmethod
+    def get_specific_milestone(group_id, project_id, milestone_id):
+        """
+        Retrieve a specific milestone in a specific project.
+        """
+        return GroupQuery.get_milestone_by_id_in_group(group_id, milestone_id, project_id)
     
 
     @staticmethod
