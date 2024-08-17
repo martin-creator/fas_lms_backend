@@ -123,7 +123,131 @@ class GroupQuery:
         serializer = TaskSerializer(tasks, many=True)
         return serializer.data
     
+
+    @staticmethod
+    def get_task_by_id_in_group(group_id, task_id):
+        """
+        Get a task in a specific group by its ID.
+        """
+        group = Group.objects.get(id=group_id)
+        task = group.related_tasks.get(id=task_id)
+        serializer = TaskSerializer(task)
+        return serializer.data
     
+
+    @staticmethod
+    def get_all_projects_in_group(group_id):
+        """
+        Get all projects in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        projects = group.related_projects.all()
+        serializer = ProjectSerializer(projects, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_project_by_id_in_group(group_id, project_id):
+        """
+        Get a project in a specific group by its ID.
+        """
+        group = Group.objects.get(id=group_id)
+        project = group.related_projects.get(id=project_id)
+        serializer = ProjectSerializer(project)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_all_meetings_in_group(group_id):
+        """
+        Get all meetings in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        meetings = group.related_meetings.all()
+        serializer = MeetingSerializer(meetings, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_meeting_by_id_in_group(group_id, meeting_id):
+        """
+        Get a meeting in a specific group by its ID.
+        """
+        group = Group.objects.get(id=group_id)
+        meeting = group.related_meetings.get(id=meeting_id)
+        serializer = MeetingSerializer(meeting)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_all_announcements_in_group(group_id):
+        """
+        Get all announcements in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        announcements = group.related_announcements.all()
+        serializer = AnnouncementSerializer(announcements, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_announcement_by_id_in_group(group_id, announcement_id):
+        """
+        Get an announcement in a specific group by its ID.
+        """
+        group = Group.objects.get(id=group_id)
+        announcement = group.related_announcements.get(id=announcement_id)
+        serializer = AnnouncementSerializer(announcement)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_group_messages(group_id):
+        """
+        Get all messages in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        messages = Message.objects.filter(discussion__group=group)
+        serializer = MessageSerializer(messages, many=True)
+        return serializer.data
+    
+    
+    @staticmethod
+    def get_group_message_by_id(group_id, message_id):
+        """
+        Get a message in a specific group by its ID.
+        """
+        group = Group.objects.get(id=group_id)
+        message = Message.objects.get(discussion__group=group, id=message_id)
+        serializer = MessageSerializer(message)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_milestones_in_group(group_id):
+        """
+        Get all milestones in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        milestones = Milestone.objects.filter(project__group=group)
+        serializer = MilestoneSerializer(milestones, many=True)
+        return serializer.data
+    
+
+
+    @staticmethod
+    def get_milestone_by_id_in_group(group_id, milestone_id):
+        """
+        Get a milestone in a specific group by its ID.
+        """
+        group = Group.objects.get(id=group_id)
+        milestone = Milestone.objects.get(project__group=group, id=milestone_id)
+        serializer = MilestoneSerializer(milestone)
+        return serializer.data
+    
+
+    
+
 
     
 

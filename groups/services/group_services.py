@@ -10,7 +10,100 @@ import logging
 
 class GroupService:
 
+    @staticmethod
+    def get_groups():
+        """
+        Retrieve all groups.
+        """
+        return GroupQuery.get_all_groups()
     
+    @staticmethod
+    def create_group(group_data):
+        """
+        Create a new group with the given data.
+        """
+        group, group_tag = GroupHelpers.process_group_data(group_data)
+        group.save()
+        if group_tag:
+            group.tags.add(group_tag)
+        
+        serializer = GroupSerializer(group)
+        return serializer.data
+    
+    @staticmethod
+    def get_group(group_id):
+        """
+        Retrieve a specific group by its ID.
+        """
+        return GroupQuery.get_group_by_id(group_id)
+    
+
+    @staticmethod
+    def update_group(group_id, group_data):
+        """
+        Update an existing group with the given data.
+        """
+        group = GroupQuery.get_group_by_id_without_serializer(group_id)
+        group, new_tag = GroupHelpers.process_group_update_data(group, group_data)
+        group.save()
+        
+        if new_tag:
+            group.tags.add(new_tag)
+        
+        serializer = GroupSerializer(group)
+        return serializer.data
+    
+
+    @staticmethod
+    def delete_group(group_id):
+        """
+        Delete a group by its ID.
+        """
+        return GroupQuery.delete_group(group_id)
+    
+
+    @staticmethod
+    def delete_all_groups():
+        """
+        Delete all groups.
+        """
+        return GroupQuery.delete_all_groups()
+    
+
+    @staticmethod
+    def get_group_members(group_id):
+        """
+        Retrieve all members of a specific group.
+        """
+        return GroupQuery.get_group_members(group_id)
+    
+
+    @staticmethod
+    def get_group_member(group_id, member_id):
+        """
+        Retrieve a specific member of a group by their ID.
+        """
+        return GroupQuery.get_group_member_by_id(group_id, member_id)
+    
+
+    @staticmethod
+    def get_group_discussions(group_id):
+        """
+        Retrieve all discussions in a specific group.
+        """
+        return GroupQuery.get_group_discussions(group_id)
+    
+
+    @staticmethod
+    def get_group_messages(group_id):
+        """
+        Retrieve all messages in a specific group.
+        """
+        return GroupQuery.get_group_messages(group_id)
+    
+
+
+
 
 
 # class CourseService:
