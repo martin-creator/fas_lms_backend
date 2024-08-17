@@ -127,14 +127,6 @@ class GroupHelpers:
         
         return membership
     
-    
-
-class ProjectHelpers:
-    """
-    ProjectHelpers: Utility functions specific to projects.
-    Functions:
-    process_project_data, process_project_update_data, validate_project_permissions.
-    """
 
     @staticmethod
     def process_project_data(project_data):
@@ -510,4 +502,5 @@ class ProjectHelpers:
             message.content = content
         
         return message
+    
     

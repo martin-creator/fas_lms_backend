@@ -2,11 +2,16 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from groups.models import Group, GroupMembership, Discussion, Message, Announcement, Meeting, Task, Project, Milestone
 from groups.serializers import GroupSerializer, GroupMembershipSerializer, DiscussionSerializer, MessageSerializer, AnnouncementSerializer, MeetingSerializer, TaskSerializer, ProjectSerializer, MilestoneSerializer
 from groups.utils import DateTimeUtils, UserUtils
-from groups.helpers.group_helpers import GroupHelpers, ProjectHelpers
+from groups.helpers.group_helpers import GroupHelpers
 from groups.querying.group_query import GroupQuery
 import logging
 
-logger = logging.getLogger(__name__)
+
+
+class GroupService:
+
+    
+
 
 # class CourseService:
 #     """
