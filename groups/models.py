@@ -45,6 +45,8 @@ class Group(models.Model):
 
     def completed_projects(self):
         return self.projects.filter(status='completed').count()
+    
+    
 
 class GroupMembership(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -150,6 +152,7 @@ class Meeting (models.Model):
 
     def __str__(self):
         return self.name
+    
 
 class Discussion(models.Model):
     topic = models.CharField(max_length=255)

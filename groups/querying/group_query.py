@@ -103,6 +103,15 @@ class GroupQuery:
         serializer = DiscussionSerializer(discussions, many=True)
         return serializer.data
     
+
+    @staticmethod
+    def get_group_discussion_by_id_without_serializer(group_id, discussion_id):
+        """
+        Get a discussion in a specific group by its ID without using a serializer.
+        """
+        group = Group.objects.get(id=group_id)
+        return group.related_discussions.get(id=discussion_id)
+    
     @staticmethod
     def get_group_discussion_by_id(group_id, discussion_id):
         """
@@ -112,6 +121,29 @@ class GroupQuery:
         discussion = group.related_discussions.get(id=discussion_id)
         serializer = DiscussionSerializer(discussion)
         return serializer.data
+    
+
+    @staticmethod
+    def delete_group_discussion(group_id, discussion_id):
+        """
+        Delete a discussion in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        discussion = group.related_discussions.get(id=discussion_id)
+        discussion.delete()
+        return True
+    
+
+    @staticmethod
+    def delete_all_group_discussions(group_id):
+        """
+        Delete all discussions in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        group.related_discussions.all().delete()
+        return True
+    
+
     
     @staticmethod
     def get_all_tasks_in_group(group_id):
@@ -136,6 +168,36 @@ class GroupQuery:
     
 
     @staticmethod
+    def get_group_task_by_id_without_serializer(group_id, task_id):
+        """
+        Get a task in a specific group by its ID without using a serializer.
+        """
+        group = Group.objects.get(id=group_id)
+        return group.related_tasks.get(id=task_id)
+    
+
+    @staticmethod
+    def delete_group_task(group_id, task_id):
+        """
+        Delete a task in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        task = group.related_tasks.get(id=task_id)
+        task.delete()
+        return True
+    
+
+    @staticmethod
+    def delete_all_group_tasks(group_id):
+        """
+        Delete all tasks in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        group.related_tasks.all().delete()
+        return True
+    
+
+    @staticmethod
     def get_all_projects_in_group(group_id):
         """
         Get all projects in a specific group.
@@ -147,6 +209,15 @@ class GroupQuery:
     
 
     @staticmethod
+    def get_group_project_by_id_without_serializer(group_id, project_id):
+        """
+        Get a project in a specific group by its ID without using a serializer.
+        """
+        group = Group.objects.get(id=group_id)
+        return group.related_projects.get(id=project_id)
+    
+
+    @staticmethod
     def get_project_by_id_in_group(group_id, project_id):
         """
         Get a project in a specific group by its ID.
@@ -155,6 +226,26 @@ class GroupQuery:
         project = group.related_projects.get(id=project_id)
         serializer = ProjectSerializer(project)
         return serializer.data
+    
+
+    @staticmethod
+    def delete_group_project(group_id, project_id):
+        """
+        Delete a project in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        project = group.related_projects.get(id=project_id)
+        project.delete()
+        return True
+    
+
+    @staticmethod
+    def delete_all_group_projects(group_id):
+        """
+        Delete all projects in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        group.related_projects.all().delete()
     
 
     @staticmethod
@@ -177,6 +268,66 @@ class GroupQuery:
         meeting = group.related_meetings.get(id=meeting_id)
         serializer = MeetingSerializer(meeting)
         return serializer.data
+    
+
+    @staticmethod
+    def get_group_meeting_by_id_without_serializer(group_id, meeting_id):
+        """
+        Get a meeting in a specific group by its ID without using a serializer.
+        """
+        group = Group.objects.get(id=group_id)
+        return group.related_meetings.get(id=meeting_id)
+    
+
+    @staticmethod
+    def get_group_announcement_by_id_without_serializer(group_id, announcement_id):
+        """
+        Get an announcement in a specific group by its ID without using a serializer.
+        """
+        group = Group.objects.get(id=group_id)
+        return group.related_announcements.get(id=announcement_id)
+    
+
+    @staticmethod
+    def delete_group_announcement(group_id, announcement_id):
+        """
+        Delete an announcement in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        announcement = group.related_announcements.get(id=announcement_id)
+        announcement.delete()
+        return True
+    
+
+    @staticmethod
+    def delete_all_group_announcements(group_id):
+        """
+        Delete all announcements in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        group.related_announcements.all().delete()
+        return True
+    
+
+    @staticmethod
+    def delete_group_meeting(group_id, meeting_id):
+        """
+        Delete a meeting in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        meeting = group.related_meetings.get(id=meeting_id)
+        meeting.delete()
+        return True
+    
+
+    @staticmethod
+    def delete_all_group_meetings(group_id):
+        """
+        Delete all meetings in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        group.related_meetings.all().delete()
+        return True
     
 
     @staticmethod
@@ -224,6 +375,37 @@ class GroupQuery:
     
 
     @staticmethod
+    def get_group_message_by_id_without_serializer(group_id, message_id):
+        """
+        Get a message in a specific group by its ID without using a serializer.
+        """
+        group = Group.objects.get(id=group_id)
+        return Message.objects.get(discussion__group=group, id=message_id)
+    
+
+    @staticmethod
+    def delete_group_message(group_id, message_id):
+        """
+        Delete a message in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        message = Message.objects.get(discussion__group=group, id=message_id)
+        message.delete()
+        return True
+    
+
+    @staticmethod
+    def delete_all_group_messages(group_id):
+        """
+        Delete all messages in a specific group.
+        """
+        group = Group.objects.get(id=group_id)
+        Message.objects.filter(discussion__group=group).delete()
+        return True
+    
+    
+
+    @staticmethod
     def get_milestones_in_group(group_id):
         """
         Get all milestones in a specific group.
@@ -245,6 +427,32 @@ class GroupQuery:
         serializer = MilestoneSerializer(milestone)
         return serializer.data
     
+
+    @staticmethod
+    def get_project_milestone_by_id_without_serializer(project_id, milestone_id):
+        """
+        Get a milestone in a specific project by its ID without using a serializer.
+        """
+        return Milestone.objects.get(project=project_id, id=milestone_id)
+    
+
+    @staticmethod
+    def delete_project_milestone(project_id, milestone_id):
+        """
+        Delete a milestone in a specific project.
+        """
+        milestone = Milestone.objects.get(project=project_id, id=milestone_id)
+        milestone.delete()
+        return True
+    
+
+    @staticmethod
+    def delete_all_project_milestones(project_id):
+        """
+        Delete all milestones in a specific project.
+        """
+        Milestone.objects.filter(project=project_id).delete()
+        return True
 
     
 

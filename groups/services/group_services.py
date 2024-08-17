@@ -4,6 +4,8 @@ from groups.serializers import GroupSerializer, GroupMembershipSerializer, Discu
 from groups.utils import DateTimeUtils, UserUtils
 from groups.helpers.group_helpers import GroupHelpers
 from groups.querying.group_query import GroupQuery
+from groups.settings.group_settings import GroupSettings
+from groups.reports.group_report import GroupReport
 import logging
 
 
@@ -63,6 +65,28 @@ class GroupService:
     
 
     @staticmethod
+    def add_member_to_group(group_id, member_data):
+        """
+        Add a new member to a specific group.
+        """
+        group = GroupQuery.get_group_by_id_without_serializer(group_id)
+        member = GroupHelpers.process_group_membership_data(group_id, member_data)
+        member.save()
+        
+        serializer = GroupMembershipSerializer(member)
+        return serializer.data
+    
+
+
+    @staticmethod
+    def remove_member_from_group(group_id, member_id):
+        """
+        Remove a member from a specific group.
+        """
+        return GroupQuery.delete_group_member(group_id, member_id)
+    
+
+    @staticmethod
     def delete_all_groups():
         """
         Delete all groups.
@@ -100,6 +124,382 @@ class GroupService:
         Retrieve all messages in a specific group.
         """
         return GroupQuery.get_group_messages(group_id)
+    
+
+    @staticmethod
+    def get_group_discussion(group_id, discussion_id):
+        """
+        Retrieve a specific discussion in a specific group.
+        """
+        return GroupQuery.get_group_discussion_by_id(group_id, discussion_id)
+    
+
+    @staticmethod
+    def get_group_message(group_id, message_id):
+        """
+        Retrieve a specific message in a specific group.
+        """
+        return GroupQuery.get_group_message_by_id(group_id, message_id)
+    
+
+    @staticmethod
+    def create_discussion(group_id, discussion_data):
+        """
+        Create a new discussion in a specific group.
+        """
+        group = GroupQuery.get_group_by_id_without_serializer(group_id)
+        discussion, tags = GroupHelpers.process_discussion_data(group, discussion_data)
+        discussion.save()
+        
+        if tags:
+            discussion.tags.add(*tags)
+        
+        serializer = DiscussionSerializer(discussion)
+        return serializer.data
+    
+
+    @staticmethod
+    def update_discussion(group_id, discussion_id, discussion_data):
+        """
+        Update an existing discussion in a specific group.
+        """
+        discussion = GroupQuery.get_group_discussion_by_id_without_serializer(group_id, discussion_id)
+        discussion, new_tags = GroupHelpers.process_discussion_update_data(discussion, discussion_data)
+        discussion.save()
+        
+        if new_tags:
+            discussion.tags.add(*new_tags)
+        
+        serializer = DiscussionSerializer(discussion)
+        return serializer.data
+    
+
+    @staticmethod
+    def delete_discussion(group_id, discussion_id):
+        """
+        Delete a specific discussion in a group.
+        """
+        return GroupQuery.delete_group_discussion(group_id, discussion_id)
+    
+
+    @staticmethod
+    def delete_all_discussions(group_id):
+        """
+        Delete all discussions in a specific group.
+        """
+        return GroupQuery.delete_all_group_discussions(group_id)
+    
+
+    @staticmethod
+    def create_message(group_id, message_data):
+        """
+        Create a new message in a specific group.
+        """
+        group = GroupQuery.get_group_by_id_without_serializer(group_id)
+        message = GroupHelpers.process_message_data(group, message_data)
+        message.save()
+        
+        serializer = MessageSerializer(message)
+        return serializer.data
+    
+
+    @staticmethod
+    def update_message(group_id, message_id, message_data):
+        """
+        Update an existing message in a specific group.
+        """
+        message = GroupQuery.get_group_message_by_id_without_serializer(group_id, message_id)
+        message = GroupHelpers.process_message_update_data(message, message_data)
+        message.save()
+        
+        serializer = MessageSerializer(message)
+        return serializer.data
+    
+
+    @staticmethod
+    def delete_message(group_id, message_id):
+        """
+        Delete a specific message in a group.
+        """
+        return GroupQuery.delete_group_message(group_id, message_id)
+    
+
+    @staticmethod
+    def delete_all_messages(group_id):
+        """
+        Delete all messages in a specific group.
+        """
+        return GroupQuery.delete_all_group_messages(group_id)
+    
+
+    @staticmethod
+    def create_announcement(group_id, announcement_data):
+        """
+        Create a new announcement in a specific group.
+        """
+        group = GroupQuery.get_group_by_id_without_serializer(group_id)
+        announcement, tags = GroupHelpers.process_announcement_data(group, announcement_data)
+        announcement.save()
+        
+        if tags:
+            announcement.tags.add(*tags)
+        
+        serializer = AnnouncementSerializer(announcement)
+        return serializer.data
+    
+
+    @staticmethod
+    def update_announcement(group_id, announcement_id, announcement_data):
+        """
+        Update an existing announcement in a specific group.
+        """
+        announcement = GroupQuery.get_group_announcement_by_id_without_serializer(group_id, announcement_id)
+        announcement, new_tags = GroupHelpers.process_announcement_update_data(announcement, announcement_data)
+        announcement.save()
+        
+        if new_tags:
+            announcement.tags.add(*new_tags)
+        
+        serializer = AnnouncementSerializer(announcement)
+        return serializer.data
+    
+
+    @staticmethod
+    def delete_announcement(group_id, announcement_id):
+        """
+        Delete a specific announcement in a group.
+        """
+        return GroupQuery.delete_group_announcement(group_id, announcement_id)
+    
+
+    @staticmethod
+    def delete_all_announcements(group_id):
+        """
+        Delete all announcements in a specific group.
+        """
+        return GroupQuery.delete_all_group_announcements(group_id)
+    
+
+    @staticmethod
+    def create_meeting(group_id, meeting_data):
+        """
+        Create a new meeting in a specific group.
+        """
+        group = GroupQuery.get_group_by_id_without_serializer(group_id)
+        meeting, tags = GroupHelpers.process_meeting_data(group, meeting_data)
+        meeting.save()
+        
+        if tags:
+            meeting.tags.add(*tags)
+        
+        serializer = MeetingSerializer(meeting)
+        return serializer.data
+    
+
+
+    @staticmethod
+    def update_meeting(group_id, meeting_id, meeting_data):
+        """
+        Update an existing meeting in a specific group.
+        """
+        meeting = GroupQuery.get_group_meeting_by_id_without_serializer(group_id, meeting_id)
+        meeting, new_tags = GroupHelpers.process_meeting_update_data(meeting, meeting_data)
+        meeting.save()
+        
+        if new_tags:
+            meeting.tags.add(*new_tags)
+        
+        serializer = MeetingSerializer(meeting)
+        return serializer.data
+    
+
+
+    @staticmethod
+    def delete_meeting(group_id, meeting_id):
+        """
+        Delete a specific meeting in a group.
+        """
+        return GroupQuery.delete_group_meeting(group_id, meeting_id)
+    
+
+
+    @staticmethod
+    def delete_all_meetings(group_id):
+        """
+        Delete all meetings in a specific group.
+        """
+        return GroupQuery.delete_all_group_meetings(group_id)
+    
+
+    @staticmethod
+    def create_task(group_id, task_data):
+        """
+        Create a new task in a specific group.
+        """
+        group = GroupQuery.get_group_by_id_without_serializer(group_id)
+        task, tags = GroupHelpers.process_task_data(group, task_data)
+        task.save()
+        
+        if tags:
+            task.tags.add(*tags)
+        
+        serializer = TaskSerializer(task)
+        return serializer.data
+    
+
+    @staticmethod
+    def update_task(group_id, task_id, task_data):
+        """
+        Update an existing task in a specific group.
+        """
+        task = GroupQuery.get_group_task_by_id_without_serializer(group_id, task_id)
+        task, new_tags = GroupHelpers.process_task_update_data(task, task_data)
+        task.save()
+        
+        if new_tags:
+            task.tags.add(*new_tags)
+        
+        serializer = TaskSerializer(task)
+        return serializer.data
+    
+
+    
+    @staticmethod
+    def delete_task(group_id, task_id):
+        """
+        Delete a specific task in a group.
+        """
+        return GroupQuery.delete_group_task(group_id, task_id)
+    
+
+    @staticmethod
+    def delete_all_tasks(group_id):
+        """
+        Delete all tasks in a specific group.
+        """
+        return GroupQuery.delete_all_group_tasks(group_id)
+    
+
+    @staticmethod
+    def create_project(group_id, project_data):
+        """
+        Create a new project in a specific group.
+        """
+        group = GroupQuery.get_group_by_id_without_serializer(group_id)
+        project, tags = GroupHelpers.process_project_data(group, project_data)
+        project.save()
+        
+        if tags:
+            project.tags.add(*tags)
+        
+        serializer = ProjectSerializer(project)
+        return serializer.data
+    
+
+    @staticmethod
+    def update_project(group_id, project_id, project_data):
+        """
+        Update an existing project in a specific group.
+        """
+        project = GroupQuery.get_group_project_by_id_without_serializer(group_id, project_id)
+        project, new_tags = GroupHelpers.process_project_update_data(project, project_data)
+        project.save()
+        
+        if new_tags:
+            project.tags.add(*new_tags)
+        
+        serializer = ProjectSerializer(project)
+        return serializer.data
+    
+
+    @staticmethod
+    def delete_project(group_id, project_id):
+        """
+        Delete a specific project in a group.
+        """
+        return GroupQuery.delete_group_project(group_id, project_id)
+    
+
+    @staticmethod
+    def delete_all_projects(group_id):
+        """
+        Delete all projects in a specific group.
+        """
+        return GroupQuery.delete_all_group_projects(group_id)
+    
+
+    @staticmethod
+    def create_milestone(project_id, milestone_data):
+        """
+        Create a new milestone in a specific project.
+        """
+        project = GroupQuery.get_group_project_by_id_without_serializer(project_id)
+        milestone, tags = GroupHelpers.process_milestone_data(project, milestone_data)
+        milestone.save()
+        
+        if tags:
+            milestone.tags.add(*tags)
+        
+        serializer = MilestoneSerializer(milestone)
+        return serializer.data
+    
+
+    @staticmethod
+    def update_milestone(project_id, milestone_id, milestone_data):
+        """
+        Update an existing milestone in a specific project.
+        """
+        milestone = GroupQuery.get_project_milestone_by_id_without_serializer(project_id, milestone_id)
+        milestone, new_tags = GroupHelpers.process_milestone_update_data(milestone, milestone_data)
+        milestone.save()
+        
+        if new_tags:
+            milestone.tags.add(*new_tags)
+        
+        serializer = MilestoneSerializer(milestone)
+        return serializer.data
+    
+
+
+    @staticmethod
+    def delete_milestone(project_id, milestone_id):
+        """
+        Delete a specific milestone in a project.
+        """
+        return GroupQuery.delete_project_milestone(project_id, milestone_id)
+    
+
+    @staticmethod
+    def delete_all_milestones(project_id):
+        """
+        Delete all milestones in a specific project.
+        """
+        return GroupQuery.delete_all_project_milestones(project_id)
+    
+
+    @staticmethod
+    def get_group_report(group_id):
+        """
+        Get a report for a specific group.
+        """
+        group = GroupQuery.get_group_by_id_without_serializer(group_id)
+        group_data = GroupReport.get_group_report(group)
+        return group_data
+    
+
+    @staticmethod
+    def get_group_members_report(group_id):
+        """
+        Get a report for all members in a specific group.
+        """
+        group = GroupQuery.get_group_by_id_without_serializer(group_id)
+        group_members_data = GroupReport.get_group_members_report(group)
+        return group_members_data
+
+    
+    
+
+
     
 
 
