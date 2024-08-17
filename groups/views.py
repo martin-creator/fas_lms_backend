@@ -490,7 +490,7 @@ def get_group_milestones(request, group_id):
         group_milestones = group_controller.get_group_milestones(group_id)
         return Response(group_milestones, status=status.HTTP_200_OK)
     else:
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)4
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
 
@@ -770,6 +770,770 @@ def delete_message(request, group_id, discussion_id, message_id):
 
 
 # create announcement
+    
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='content', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='owner', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Create a new announcement',
+            description='Create a new announcement',
+            value={
+                "title": "title",
+                "content": "content",
+                "owner": 1
+            }
+        )
+    ],
+    request=AnnouncementSerializer,
+    responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Announcement data')}
+)
+@api_view(['POST'])
+def create_announcement(request, group_id):
+    """
+    API endpoint that allows an announcement to be created.
+    """
+    if request.method == 'POST':
+        announcement_data = request.data
+        announcement = group_controller.create_announcement(group_id, announcement_data)
+        return Response(announcement, status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='announcement_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get a specific announcement',
+            description='Get a specific announcement',
+            value={
+                "group_id": 1,
+                "announcement_id": 1
+            }
+        )
+    ],
+    request=AnnouncementSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Announcement data')}
+)
+@api_view(['GET'])
+def get_specific_announcement(request, group_id, announcement_id):
+    """
+    API endpoint that allows a specific announcement to be retrieved.
+    """
+    if request.method == 'GET':
+        announcement = group_controller.get_announcement_by_id(group_id, announcement_id)
+        return Response(announcement, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='announcement_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='content', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='owner', type=int, location=OpenApiParameter.QUERY, required=False),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update an existing announcement',
+            description='Update an existing announcement',
+            value={
+                "title": "title",
+                "content": "content",
+                "owner": 1
+            }
+        )
+    ],
+    request=AnnouncementSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Announcement data')}
+)
+@api_view(['PUT','GET'])
+def update_announcement(request, group_id, announcement_id):
+    """
+    API endpoint that allows an existing announcement to be updated.
+    """
+    if request.method == 'PUT':
+        announcement_data = request.data
+        announcement = group_controller.update_announcement(group_id, announcement_id, announcement_data)
+        return Response(announcement, status=status.HTTP_200_OK)
+    elif request.method == 'GET':
+        announcement = group_controller.get_announcement_by_id(group_id, announcement_id)
+        return Response(announcement, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='announcement_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete a specific announcement',
+            description='Delete a specific announcement',
+            value={}
+        )
+    ],
+    request=AnnouncementSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Deleted announcement data')}
+)
+@api_view(['DELETE'])
+def delete_announcement(request, group_id, announcement_id):
+    """
+    API endpoint that allows a specific announcement to be deleted.
+    """
+    if request.method == 'DELETE':
+        announcement = group_controller.delete_announcement(group_id, announcement_id)
+        return Response(announcement, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+
+# create meeting
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='owner', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='participants', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='start_time', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='end_time', type=str, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Create a new meeting',
+            description='Create a new meeting',
+            value={
+                "title": "title",
+                "description": "description",
+                "owner": 1,
+                "participants": "participants",
+                "start_time": "2021-09-01 12:00:00",
+                "end_time": "2021-09-01 13:00:00"
+            }
+        )
+    ],
+    request=MeetingSerializer,
+    responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Meeting data')}
+)
+@api_view(['POST'])
+def create_meeting(request, group_id):
+    """
+    API endpoint that allows a meeting to be created.
+    """
+    if request.method == 'POST':
+        meeting_data = request.data
+        meeting = group_controller.create_meeting(group_id, meeting_data)
+        return Response(meeting, status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='meeting_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get a specific meeting',
+            description='Get a specific meeting',
+            value={}
+        )
+    ],
+    request=MeetingSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Meeting data')}
+)
+@api_view(['GET'])
+def get_specific_meeting(request, group_id, meeting_id):
+    """
+    API endpoint that allows a specific meeting to be retrieved.
+    """
+    if request.method == 'GET':
+        meeting = group_controller.get_meeting_by_id(group_id, meeting_id)
+        return Response(meeting, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='meeting_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='owner', type=int, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='participants', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='start_time', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='end_time', type=str, location=OpenApiParameter.QUERY, required=False),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update an existing meeting',
+            description='Update an existing meeting',
+            value={
+                "title": "title",
+                "description": "description",
+                "owner": 1,
+                "participants": "participants",
+                "start_time": "2021-09-01 12:00:00",
+                "end_time": "2021-09-01 13:00:00"
+            }
+        )
+    ],
+    request=MeetingSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Meeting data')}
+)
+@api_view(['PUT','GET'])
+def update_meeting(request, group_id, meeting_id):
+    """
+    API endpoint that allows an existing meeting to be updated.
+    """
+    if request.method == 'PUT':
+        meeting_data = request.data
+        meeting = group_controller.update_meeting(group_id, meeting_id, meeting_data)
+        return Response(meeting, status=status.HTTP_200_OK)
+    elif request.method == 'GET':
+        meeting = group_controller.get_meeting_by_id(group_id, meeting_id)
+        return Response(meeting, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='meeting_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete a specific meeting',
+            description='Delete a specific meeting',
+            value={}
+        )
+    ],
+    request=MeetingSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Meeting data')}
+)
+@api_view(['DELETE'])
+def delete_meeting(request, group_id, meeting_id):
+    """
+    API endpoint that allows a specific meeting to be deleted.
+    """
+    if request.method == 'DELETE':
+        meeting = group_controller.delete_meeting(group_id, meeting_id)
+        return Response(meeting, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+# create project
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='owner', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='participants', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='start_date', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='end_date', type=str, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Create a new project',
+            description='Create a new project',
+            value={
+                "title": "title",
+                "description": "description",
+                "owner": 1,
+                "participants": "participants",
+                "start_date": "2021-09-01",
+                "end_date": "2021-09-30"
+            }
+        )
+    ],
+    request=ProjectSerializer,
+    responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Project data')}
+)
+@api_view(['POST'])
+def create_project(request, group_id):
+    """
+    API endpoint that allows a project to be created.
+    """
+    if request.method == 'POST':
+        project_data = request.data
+        project = group_controller.create_project(group_id, project_data)
+        return Response(project, status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='project_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get a specific project',
+            description='Get a specific project',
+            value={}
+        )
+    ],
+    request=ProjectSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Project data')}
+)
+@api_view(['GET'])
+def get_specific_project(request, group_id, project_id):
+    """
+    API endpoint that allows a specific project to be retrieved.
+    """
+    if request.method == 'GET':
+        project = group_controller.get_project_by_id(group_id, project_id)
+        return Response(project, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='project_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='owner', type=int, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='participants', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='start_date', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='end_date', type=str, location=OpenApiParameter.QUERY, required=False),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update an existing project',
+            description='Update an existing project',
+            value={
+                "title": "title",
+                "description": "description",
+                "owner": 1,
+                "participants": "participants",
+                "start_date": "2021-09-01",
+                "end_date": "2021-09-30"
+            }
+        )
+    ],
+    request=ProjectSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Project data')}
+)
+@api_view(['PUT','GET'])
+def update_project(request, group_id, project_id):
+    """
+    API endpoint that allows an existing project to be updated.
+    """
+    if request.method == 'PUT':
+        project_data = request.data
+        project = group_controller.update_project(group_id, project_id, project_data)
+        return Response(project, status=status.HTTP_200_OK)
+    elif request.method == 'GET':
+        project = group_controller.get_project_by_id(group_id, project_id)
+        return Response(project, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='project_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete a specific project',
+            description='Delete a specific project',
+            value={}
+        )
+    ],
+    request=ProjectSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Project data')}
+)
+@api_view(['DELETE'])
+def delete_project(request, group_id, project_id):
+    """
+    API endpoint that allows a specific project to be deleted.
+    """
+    if request.method == 'DELETE':
+        project = group_controller.delete_project(group_id, project_id)
+        return Response(project, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+
+
+# create task
+# class Task(models.Model):
+#     STATUS_CHOICES = [
+#         ('pending', 'Pending'),
+#         ('in_progress', 'In Progress'),
+#         ('completed', 'Completed'),
+#         ('cancelled', 'Cancelled')
+#     ]
+
+#     title = models.CharField(max_length=255)
+#     description = models.TextField()
+#     due_date = models.DateTimeField()
+#     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+#     assigned_to = models.ForeignKey(
+#         settings.AUTH_USER_MODEL, 
+#         on_delete=models.CASCADE, 
+#         related_name='assigned_tasks', 
+#         blank=True, null=True
+#     )
+#     created_by = models.ForeignKey(
+#         settings.AUTH_USER_MODEL, 
+#         on_delete=models.CASCADE, 
+#         related_name='created_tasks'
+#     )
+#     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks_in_project')
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='project_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='due_date', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='status', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='assigned_to', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='created_by', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Create a new task',
+            description='Create a new task',
+            value={
+                "title": "title",
+                "description": "description",
+                "due_date": "2021-09-01 12:00:00",
+                "status": "pending",
+                "assigned_to": 1,
+                "created_by": 1
+            }
+        )
+    ],
+    request=TaskSerializer,
+    responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Task data')}
+)
+@api_view(['POST'])
+def create_task(request, group_id, project_id):
+    """
+    API endpoint that allows a task to be created.
+    """
+    if request.method == 'POST':
+        task_data = request.data
+        task = group_controller.create_task(group_id, project_id, task_data)
+        return Response(task, status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='project_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='task_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get a specific task',
+            description='Get a specific task',
+            value={}
+        )
+    ],
+    request=TaskSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Task data')}
+)
+@api_view(['GET'])
+def get_specific_task(request, group_id, project_id, task_id):
+    """
+    API endpoint that allows a specific task to be retrieved.
+    """
+    if request.method == 'GET':
+        task = group_controller.get_task_by_id(group_id, project_id, task_id)
+        return Response(task, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='project_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='task_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='due_date', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='status', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='assigned_to', type=int, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='created_by', type=int, location=OpenApiParameter.QUERY, required=False),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update an existing task',
+            description='Update an existing task',
+            value={
+                "title": "title",
+                "description": "description",
+                "due_date": "2021-09-01 12:00:00",
+                "status": "pending",
+                "assigned_to": 1,
+                "created_by": 1
+            }
+        )
+    ],
+    request=TaskSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Task data')}
+
+)
+@api_view(['PUT','GET'])
+def update_task(request, group_id, project_id, task_id):
+    """
+    API endpoint that allows an existing task to be updated.
+    """
+    if request.method == 'PUT':
+        task_data = request.data
+        task = group_controller.update_task(group_id, project_id, task_id, task_data)
+        return Response(task, status=status.HTTP_200_OK)
+    elif request.method == 'GET':
+        task = group_controller.get_task_by_id(group_id, project_id, task_id)
+        return Response(task, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='project_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='task_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete a specific task',
+            description='Delete a specific task',
+            value={}
+        )
+    ],
+    request=TaskSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Task data')}
+)
+@api_view(['DELETE'])
+def delete_task(request, group_id, project_id, task_id):
+    """
+    API endpoint that allows a specific task to be deleted.
+    """
+    if request.method == 'DELETE':
+        task = group_controller.delete_task(group_id, project_id, task_id)
+        return Response(task, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+    
+
+
+# create milestone
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='project_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='due_date', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='status', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='assigned_to', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='created_by', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Create a new milestone',
+            description='Create a new milestone',
+            value={
+                "title": "title",
+                "description": "description",
+                "due_date": "2021-09-01 12:00:00",
+                "status": "pending",
+                "assigned_to": 1,
+                "created_by": 1
+            }
+        )
+    ],
+    request=MilestoneSerializer,
+    responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Milestone data')}
+)
+@api_view(['POST'])
+def create_milestone(request, group_id, project_id):
+    """
+    API endpoint that allows a milestone to be created.
+    """
+    if request.method == 'POST':
+        milestone_data = request.data
+        milestone = group_controller.create_milestone(group_id, project_id, milestone_data)
+        return Response(milestone, status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='project_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='milestone_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get a specific milestone',
+            description='Get a specific milestone',
+            value={}
+        )
+    ],
+    request=MilestoneSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Milestone data')}
+)
+@api_view(['GET'])
+def get_specific_milestone(request, group_id, project_id, milestone_id):
+    """
+    API endpoint that allows a specific milestone to be retrieved.
+    """
+    if request.method == 'GET':
+        milestone = group_controller.get_milestone_by_id(group_id, project_id, milestone_id)
+        return Response(milestone, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='project_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='milestone_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='due_date', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='status', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='assigned_to', type=int, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='created_by', type=int, location=OpenApiParameter.QUERY, required=False),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update an existing milestone',
+            description='Update an existing milestone',
+            value={
+                "title": "title",
+                "description": "description",
+                "due_date": "2021-09-01 12:00:00",
+                "status": "pending",
+                "assigned_to": 1,
+                "created_by": 1
+            }
+        )
+    ],
+    request=MilestoneSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Milestone data')}
+)
+@api_view(['PUT','GET'])
+def update_milestone(request, group_id, project_id, milestone_id):
+    """
+    API endpoint that allows an existing milestone to be updated.
+    """
+    if request.method == 'PUT':
+        milestone_data = request.data
+        milestone = group_controller.update_milestone(group_id, project_id, milestone_id, milestone_data)
+        return Response(milestone, status=status.HTTP_200_OK)
+    elif request.method == 'GET':
+        milestone = group_controller.get_milestone_by_id(group_id, project_id, milestone_id)
+        return Response(milestone, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='project_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='milestone_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete a specific milestone',
+            description='Delete a specific milestone',
+            value={}
+        )
+    ],
+    request=MilestoneSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Milestone data')}
+)
+@api_view(['DELETE'])
+def delete_milestone(request, group_id, project_id, milestone_id):
+    """
+    API endpoint that allows a specific milestone to be deleted.
+    """
+    if request.method == 'DELETE':
+        milestone = group_controller.delete_milestone(group_id, project_id, milestone_id)
+        return Response(milestone, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+    
+
+
+
+
 
 
 
