@@ -1,386 +1,513 @@
 from django.core.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
 # from django.contrib.auth.models import User
-from courses.models import Course, CourseEnrollment, CourseCompletion, Lesson, LessonProgress, Quiz, QuizProgress, Question, Choice
-from courses.serializers import CourseSerializer, CourseEnrollmentSerializer, CourseCompletionSerializer, LessonSerializer, QuizSerializer, QuestionSerializer, ChoiceSerializer, LessonProgressSerializer, QuizProgressSerializer
+from groups.models import Group, GroupMembership, Discussion, Message, Announcement, Meeting, Task, Project, Milestone
+from groups.serializers import GroupSerializer, GroupMembershipSerializer, DiscussionSerializer, MessageSerializer, AnnouncementSerializer, MeetingSerializer, TaskSerializer, ProjectSerializer, MilestoneSerializer
 from django.contrib.auth import get_user_model
 from datetime import timedelta
 # from taggit
 
 User = get_user_model()
-class CourseHelpers:
-# CourseHelpers: Utility functions specific to courses.
-# Functions:
-# process_course_data, validate_course_permissions.
-    
-    @staticmethod
-    def process_course_data(course_data):
-        """
-        Process course data to create or update a course.
-        """
-        course_id = course_data.get('id')
-        course_title = course_data.get('title')
-        course_description = course_data.get('description')
-        instructor_id = course_data.get('instructor')
-        course_duration = course_data.get('duration')
-        course_level = course_data.get('level')
-        course_tag = course_data.get('tags')
 
-        try:
-            instructor = User.objects.get(id=instructor_id)
-        except ObjectDoesNotExist:
-            raise ValidationError("Instructor with the given ID does not exist.")
-        
-        course = Course(
-                title=course_title,
-                description=course_description,
-                instructor=instructor,
-                duration=timedelta(hours=int(course_duration)),
-                level=course_level)
-
-        return course, course_tag
-    
-    @staticmethod
-    def process_course_update_data(course_id, course_data):
-        """
-        Process course data to update a course.
-        """
-        course_title = course_data.get('title')
-        course_description = course_data.get('description')
-        instructor_id = course_data.get('instructor')
-        course_duration = course_data.get('duration')
-        course_level = course_data.get('level')
-        course_language = course_data.get('language')
-
-        # try:
-        #     instructor = 
-        # except ObjectDoesNotExist:
-        #     raise ValidationError("Instructor with the given ID does not exist.")
-
-        course = Course.objects.get(id=course_id)
-        # make sure that if if the course data does not provide a value for specific element, the existing value is retained
-        # Update course attributes if provided in the data, otherwise retain the existing values
-        if course_title is not None:
-            course.title = course_title
-        
-        if course_description is not None:
-            course.description = course_description
-        
-        if instructor_id is not None:
-            try:
-                instructor = User.objects.get(id=instructor_id)
-                course.instructor = instructor
-            except:
-                raise ValidationError("Instructor with the given ID does not exist.")
-        
-        if course_duration is not None:
-            course.duration = timedelta(hours=int(course_duration))
-        
-        if course_level is not None:
-            course.level = course_level
-        
-        if course_language is not None:
-            course.language = course_language
-        
-        return course
-
-        # print(course)
-      
-        # return course
-        
-    # @staticmethod
-    # def process_course_data(course_data):
-    #     """
-    #     Process course data to create or update a course.
-    #     """
-    #     course_id = course_data.get('id')
-    #     course_title = course_data.get('title')
-    #     course_description = course_data.get('description')
-    #     course_instructor = course_data.get('instructor')
-    #     course_duration = course_data.get('duration')
-    #     course_level = course_data.get('level')
-    #     course_image = course_data.get('image')
-    #     course_video = course_data.get('video')
-    #     course_certificate = course_data.get('certificate')
-
-    #     if course_id:
-    #         # Update existing course
-    #         course = Course.objects.get(id=course_id)
-    #         course.title = course_title
-    #         course.description = course_description
-    #         course.instructor = course_instructor
-    #         course.duration = course_duration
-    #         course.level = course_level
-    #         course.image = course_image
-    #         course.video = course_video
-    #         course.certificate = course_certificate
-    #     else:
-    #         # Create new course
-    #         course = Course(
-    #             title=course_title,
-    #             description=course_description,
-    #             instructor=course_instructor,
-    #             duration=course_duration,
-    #             level=course_level,
-    #         )
-
-    #     return course
-    
+class GroupHelpers:
+    """
+    GroupHelpers: Utility functions specific to groups.
+    Functions:
+    process_group_data, process_group_update_data, validate_group_permissions, process_group_membership_data, process_group_membership_update_data, validate_group_membership_permissions.
+    """
 
     @staticmethod
-    def validate_course_permissions(user, course):
+    def process_group_data(group_data):
         """
-        Validate course permissions for a user.
+        Process group data to create a group.
         """
-        if user.is_superuser or course.instructor == user:
+        group_name = group_data.get('name')
+        group_description = group_data.get('description')
+        group_type = group_data.get('group_type')
+        privacy_level = group_data.get('privacy_level')
+        cover_image = group_data.get('cover_image')
+        tags = group_data.get('tags')
+
+        group = Group(
+                name=group_name,
+                description=group_description,
+                group_type=group_type,
+                privacy_level=privacy_level,
+                cover_image=cover_image
+            )
+
+        return group, tags
+    
+    @staticmethod
+    def process_group_update_data(group_id, group_data):
+        """
+        Process group data to update a group.
+        """
+        group_name = group_data.get('name')
+        group_description = group_data.get('description')
+        group_type = group_data.get('group_type')
+        privacy_level = group_data.get('privacy_level')
+        cover_image = group_data.get('cover_image')
+        tags = group_data.get('tags')
+
+        group = Group.objects.get(id=group_id)
+
+        if group_name is not None:
+            group.name = group_name
+        
+        if group_description is not None:
+            group.description = group_description
+        
+        if group_type is not None:
+            group.group_type = group_type
+        
+        if privacy_level is not None:
+            group.privacy_level = privacy_level
+        
+        if cover_image is not None:
+            group.cover_image = cover_image
+        
+        if tags is not None:
+            group.tags = tags
+        
+        return group
+
+    @staticmethod
+    def validate_group_permissions(user, group):
+        """
+        Validate group permissions for a user.
+        """
+        if user.is_superuser:
+            return True
+        elif user in group.members.all():
             return True
         else:
             raise ValidationError('You do not have permission to perform this action.')
-        
     
     @staticmethod
-    def process_course_enrollment_data(enrollment_data):
+    def process_group_membership_data(group_id, membership_data):
         """
-        Process course enrollment data to create or update a course enrollment.
+        Process group membership data to create a group membership.
         """
-        enrollment_id = enrollment_data.get('id')
-        course_id = enrollment_data.get('course')
-        student_id = enrollment_data.get('student')
-        completed_at = enrollment_data.get('completed_at')
-        certificate_url = enrollment_data.get('certificate_url')
-        certificate = enrollment_data.get('certificate')
+        user_id = membership_data.get('user')
+        role = membership_data.get('role')
+        permissions = membership_data.get
 
-        if enrollment_id:
-            # Update existing course enrollment
-            enrollment = CourseEnrollment.objects.get(id=enrollment_id)
-            enrollment.course_id = course_id
-            enrollment.student_id = student_id
-            enrollment.completed_at = completed_at
-            enrollment.certificate_url = certificate_url
-            enrollment.certificate = certificate
-        else:
-            # Create new course enrollment
-            enrollment = CourseEnrollment(
-                course_id=course_id,
-                student_id=student_id,
-                completed_at=completed_at,
-                certificate_url=certificate_url,
-                certificate=certificate
+
+        try:
+            user = User.objects.get(id=user_id)
+        except ObjectDoesNotExist:
+            raise ValidationError("User with the given ID does not exist.")
+        
+        group = Group.objects.get(id=group_id)
+
+        membership = GroupMembership(
+                user=user,
+                group=group,
+                role=role
+            )
+        
+        return membership
+    
+    @staticmethod
+    def process_group_membership_update_data(group_id, membership_id, membership_data):
+        """
+        Process group membership data to update a group membership.
+        """
+        role = membership_data.get('role')
+        permissions = membership_data.get('permissions')
+
+        membership = GroupMembership.objects.get(id=membership_id)
+
+        if role is not None:
+            membership.role = role
+        
+        if permissions is not None:
+            membership.permissions = permissions
+        
+        return membership
+    
+    
+
+class ProjectHelpers:
+    """
+    ProjectHelpers: Utility functions specific to projects.
+    Functions:
+    process_project_data, process_project_update_data, validate_project_permissions.
+    """
+
+    @staticmethod
+    def process_project_data(project_data):
+        """
+        Process project data to create a project.
+        """
+        project_name = project_data.get('name')
+        project_description = project_data.get('description')
+        start_date = project_data.get('start_date')
+        end_date = project_data.get('end_date')
+        created_by_id = project_data.get('created_by')
+        members = project_data.get('members')
+
+        try:
+            created_by = User.objects.get(id=created_by_id)
+        except ObjectDoesNotExist:
+            raise ValidationError("User with the given ID does not exist.")
+        
+        project = Project(
+                name=project_name,
+                description=project_description,
+                start_date=start_date,
+                end_date=end_date,
+                created_by=created_by
             )
 
-        return enrollment
+        return project, members
     
+    @staticmethod
+    def process_project_update_data(project_id, project_data):
+        """
+        Process project data to update a project.
+        """
+        project_name = project_data.get('name')
+        project_description = project_data.get('description')
+        start_date = project_data.get('start_date')
+        end_date = project_data.get('end_date')
+        members = project_data.get('members')
 
-    # course = models.ForeignKey(Course, related_name='lessons', on_delete=models.CASCADE)
-    # title = models.CharField(max_length=255)
-    # description = models.TextField(default='', blank=True, null=True)
-    # content = models.TextField(default='', blank=True, null=True)
-    # video_url = models.URLField(blank=True, null=True)
-    # attachments = GenericRelation('Attachment')
-    # tags = TaggableManager()
-    # order = models.PositiveIntegerField(default=0, blank=True, null=True)
+        project = Project.objects.get(id=project_id)
+
+        if project_name is not None:
+            project.name = project_name
+        
+        if project_description is not None:
+            project.description = project_description
+        
+        if start_date is not None:
+            project.start_date = start_date
+        
+        if end_date is not None:
+            project.end_date = end_date
+        
+        if members is not None:
+            project.members.set(members)
+        
+        return project
 
     @staticmethod
-    def process_lesson_data(course_id, lesson_data):
+    def validate_project_permissions(user, project):
         """
-        Process lesson data to create a lesson.
+        Validate project permissions for a user.
         """
-        course_id = lesson_data.get('course')
-        title = lesson_data.get('title')
-        description = lesson_data.get('description')
-        content = lesson_data.get('content')
-        video_url = lesson_data.get('video_url')
-        order = lesson_data.get('order')
-        tags = lesson_data.get('tags')
+        if user.is_superuser:
+            return True
+        elif user in project.members.all():
+            return True
+        else:
+            raise ValidationError('You do not have permission to perform this action.')
 
-        lesson = Lesson(
-                course_id=course_id,
+    
+    @staticmethod
+    def process_task_data(project_id, task_data):
+        """
+        Process task data to create a task.
+        """
+        project_id = task_data.get('project')
+        title = task_data.get('title')
+        description = task_data.get('description')
+        due_date = task_data.get('due_date')
+        status = task_data.get('status')
+        assigned_to_id = task_data.get('assigned_to')
+        created_by_id = task_data.get('created_by')
+
+        try:
+            assigned_to = User.objects.get(id=assigned_to_id)
+        except ObjectDoesNotExist:
+            raise ValidationError("User with the given ID does not exist.")
+        
+        try:
+            created_by = User.objects.get(id=created_by_id)
+        except ObjectDoesNotExist:
+            raise ValidationError("User with the given ID does not exist.")
+        
+        task = Task(
+                project_id=project_id,
                 title=title,
                 description=description,
-                content=content,
-                video_url=video_url,
-                order=order
+                due_date=due_date,
+                status=status,
+                assigned_to=assigned_to,
+                created_by=created_by
             )
 
-        return lesson, tags
+        return task
     
 
     @staticmethod
-    def process_lesson_update_data(course_id, lesson_id, lesson_data):
+    def process_task_update_data(project_id, task_id, task_data):
         """
-        Process lesson data to update a lesson.
+        Process task data to update a task.
         """
-        title = lesson_data.get('title')
-        description = lesson_data.get('description')
-        content = lesson_data.get('content')
-        video_url = lesson_data.get('video_url')
-        order = lesson_data.get('order')
-        tags = lesson_data.get('tags')
-        new_tags = []
+        title = task_data.get('title')
+        description = task_data.get('description')
+        due_date = task_data.get('due_date')
+        status = task_data.get('status')
+        assigned_to_id = task_data.get('assigned_to')
 
-        lesson = Lesson.objects.get(id=lesson_id)
+        task = Task.objects.get(id=task_id)
 
         if title is not None:
-            lesson.title = title
+            task.title = title
         
         if description is not None:
-            lesson.description = description
+            task.description = description
         
-        if content is not None:
-            lesson.content = content
+        if due_date is not None:
+            task.due_date = due_date
         
-        if video_url is not None:
-            lesson.video_url = video_url
+        if status is not None:
+            task.status = status
         
-        if order is not None:
-            lesson.order = order
+        if assigned_to_id is not None:
+            try:
+                assigned_to = User.objects.get(id=assigned_to_id)
+                task.assigned_to = assigned_to
+            except ObjectDoesNotExist:
+                raise ValidationError("User with the given ID does not exist.")
         
-        if tags is not None:
-            new_tags = tags
-        else:
-            new_tags = lesson.tags
-        
-        return lesson, new_tags
+        return task
     
-
-    # class Quiz(models.Model):
-    # """
-    # Represents a quiz associated with a lesson.
-
-    # Attributes:
-    #     lesson (ForeignKey): The lesson to which the quiz belongs.
-    #     title (CharField): The title of the quiz.
-    #     description (TextField): A detailed description of the quiz.
-    #     questions (ManyToManyField): The questions that are part of the quiz.
-    # """
-    # lesson = models.ForeignKey(Lesson, related_name='quizzes', on_delete=models.CASCADE)
-    # title = models.CharField(max_length=255)
-    # description = models.TextField(default='', blank=True, null=True)
-    # questions = models.ManyToManyField('Question', related_name='quizzes')
-
-    # def __str__(self):
-    #     return f"Quiz for {self.lesson.title}"
-    
-    
-    # add quiz to lesson
 
     @staticmethod
-    def process_quiz_data(lesson, quiz_data):
+    def process_milestone_data(project_id, milestone_data):
         """
-        Process quiz data to create a quiz.
+        Process milestone data to create a milestone.
         """
-        title = quiz_data.get('title')
-        description = quiz_data.get('description')
+        project_id = milestone_data.get('project')
+        name = milestone_data.get('name')
+        description = milestone_data.get('description')
+        due_date = milestone_data.get('due_date')
+        is_achieved = milestone_data.get('is_achieved')
 
-        quiz = Quiz(
-                lesson_id=lesson.id,
-                title=title,
-                description=description
+        milestone = Milestone(
+                project_id=project_id,
+                name=name,
+                description=description,
+                due_date=due_date,
+                is_achieved=is_achieved
             )
 
-        return quiz
+        return milestone
     
-
-    # class Question(models.Model):
-#     """
-#     Represents a question in a quiz.
-
-#     Attributes:
-#         text (TextField): The text of the question.
-#         choices (ManyToManyField): The possible choices for the question.
-#         correct_choice (ForeignKey): The correct choice for the question.
-#     """
-#     text = models.TextField(default='', blank=True, null=True)
-#     choices = models.ManyToManyField('Choice', related_name='questions')
-#     correct_choice = models.ForeignKey('Choice', related_name='correct_for_questions', on_delete=models.CASCADE)
-
-#     def __str__(self):
-#         return self.text
-
-# class Choice(models.Model):
-#     """
-#     Represents a choice for a quiz question.
-
-#     Attributes:
-#         text (CharField): The text of the choice.
-#     """
-#     text = models.CharField(max_length=255)
-
-#     def __str__(self):
-#         return self.text
-    
-    # add  questions and choices to a quiz, you should also add the correct choice to the question. no saving shoukd happren here
-    # function should return question, choices, correct_choice
-    # def add_question_to_quiz(quiz_id, question_data,):
-    #     """
-    #     Add a question to a quiz.
-    #     """
-    #     quiz = CourseQuery.get_quiz_by_id_without_serializer(quiz_id)
-    #     question, choices, correct_choice = CourseHelpers.process_question_data(question_data)
-    #     question.save()
-    #     question.choices.set(choices)
-    #     question.correct_choice = correct_choice
-    #     question.save()
-    #     serializer = QuestionSerializer(question)
-    #     return serializer.data
 
     @staticmethod
-    def process_question_data(quiz, question_data):
+    def process_milestone_update_data(project_id, milestone_id, milestone_data):
         """
-        Process question data to create a question.
+        Process milestone data to update a milestone.
         """
-        text = question_data.get('text')
-        choices_data = question_data.get('choices')
-        correct_choice_text = question_data.get('correct_choice')
+        name = milestone_data.get('name')
+        description = milestone_data.get('description')
+        due_date = milestone_data.get('due_date')
+        is_achieved = milestone_data.get('is_achieved')
 
-        # Create or retrieve choices
-        choices = []
-        for choice_text in choices_data:
-            choice, created = Choice.objects.get_or_create(text=choice_text)
-            choices.append(choice)
+        milestone = Milestone.objects.get(id=milestone_id)
 
-        # Retrieve the correct choice
-        try:
-            correct_choice = Choice.objects.get(text=correct_choice_text)
-        except ObjectDoesNotExist:
-            raise ValueError(f"Correct choice '{correct_choice_text}' not found")
-
-        # Create the question instance
-        question = Question(
-            text=text,
-        )
-
-        print(choices)
-        print(correct_choice)
+        if name is not None:
+            milestone.name = name
         
-        return question, choices, correct_choice
+        if description is not None:
+            milestone.description = description
+        
+        if due_date is not None:
+            milestone.due_date = due_date
+        
+        if is_achieved is not None:
+            milestone.is_achieved = is_achieved
+        
+        return milestone
+    
+    
+    @staticmethod
+    def process_meeting_data(group_id, meeting_data):
+        """
+        Process meeting data to create a meeting.
+        """
+        group_id = meeting_data.get('group')
+        name = meeting_data.get('name')
+        description = meeting_data.get('description')
+        meeting_date = meeting_data.get('meeting_date')
+        created_by_id = meeting_data.get('created_by')
+        participants = meeting_data.get('participants')
+
+        try:
+            created_by = User.objects.get(id=created_by_id)
+        except ObjectDoesNotExist:
+            raise ValidationError("User with the given ID does not exist.")
+        
+        meeting = Meeting(
+                group_id=group_id,
+                name=name,
+                description=description,
+                meeting_date=meeting_date,
+                created_by=created_by
+            )
+
+        return meeting, participants
     
 
     @staticmethod
-    def process_question_update_data(question, question_data):
+    def process_meeting_update_data(group_id, meeting_id, meeting_data):
         """
-        Process question data to update a question.
+        Process meeting data to update a meeting.
         """
-        text = question_data.get('text')
-        choices_data = question_data.get('choices')
-        correct_choice_text = question_data.get('correct_choice')
+        name = meeting_data.get('name')
+        description = meeting_data.get('description')
+        meeting_date = meeting_data.get('meeting_date')
+        participants = meeting_data.get('participants')
 
-        # Update the question text
-        if text is not None:
-            question.text = text
+        meeting = Meeting.objects.get(id=meeting_id)
 
-        # Update the choices
-        choices = []
-        for choice_text in choices_data:
-            choice, created = Choice.objects.get_or_create(text=choice_text)
-            choices.append(choice)
+        if name is not None:
+            meeting.name = name
+        
+        if description is not None:
+            meeting.description = description
+        
+        if meeting_date is not None:
+            meeting.meeting_date = meeting_date
+        
+        if participants is not None:
+            meeting.participants.set(participants)
+        
+        return meeting
+    
 
-        # Update the correct choice
+    @staticmethod
+    def process_discussion_data(group_id, discussion_data):
+        """
+        Process discussion data to create a discussion.
+        """
+        group_id = discussion_data.get('group')
+        topic = discussion_data.get('topic')
+        description = discussion_data.get('description')
+        created_by_id = discussion_data.get('created_by')
+        messages = discussion_data.get('messages')
+
         try:
-            correct_choice = Choice.objects.get(text=correct_choice_text)
+            created_by = User.objects.get(id=created_by_id)
         except ObjectDoesNotExist:
-            raise ValueError(f"Correct choice '{correct_choice_text}' not found")
+            raise ValidationError("User with the given ID does not exist.")
+        
+        discussion = Discussion(
+                group_id=group_id,
+                topic=topic,
+                description=description,
+                created_by=created_by
+            )
 
-        return question, choices, correct_choice
+        return discussion, messages
+    
 
+    @staticmethod
+    def process_discussion_update_data(group_id, discussion_id, discussion_data):
+        """
+        Process discussion data to update a discussion.
+        """
+        topic = discussion_data.get('topic')
+        description = discussion_data.get('description')
+        messages = discussion_data.get('messages')
+
+        discussion = Discussion.objects.get(id=discussion_id)
+
+        if topic is not None:
+            discussion.topic = topic
+        
+        if description is not None:
+            discussion.description = description
+        
+        if messages is not None:
+            discussion.messages.set(messages)
+        
+        return discussion
+    
+
+    @staticmethod
+    def process_announcement_data(group_id, announcement_data):
+        """
+        Process announcement data to create an announcement.
+        """
+        group_id = announcement_data.get('group')
+        title = announcement_data.get('title')
+        content = announcement_data.get('content')
+        created_by_id = announcement_data.get('created_by')
+
+        try:
+            created_by = User.objects.get(id=created_by_id)
+        except ObjectDoesNotExist:
+            raise ValidationError("User with the given ID does not exist.")
+        
+        announcement = Announcement(
+                group_id=group_id,
+                title=title,
+                content=content,
+                created_by=created_by
+            )
+
+        return announcement
+    
+
+    @staticmethod
+    def process_announcement_update_data(group_id, announcement_id, announcement_data):
+        """
+        Process announcement data to update an announcement.
+        """
+        title = announcement_data.get('title')
+        content = announcement_data.get('content')
+
+        announcement = Announcement.objects.get(id=announcement_id)
+
+        if title is not None:
+            announcement.title = title
+        
+        if content is not None:
+            announcement.content = content
+        
+        return announcement
+    
+
+    @staticmethod
+    def process_message_data(discussion_id, message_data):
+        """
+        Process message data to create a message.
+        """
+        discussion_id = message_data.get('discussion')
+        content = message_data.get('content')
+        created_by_id = message_data.get('created_by')
+
+        try:
+            created_by = User.objects.get(id=created_by_id)
+        except ObjectDoesNotExist:
+            raise ValidationError("User with the given ID does not exist.")
+        
+        message = Message(
+                discussion_id=discussion_id,
+                content=content,
+                created_by=created_by
+            )
+
+        return message
+    
+
+    @staticmethod
+    def process_message_update_data(discussion_id, message_id, message_data):
+        """
+        Process message data to update a message.
+        """
+        content = message_data.get('content')
+
+        message = Message.objects.get(id=message_id)
+
+        if content is not None:
+            message.content = content
+        
+        return message
     
