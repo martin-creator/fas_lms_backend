@@ -18,6 +18,7 @@ class Certification(models.Model):
     verification_status = models.BooleanField(default=False)
     related_jobs = models.ManyToManyField('jobs.JobListing', related_name='job_certifications', blank=True)
     related_courses = models.ManyToManyField('courses.Course', related_name='courses_certifications', blank=True)
+    revoked = models.BooleanField(default=False, blank=True, null=True)
 
     def __str__(self):
         return f"{self.name} - {self.user.user.username}"
