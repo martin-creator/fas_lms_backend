@@ -22,3 +22,14 @@ class Certification(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.user.user.username}"
+    
+class LinkedInBadge(models.Model):
+    certification = models.OneToOneField(Certification, related_name='linkedin_badge', on_delete=models.CASCADE)
+    badge_image = models.ImageField(upload_to='linkedin_badges/', blank=True)
+    badge_url = models.URLField(blank=True)
+    share_on_linkedin = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"LinkedIn Badge for {self.certification.name}"
