@@ -635,6 +635,144 @@ def delete_discussion(request, group_id, discussion_id):
     
 
 
+# create message
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='discussion_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='content', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='sender', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Create a new message',
+            description='Create a new message',
+            value={
+                "content": "content",
+                "sender": 1
+            }
+        )
+    ],
+    request=MessageSerializer,
+    responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Message data')}
+)
+@api_view(['POST'])
+def create_message(request, group_id, discussion_id):
+    """
+    API endpoint that allows a message to be created.
+    """
+    if request.method == 'POST':
+        message_data = request.data
+        message = group_controller.create_message(group_id, discussion_id, message_data)
+        return Response(message, status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='discussion_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='message_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get a specific message',
+            description='Get a specific message',
+            value={}
+        )
+    ],
+    request=MessageSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Message data')}
+)
+@api_view(['GET'])
+def get_specific_message(request, group_id, discussion_id, message_id):
+    """
+    API endpoint that allows a specific message to be retrieved.
+    """
+    if request.method == 'GET':
+        message = group_controller.get_message_by_id(group_id, discussion_id, message_id)
+        return Response(message, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='discussion_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='message_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='content', type=str, location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='sender', type=int, location=OpenApiParameter.QUERY, required=False),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update an existing message',
+            description='Update an existing message',
+            value={
+                "content": "content",
+                "sender": 1
+            }
+        )
+    ],
+    request=MessageSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Message data')}
+)
+@api_view(['PUT','GET'])
+def update_message(request, group_id, discussion_id, message_id):
+    """
+    API endpoint that allows an existing message to be updated.
+    """
+    if request.method == 'PUT':
+        message_data = request.data
+        message = group_controller.update_message(group_id, discussion_id, message_id, message_data)
+        return Response(message, status=status.HTTP_200_OK)
+    elif request.method == 'GET':
+        message = group_controller.get_message_by_id(group_id, discussion_id, message_id)
+        return Response(message, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='group_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='discussion_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='message_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete a specific message',
+            description='Delete a specific message',
+            value={}
+        )
+    ],
+    request=MessageSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Message data')}
+)
+@api_view(['DELETE'])
+def delete_message(request, group_id, discussion_id, message_id):
+    """
+    API endpoint that allows a specific message to be deleted.
+    """
+    if request.method == 'DELETE':
+        message = group_controller.delete_message(group_id, discussion_id, message_id)
+        return Response(message, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+# create announcement
+
+
+
 
 
 
