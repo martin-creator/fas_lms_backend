@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
-from activity.models import Reaction, Share, Category
+from django.contrib.contenttypes.fields import GenericRelation
+from activity.models import Share, Category
 from taggit.managers import TaggableManager
 from django.utils import timezone
 
@@ -27,7 +28,8 @@ class Group(models.Model):
     )
     tags = TaggableManager()
     cover_image = models.ImageField(upload_to='group_covers/', blank=True, null=True)
-    shares = models.ManyToManyField(Share, related_name='group_shares', blank=True, db_index=True)
+    shares = GenericRelation(Share, related_name='group_shares', blank=True, db_index=True)
+    tags = TaggableManager()
 
     # Advanced project management and collaboration features
     projects = models.ManyToManyField('Project', related_name='groups_projects', blank=True)
