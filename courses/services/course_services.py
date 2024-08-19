@@ -1,17 +1,16 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.db.models import Count
 from courses.models import Course, CourseEnrollment, CourseCompletion, Lesson, LessonProgress, Quiz, QuizProgress, Question, Choice
 from courses.serializers import CourseSerializer, CourseEnrollmentSerializer, CourseCompletionSerializer, LessonSerializer, LessonProgressSerializer, QuizSerializer, QuizProgressSerializer, QuestionSerializer, ChoiceSerializer
 from courses.utils import DateTimeUtils, UserUtils
-# from notifications.utils.notification_utils import NotificationUtils
+from notifications.utils.notification_utils import NotificationUtils
 from courses.helpers.course_helpers import CourseHelpers
 from courses.querying.course_query import CourseQuery
 from courses.settings.course_settings import CourseSettings
 from courses.reports.course_report import CourseReport
 import logging
-from django.http import request
 
 logger = logging.getLogger(__name__)
+
 
 # automatically save course progress and then return the updated course progress when a person logs in
 

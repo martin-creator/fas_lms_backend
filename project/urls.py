@@ -56,15 +56,14 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-<<<<<<< HEAD
+
 
     path('api/course/', include('courses.urls')),
     path('api/event/', include('events.urls')),
-=======
+    path('api/company/', include('companies.urls')),
     
     path('api/course/', include('courses.urls')),
     path('django-rq/', include('django_rq.urls')),
->>>>>>> b1ad751f06a724ce1903030e25db3f1e8c6ccfd6
     
     # path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     # path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
