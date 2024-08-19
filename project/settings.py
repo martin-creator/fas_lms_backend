@@ -78,11 +78,7 @@ INSTALLED_APPS = [
     'connections',
     'companies',
     'certifications',
-<<<<<<< HEAD
-    # 'loggings',
-=======
     'app_logs', # renamed
->>>>>>> b1ad751f06a724ce1903030e25db3f1e8c6ccfd6
     
 ]
 
@@ -168,15 +164,6 @@ ASGI_APPLICATION = "project.asgi.application"
 # }
 
 
-<<<<<<< HEAD
-# # Celery Configuration
-# CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
-# CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
-# CELERY_ACCEPT_CONTENT = ['json']
-# CELERY_TASK_SERIALIZER = 'json'
-# CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_TIMEZONE = 'UTC'
-=======
 RQ_QUEUES = {
     'default': {
         'HOST': 'localhost',
@@ -211,7 +198,6 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
->>>>>>> b1ad751f06a724ce1903030e25db3f1e8c6ccfd6
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'

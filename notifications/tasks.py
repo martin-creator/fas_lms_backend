@@ -27,7 +27,15 @@ def send_email_notification(notification_id):
         logger.error(f"Failed to send email notification: {e}")
 
 
-@shared_task
+# @shared_task
+# def send_bulk_notifications(notification_data_list):
+#     from .services.notification_service import send_notification
+
+#     for data in notification_data_list:
+#         try:
+#             send_notification(data)
+#         except Exception as e:
+#             logger.error(f"Failed to send bulk notification: {e}")
 def send_notification_task(notification_id):
     """
     Task to send a notification asynchronously.

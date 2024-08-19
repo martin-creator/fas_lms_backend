@@ -33,8 +33,13 @@ class Course(models.Model):
     description = models.TextField()
     attachments = GenericRelation(Attachment)
     categories = models.ManyToManyField('activity.Category', related_name='courses_categories')
-    instructor = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='instructed_courses', on_delete=models.CASCADE)
-    students = models.ManyToManyField(settings.AUTH_USER_MODEL, through='CourseEnrollment', related_name='enrolled_courses')
+    instructor = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='instructed_courses', on_delete=models.CASCADE, null=True, blank=True)
+    students = models.ManyToManyField(
+    settings.AUTH_USER_MODEL, 
+    through='CourseEnrollment', 
+    related_name='course_students',  # Updated related_name
+    blank=True, 
+    null=True)
     shares = models.ManyToManyField('activity.Share', related_name='course_shares', blank=True)
     comments = models.ManyToManyField('posts.Comment', related_name='course_comments', blank=True)
     reactions = models.ManyToManyField('activity.Reaction', related_name='course_reactions', blank=True)
@@ -64,7 +69,7 @@ class Lesson(models.Model):
         other_reading_links (ManyToManyField): Other reading links related to the lesson.
         order (PositiveIntegerField): The order of the lesson within the course.
     """
-    course = models.ForeignKey(Course, related_name='lessons', on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, related_name='lessons', on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField(default='', blank=True, null=True)
     content = models.TextField(default='', blank=True, null=True)
@@ -86,8 +91,8 @@ class LessonProgress(models.Model):
         lesson (ForeignKey): The lesson being tracked.
         completed_at (DateTimeField): The date and time when the lesson was completed.
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    lesson = models.ForeignKey(Lesson, related_name='progress', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='lesson_progress', null=True, blank=True)
+    lesson = models.ForeignKey(Lesson, related_name='progress', on_delete=models.CASCADE, null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -111,10 +116,10 @@ class Quiz(models.Model):
         description (TextField): A detailed description of the quiz.
         questions (ManyToManyField): The questions that are part of the quiz.
     """
-    lesson = models.ForeignKey(Lesson, related_name='quizzes', on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, related_name='quizzes', on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField(default='', blank=True, null=True)
-    questions = models.ManyToManyField('Question', related_name='quizzes')
+    questions = models.ManyToManyField('Question', related_name='quizzes', blank=True)
 
     def __str__(self):
         return f"Quiz for {self.lesson.title}"
@@ -129,7 +134,7 @@ class Question(models.Model):
         correct_choice (ForeignKey): The correct choice for the question.
     """
     text = models.TextField(default='', blank=True, null=True)
-    choices = models.ManyToManyField('Choice', related_name='questions')
+    choices = models.ManyToManyField('Choice', related_name='questions', blank=True)
     correct_choice = models.ForeignKey('Choice', related_name='correct_for_questions', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
@@ -158,8 +163,8 @@ class QuizProgress(models.Model):
         completed_at (DateTimeField): The date and time when the quiz was completed.
         score (IntegerField): The score achieved by the user in the quiz.
     """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    quiz = models.ForeignKey(Quiz, related_name='progress', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='quiz_progress', null=True, blank=True)
+    quiz = models.ForeignKey(Quiz, related_name='progress', on_delete=models.CASCADE, null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     score = models.IntegerField(null=True, blank=True)
 
@@ -180,8 +185,14 @@ class CourseEnrollment(models.Model):
         enrolled_at (DateTimeField): The date and time when the student enrolled.
         progress (FloatField): The student's progress in the course as a percentage.
     """
-    course = models.ForeignKey(Course, related_name='enrolled_courses', on_delete=models.CASCADE)
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, related_name='enrolled_courses', on_delete=models.CASCADE, null=True, blank=True)
+    student = models.ForeignKey(
+    settings.AUTH_USER_MODEL, 
+    on_delete=models.CASCADE, 
+    related_name='course_enrollments',  # Updated related_name
+    null=True, 
+    blank=True
+)
     enrolled_at = models.DateTimeField(auto_now_add=True)
     progress = models.FloatField(default=0)  # Track progress as a percentage
 
@@ -200,8 +211,8 @@ class CourseCompletion(models.Model):
         certificate (ForeignKey): The certificate associated with the course completion.
         tags (TaggableManager): Tags associated with the course completion.
     """
-    course = models.ForeignKey(Course, related_name='completions', on_delete=models.CASCADE)
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='completed_courses', on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, related_name='completions', on_delete=models.CASCADE, null=True, blank=True)
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='completed_courses', on_delete=models.CASCADE, null=True, blank=True)
     completed_at = models.DateTimeField(auto_now_add=True)
     certificate_url = models.URLField(blank=True, null=True)
     certificate = models.ForeignKey('certifications.Certification', related_name='course_completions', on_delete=models.SET_NULL, null=True, blank=True)
