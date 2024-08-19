@@ -11,7 +11,7 @@ class PermissionChecker:
     """
 
     @staticmethod
-    def user_can_manage_notifications(user):
+    def user_can_manage_notifications(user_profile):
         """
         Check if the user has permission to manage notifications.
 
@@ -21,10 +21,11 @@ class PermissionChecker:
         Returns:
             bool: True if the user has the permission, False otherwise.
         """
+        user = user_profile.user
         return user.has_perm('notifications.can_manage_notifications')
 
     @staticmethod
-    def user_can_view_notifications(user):
+    def user_can_view_notifications(user_profile):
         """
         Check if the user has permission to view notifications.
 
@@ -34,6 +35,7 @@ class PermissionChecker:
         Returns:
             bool: True if the user has the permission, False otherwise.
         """
+        user = user_profile.user
         return user.has_perm('notifications.can_view_notifications')
 
     @staticmethod

@@ -41,18 +41,21 @@ class NotificationAdmin(admin.ModelAdmin):
 @admin.register(NotificationReadStatus)
 class NotificationReadStatusAdmin(admin.ModelAdmin):
     form = NotificationReadStatusForm
-    list_display = ('user', 'notification', 'is_read', 'read_at')
+    list_display = ('user', 'is_read', 'read_at', 'get_notification_type')
     list_filter = ('is_read',)
-    search_fields = ('user__username', 'notification__notification_type__type_name')
+    search_fields = ('user__username',)
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related('user', 'notification')
+        
+        return queryset
 
-    def notification_type(self, obj):
-        return obj.notification.notification_type.type_name
-
-    notification_type.short_description = 'Notification Type'
+    def get_notification_type(self, obj):
+        if obj.notification.exists():  # Check if notification is related
+            return obj.notification.first().notification_type.type_name
+        return 'N/A'
+    
+    get_notification_type.short_description = 'Notification Type'
 
 @admin.register(UserNotificationPreference)
 class UserNotificationPreferenceAdmin(admin.ModelAdmin):
@@ -67,7 +70,7 @@ class NotificationSnoozeAdmin(admin.ModelAdmin):
 
 @admin.register(NotificationEngagement)
 class NotificationEngagementAdmin(admin.ModelAdmin):
-    list_display = ('notification', 'user', 'viewed_at', 'clicked_at', 'interaction_type')
+    list_display = ( 'user', 'viewed_at', 'clicked_at', 'interaction_type')
     list_filter = ('interaction_type', 'viewed_at', 'clicked_at')
     search_fields = ('user__username', 'notification__notification_type__type_name')
 
@@ -79,6 +82,6 @@ class NotificationABTestAdmin(admin.ModelAdmin):
 
 @admin.register(NotificationLog)
 class NotificationLogAdmin(admin.ModelAdmin):
-    list_display = ('notification', 'action', 'performed_by', 'timestamp')
+    list_display = ('action', 'performed_by', 'timestamp')
     list_filter = ('action', 'timestamp')
     search_fields = ('notification__notification_type__type_name', 'performed_by__username')

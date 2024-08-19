@@ -9,16 +9,17 @@ class ChatRoomAdmin(admin.ModelAdmin):
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('sender', 'chat', 'content', 'timestamp', 'is_read')
-    list_filter = ('chat', 'sender', 'timestamp', 'is_read', 'message_type')
+    list_display = ('sender', 'chat_room', 'content', 'timestamp', 'is_read')
+    list_filter = ('chat_room', 'sender', 'timestamp', 'is_read', 'message_type')
     search_fields = ('sender__username', 'chat__roomId', 'content')
     date_hierarchy = 'timestamp'
-    filter_horizontal = ('attachments', 'reactions', 'shares')  # Allows for easier selection of related objects
+    filter_horizontal = () 
     raw_id_fields = ('parent_message',)  # Provides a raw ID field for parent_message for efficient lookup
+
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related('sender', 'chat')
+        return queryset.select_related('sender', 'chat_room')
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'sender':

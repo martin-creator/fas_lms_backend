@@ -102,7 +102,7 @@ class NotificationSettingsForm(forms.ModelForm):
 class NotificationReadStatusForm(forms.ModelForm):
     class Meta:
         model = NotificationReadStatus
-        fields = ['user', 'notification', 'is_read', 'read_at']
+        fields = ['user', 'is_read', 'read_at']
 
     def clean_read_at(self):
         read_at = self.cleaned_data.get('read_at')
@@ -142,7 +142,7 @@ class NotificationSnoozeForm(forms.ModelForm):
 class NotificationEngagementForm(forms.ModelForm):
     class Meta:
         model = NotificationEngagement
-        fields = ['notification', 'user', 'clicked_at', 'interaction_type']
+        fields = ['user', 'clicked_at', 'interaction_type']
 
     def clean_clicked_at(self):
         clicked_at = self.cleaned_data.get('clicked_at')
@@ -173,7 +173,7 @@ class NotificationABTestForm(forms.ModelForm):
 class NotificationLogForm(forms.ModelForm):
     class Meta:
         model = NotificationLog
-        fields = ['notification', 'action', 'performed_by']  # Removed 'timestamp'
+        fields = [ 'action', 'performed_by']  # Removed 'timestamp'
 
     def clean(self):
         cleaned_data = super().clean()

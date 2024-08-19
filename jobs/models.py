@@ -23,8 +23,8 @@ class JobListing(models.Model):
     company = models.ForeignKey('companies.Company', related_name='job_listings_companies', on_delete=models.CASCADE, db_index=True)
     title = models.CharField(max_length=255)
     description = models.TextField()
-    attachments = GenericRelation('activity.Attachment')
-    categories = models.ManyToManyField('activity.Category', related_name='job_listings_categories')
+    attachments = GenericRelation('activity.Attachment',related_name='job_listings_attachments' )
+    categories = GenericRelation('activity.Category', related_name='job_listings_categories')
     location = models.CharField(max_length=255)
     posted_date = models.DateTimeField(auto_now_add=True)
     closing_date = models.DateTimeField()
@@ -42,10 +42,10 @@ class JobListing(models.Model):
         choices=EXPERIENCE_LEVELS,
         blank=True
     )
-    skills_required = models.ManyToManyField('profiles.Skill', related_name='required_jobs', blank=True, db_index=True)
+    skills_required = models.ManyToManyField('profiles.Skill', related_name='required_skills_jobs', blank=True, db_index=True)
     applications = models.ManyToManyField('JobApplication', related_name='applications_job_listings', blank=True, db_index=True)
     notifications = models.ManyToManyField('JobNotification', related_name='notifications_job_listings', blank=True, db_index=True)
-    shares = models.ManyToManyField('activity.Share', related_name='shared_job_listings', blank=True)
+    shares = GenericRelation('activity.Share', related_name='shared_job_listings')
     tags = TaggableManager()
 
     def __str__(self):
@@ -70,7 +70,7 @@ class JobApplication(models.Model):
         choices=STATUS_CHOICES,
         default='applied'
     )
-    shares = models.ManyToManyField('activity.Share', related_name='shared_applications', blank=True)
+    shares = GenericRelation('activity.Share', related_name='shared_applications')
 
     def __str__(self):
         return f'{self.applicant.username} applied for {self.job_listing.title}'
@@ -80,7 +80,7 @@ class JobNotification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='notifications', on_delete=models.CASCADE, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
-    shares = models.ManyToManyField('activity.Share', related_name='shared_notifications', blank=True)
+    shares = GenericRelation('activity.Share', related_name='shared_notifications')
 
     def __str__(self):
         return f'{self.user.username} received a notification for {self.job_listing.title}'

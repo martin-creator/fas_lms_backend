@@ -1,6 +1,7 @@
 # notifications/utils/delivery_method.py
 
 from enum import Enum
+from django.utils.translation import gettext as _
 import logging
 
 logger = logging.getLogger(__name__)
@@ -10,22 +11,37 @@ class DeliveryMethod(Enum):
     SMS = "SMS"
     PUSH = "PUSH"
     IN_APP = "IN_APP"
-    
-    @staticmethod
-    def notify(notification):
+
+class DeliveryMethodHandler:
+    def __init__(self):
         from notifications.services.pubsub_service import PubSubService
-        
-        method = notification.delivery_method
-        if method == DeliveryMethod.EMAIL.name:
-            PubSubService.send_email_notification(notification)
-        elif method == DeliveryMethod.SMS.name:
-            PubSubService.send_sms_notification(notification)
-        elif method == DeliveryMethod.PUSH.name:
-            PubSubService.send_push_notification(notification.id)
-        elif method == DeliveryMethod.IN_APP.name:
-            PubSubService.send_in_app_notification(notification)
-        
-        # Publish to Redis and send WebSocket notification
-        pubsub_service = PubSubService()
-        pubsub_service.publish_notification('notifications', notification)
-        PubSubService.send_websocket_notification(notification)
+        self._pubsub_service = PubSubService()
+        self._method_function_map = {
+            DeliveryMethod.EMAIL.name: self._pubsub_service.send_email_notification,
+            DeliveryMethod.SMS.name: self._pubsub_service.send_sms_notification,
+            DeliveryMethod.PUSH.name: self._pubsub_service.send_push_notification,
+            DeliveryMethod.IN_APP.name: self._pubsub_service.send_in_app_notification,
+        }
+
+    def dispatch(self, notification, method):
+        """
+        Dispatch the notification based on the specified delivery method.
+
+        Args:
+            notification (Notification): The notification object.
+            method (str): The delivery method as a string.
+        """
+        func = self._method_function_map.get(method)
+        if func:
+            func(notification)
+
+
+    def notify(self, notification):
+        """
+        Handle notification dispatch and real-time notifications.
+
+        Args:
+            notification (Notification): The notification object.
+        """
+        delivery_method = notification.delivery_method
+        self.dispatch(notification, delivery_method)

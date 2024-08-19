@@ -9,7 +9,7 @@ from notifications.querying.notification_query import NotificationQueryService
 from notifications.reports.notification_report import generate_user_notification_report, generate_notification_summary
 from notifications.utils.permissions import PermissionChecker
 from notifications.utils.notification_validation import NotificationsValidator
-from notifications.services.pubsub_service import PubSubService
+from notifications.utils.delivery_method import DeliveryMethodHandler
 from notifications.services.crm_integration import send_crm_alert
 from notifications.services.alert_system_integration import send_external_alert
 from notifications.settings.config.constances import NOTIFICATION_CHANNELS
@@ -17,57 +17,170 @@ from notifications.metrics import increment_notifications_sent, increment_notifi
 from django.utils.translation import gettext_lazy as _
 import random
 from django.apps import apps
-
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 logger = logging.getLogger(__name__)
 
 class NotificationUtils:
+    """
+    Utility class providing methods to handle notifications.
+    """
 
     @staticmethod
     def get_model(model_name):
+        """
+        Retrieve the model class by name from the 'notifications' app.
+        """
         return apps.get_model('notifications', model_name)
 
     @staticmethod
     def send_notification(data):
+        """
+        Validates and sends a notification with permission checks.
+
+        Args:
+            data (dict): Data required for creating a notification.
+
+        Returns:
+            Notification: The created and sent notification object.
+
+        Raises:
+            PermissionDenied: If the user lacks the necessary permissions.
+            ValueError: If the data provided is invalid.
+        """
         from profiles.models import UserProfile
         from notifications.serializers import NotificationSerializer
-        from notifications.utils.delivery_method import DeliveryMethod
-
-        user = UserProfile.objects.get(id=data['recipient'])
-        
-        if not PermissionChecker.user_can_manage_notifications(user):
-            raise PermissionDenied(_("You do not have permission to send notifications."))
-        
-        if not NotificationsValidator.validate_notification_permissions(user, data['notification_type']):
-            raise PermissionDenied(_("User does not have permission to receive this notification."))
-
-        serializer = NotificationSerializer(data=data)
-        if serializer.is_valid():
-            notification = serializer.save()
-            delivery_method = data.get('delivery_method', DeliveryMethod.PUSH.value)
-            NotificationUtils._dispatch_notification(notification, delivery_method)
-
-            if data.get('notify_crm'):
-                send_crm_alert(user.id, data['event_type'], data['event_data'])
-            if data.get('notify_alert_system'):
-                send_external_alert(user.id, data['alert_type'], data['message'])
-
-            PubSubService.publish_notification(notification)
-            increment_notifications_sent()
-            return notification
-        else:
-            raise ValueError(serializer.errors)
-
-    @staticmethod
-    def _dispatch_notification(notification, delivery_method):
+        from notifications.services.pubsub_service import PubSubService
         from notifications.utils.delivery_method import DeliveryMethod
 
         try:
-            delivery_function = getattr(DeliveryMethod, f'send_{delivery_method.lower()}_notification')
-            delivery_function(notification)
-        except AttributeError:
-            raise ValueError(_("Invalid delivery method."))
+            # Fetch the recipient user
+            user = UserProfile.objects.get(id=data['recipient'])
 
+            # Permission checks
+            NotificationUtils._check_permissions(user, data['notification_type'])
+
+            # Validate and save the notification
+            serializer = NotificationSerializer(data=data)
+            if serializer.is_valid():
+                notification = serializer.save()
+
+                # Always send in-app notification using PubSubService
+                pubsub_service = PubSubService()
+                pubsub_service.send_in_app_notification(notification)
+
+                # Optionally send additional notifications via other methods
+                additional_methods = data.get("delivery_method", [])
+                for method in additional_methods:
+                    if method != DeliveryMethod.IN_APP.value:
+                        NotificationUtils._dispatch_notification(notification, method)
+
+
+                # Trigger external integrations if applicable
+                NotificationUtils._trigger_external_integrations(data, user)
+
+                # Increment metrics for sent notifications
+                increment_notifications_sent()
+
+                return notification
+            else:
+                raise ValueError(serializer.errors)
+        except Exception as e:
+            logger.error(f"Error sending notification: {e}")
+            increment_notifications_failed()
+            raise
+    
+    @staticmethod
+    def _check_permissions(user, notification_type):
+        if not PermissionChecker.user_can_manage_notifications(user):
+            raise PermissionDenied(_("You do not have permission to send notifications."))
+
+        if not NotificationsValidator.validate_notification_permissions(user, notification_type):
+            raise PermissionDenied(_("User does not have permission to receive this notification."))
+               
+    @staticmethod
+    def _dispatch_notification(notification, delivery_method):
+        """
+        Dispatch the notification using the specified delivery method and
+        ensure real-time notification is handled.
+
+        Args:
+            notification (Notification): The notification object.
+            delivery_method (str): The delivery method as a string.
+        """
+        handler = DeliveryMethodHandler()
+        handler.dispatch(notification, delivery_method)
+
+        # Ensure real-time notification is sent
+        NotificationUtils._send_realtime_notification(notification)
+
+    @staticmethod
+    def _send_realtime_notification(notification):
+        """
+        Send real-time notifications via PubSubService.
+
+        Args:
+            notification (Notification): The notification object.
+        """
+        from notifications.services.pubsub_service import PubSubService
+        try:
+            # Use PubSubService to handle real-time notification
+            PubSubService().handle_real_time_notification(notification)
+            logger.info(f"Real-time notification processed for user {notification.recipient.username}")
+        except Exception as e:
+            logger.error(f"Error processing real-time notification: {e}")
+
+    @staticmethod
+    def _trigger_external_integrations(data, user):
+        """
+        Trigger external system integrations if applicable.
+
+        Args:
+            data (dict): Notification data.
+            user (UserProfile): The user receiving the notification.
+        """
+        if data.get("notify_crm"):
+            send_crm_alert(user.id, data.get("event_type"), data.get("event_data"))
+        if data.get("notify_alert_system"):
+            send_external_alert(user.id, data.get("alert_type"), data.get("message"))
+
+    @staticmethod
+    def create_notification(recipient, content, notification_type, url, delivery_methods=None):
+        """
+        Create and send a notification with an in-app notification by default.
+        Allows for additional delivery methods if specified.
+
+        Args:
+            recipient (UserProfile): The recipient user.
+            content (str): The content of the notification.
+            notification_type (NotificationType): The type of the notification.
+            url (str): URL associated with the notification.
+            delivery_methods (list of str): Optional list of additional delivery methods.
+
+        Returns:
+            Notification: The created and sent notification object.
+        """
+        # Prepare notification data
+        data = {
+            "recipient": recipient.id,
+            "content": content,
+            "notification_type": {
+                "id": notification_type.id,
+                "type_name": notification_type.type_name,
+            },
+            "url": url,
+            "timestamp": timezone.now(),
+            "delivery_method": delivery_methods if delivery_methods else []
+        }
+
+        # Call send_notification
+        return NotificationUtils.send_notification(data)
+
+
+
+
+    
     @staticmethod
     def _handle_error(e, data):
         increment_notifications_failed()

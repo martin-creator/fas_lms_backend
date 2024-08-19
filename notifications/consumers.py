@@ -52,7 +52,7 @@ class NotificationConsumer(WebsocketConsumer):
 
 class NotificationSubscriber:
     def __init__(self):
-        self.r = redis.Redis(host='localhost', port=6379, db=0)  # Adjust settings as needed
+        self.r = redis.Redis(host='localhost', port=6379, db=0)
         self.pubsub = self.r.pubsub()
         self.pubsub.subscribe('notifications')
         self.channel_layer = get_channel_layer()

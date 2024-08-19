@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+from django.contrib.contenttypes.fields import GenericRelation
 # from jobs.models import JobApplication, JobListing
 from followers.models import Follower, FollowRequest, FollowNotification
 # from notifications.models import Notification
@@ -29,10 +30,10 @@ class UserProfile(models.Model):
     endorsements = models.ManyToManyField('Endorsement', related_name='users_endorsements', blank=True, db_index=True)
     job_applications = models.ManyToManyField('jobs.JobApplication', related_name='profile_job_applications', blank=True)
     job_listings = models.ManyToManyField('jobs.JobListing', related_name='profile_job_listings', blank=True)
-    notifications = models.ManyToManyField('notifications.Notification', related_name='profile_notifications', blank=True)
+    notifications = GenericRelation('notifications.Notification', related_name='profile_notifications')
     followers = models.ManyToManyField(Follower, related_name='users_followers', blank=True)
     follow_requests = models.ManyToManyField(FollowRequest, related_name='users_follow_requests', blank=True)
-    shares = models.ManyToManyField('activity.Share', related_name='users_shares', blank=True)
+    shares = GenericRelation('activity.Share', related_name='users_shares')
     
     
     def __str__(self):
@@ -101,7 +102,7 @@ class Experience(models.Model):
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
     is_current = models.BooleanField(default=False)
-    shares = models.ManyToManyField('activity.Share', related_name='experience_shares', blank=True)
+    shares = GenericRelation('activity.Share', related_name='experience_shares')
 
     def __str__(self):
         return f'{self.title} at {self.company.name if self.company else "N/A"}'
@@ -114,7 +115,7 @@ class Education(models.Model):
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
     is_current = models.BooleanField(default=False)
-    shares = models.ManyToManyField('activity.Share', related_name='education_shares', blank=True)
+    shares = GenericRelation('activity.Share', related_name='education_shares')
 
     def __str__(self):
         return f'{self.degree} in {self.field_of_study} from {self.institution}'
@@ -127,7 +128,7 @@ class Skill(models.Model):
     endorsements = models.ManyToManyField('Endorsement', related_name='endorsement_skills', blank=True, db_index=True)
     job_applications = models.ManyToManyField('jobs.JobApplication', related_name='skill_job_applications', blank=True)
     job_listings = models.ManyToManyField('jobs.JobListing', related_name='skill_job_listings', blank=True)
-    notifications = models.ManyToManyField('notifications.Notification', related_name='skill_notifications', blank=True)
+    notifications = GenericRelation('notifications.Notification', related_name='skill_notifications')
     verified_from = models.ManyToManyField(UserProfile, related_name='skill_verified_from', blank=True)
     verified_to = models.ManyToManyField(UserProfile, related_name='skill_verified_to', blank=True)
 

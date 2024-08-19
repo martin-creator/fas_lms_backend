@@ -10,7 +10,7 @@ from notifications.serializers import (
     NotificationSettingsSerializer, NotificationTypeSerializer,
     UserNotificationPreferenceSerializer, NotificationLogSerializer
 )
-
+from django.conf import settings
 
 
 class NotificationViewSet(viewsets.ViewSet):
@@ -19,6 +19,10 @@ class NotificationViewSet(viewsets.ViewSet):
     """
     controller = NotificationController()
 
+    # def list(self, request):
+    #     print("REST_FRAMEWORK settings in view:", settings.REST_FRAMEWORK)
+    #     return Response({"message": "List of notifications"}, status=status.HTTP_200_OK)
+    
     def create(self, request):
         data = request.data
         notification = self.controller.create_notification(data)
@@ -69,7 +73,7 @@ class NotificationViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
-    def settings(self, request, user_id=None):
+    def get_notifications_settings(self, request, user_id=None):
         settings = self.controller.get_notification_settings(user_id)
         serializer = NotificationSettingsSerializer(settings)
         return Response(serializer.data)
