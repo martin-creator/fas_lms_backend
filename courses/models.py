@@ -31,7 +31,7 @@ class Course(models.Model):
     """
     title = models.CharField(max_length=255)
     description = models.TextField()
-    attachments = GenericRelation('Attachment')
+    attachments = GenericRelation(Attachment)
     categories = models.ManyToManyField('activity.Category', related_name='courses_categories')
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='instructed_courses', on_delete=models.CASCADE)
     students = models.ManyToManyField(settings.AUTH_USER_MODEL, through='CourseEnrollment', related_name='enrolled_courses')
@@ -69,9 +69,6 @@ class Lesson(models.Model):
     description = models.TextField(default='', blank=True, null=True)
     content = models.TextField(default='', blank=True, null=True)
     video_url = models.URLField(blank=True, null=True)
-
-
-
     attachments = GenericRelation(Attachment)
     tags = TaggableManager()
     order = models.PositiveIntegerField(default=0, blank=True, null=True)
