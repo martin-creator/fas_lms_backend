@@ -1,4 +1,4 @@
-
+# notifications/settings/default_notifications_settings.py
 
 
 from config.constances import NOTIFICATION_TYPES, NOTIFICATION_CHANNELS
