@@ -44,12 +44,12 @@ def decrease_enrollment_count(sender, instance, **kwargs):
     course.enrollment_count = CourseEnrollment.objects.filter(course=course).count()
     course.save()
 
-# Signal to update course duration when start or end time is changed
-@receiver(post_save, sender=Course)
-def update_course_duration(sender, instance, created, **kwargs):
-    if not created:
-        instance.duration_days = (instance.end_time - instance.start_time).days
-        instance.save()
+# # Signal to update course duration when start or end time is changed
+# @receiver(post_save, sender=Course)
+# def update_course_duration(sender, instance, created, **kwargs):
+#     if not created:
+#         instance.duration_days = (instance.end_time - instance.start_time).days
+#         instance.save()
 
 # Signal to delete associated course completions when a course is deleted
 @receiver(post_delete, sender=Course)
