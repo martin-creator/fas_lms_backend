@@ -1,7 +1,7 @@
 # notifications/reports/notification_report.py
 
+from django.apps import apps
 from django.db.models import Count
-from notifications.models import Notification
 
 def generate_user_notification_report(user_id):
     """
@@ -13,6 +13,8 @@ def generate_user_notification_report(user_id):
     Returns:
     - dict: A dictionary containing the notification report for the user.
     """
+    Notification = apps.get_model('notifications', 'Notification')
+    
     notifications = Notification.objects.filter(recipient_id=user_id).order_by('-timestamp')
     unread_count = notifications.filter(read=False).count()
     read_count = notifications.filter(read=True).count()
@@ -34,6 +36,8 @@ def generate_notification_summary():
     Returns:
     - dict: A dictionary containing the summary of notifications.
     """
+    Notification = apps.get_model('notifications', 'Notification')
+    
     total_notifications = Notification.objects.count()
     unread_notifications = Notification.objects.filter(read=False).count()
     read_notifications = Notification.objects.filter(read=True).count()

@@ -64,7 +64,6 @@ urlpatterns = [
 =======
     
     path('api/course/', include('courses.urls')),
-    
     path('django-rq/', include('django_rq.urls')),
 >>>>>>> b1ad751f06a724ce1903030e25db3f1e8c6ccfd6
     

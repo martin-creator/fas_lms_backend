@@ -1,5 +1,4 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
 *.py[cod]
 *$py.class
 
@@ -72,7 +71,7 @@ instance/
 docs/_build/
 
 # PyBuilder
-.pybuilder/
+./pybuilder/
 target/
 
 # Jupyter Notebook
