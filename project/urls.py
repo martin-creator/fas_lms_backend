@@ -57,6 +57,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
+
     path('api/course/', include('courses.urls')),
     path('api/event/', include('events.urls')),
     path('api/company/', include('companies.urls')),

@@ -562,10 +562,9 @@ def delete_specific_lesson(request, course_id, lesson_id):
             value={}
         )
     ],
-<<<<<<< HEAD
+
     request=LessonProgressSerializer,
-=======
->>>>>>> b1ad751f06a724ce1903030e25db3f1e8c6ccfd6
+
     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Course data')}
 )
 @api_view(['POST'])

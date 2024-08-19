@@ -356,4 +356,3 @@ class CourseQuery:
         Get a choice by its ID.
         """
         return Choice.objects.get(id=choice_id)
-    
