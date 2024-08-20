@@ -27,7 +27,7 @@ class JobListingAdmin(admin.ModelAdmin):
     search_fields = ('title', 'description', 'location', 'requirements', 'responsibilities')
     readonly_fields = ('posted_date',)
     inlines = (AttachmentInline,)
-    filter_horizontal = ('categories', 'skills_required', 'shares')
+    filter_horizontal = ()
 
 @admin.register(JobApplication)
 class JobApplicationAdmin(admin.ModelAdmin):
@@ -35,7 +35,7 @@ class JobApplicationAdmin(admin.ModelAdmin):
     list_filter = ('job_listing', 'status', 'applied_date')
     search_fields = ('applicant__username', 'job_listing__title')
     readonly_fields = ('applied_date',)
-    filter_horizontal = ('shares',)
+    filter_horizontal = ()
 
 @admin.register(JobNotification)
 class JobNotificationAdmin(admin.ModelAdmin):
@@ -43,4 +43,4 @@ class JobNotificationAdmin(admin.ModelAdmin):
     list_filter = ('job_listing', 'created_at', 'read')
     search_fields = ('user__username', 'job_listing__title')
     readonly_fields = ('created_at',)
-    filter_horizontal = ('shares',)
+    filter_horizontal = ()

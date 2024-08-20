@@ -4,7 +4,9 @@ from taggit.managers import TaggableManager
 from datetime import timedelta
 # from posts.models import Comment
 # from certifications.models import Certification
+
 from activity.models import Attachment
+
 from django.contrib.contenttypes.fields import GenericRelation
 
 class Course(models.Model):
@@ -29,7 +31,7 @@ class Course(models.Model):
     """
     title = models.CharField(max_length=255)
     description = models.TextField()
-    attachments = GenericRelation('activity.Attachment')
+    attachments = GenericRelation(Attachment)
     categories = models.ManyToManyField('activity.Category', related_name='courses_categories')
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='instructed_courses', on_delete=models.CASCADE, null=True, blank=True)
     students = models.ManyToManyField(
@@ -72,7 +74,7 @@ class Lesson(models.Model):
     description = models.TextField(default='', blank=True, null=True)
     content = models.TextField(default='', blank=True, null=True)
     video_url = models.URLField(blank=True, null=True)
-    attachments = GenericRelation('activity.Attachment')
+    attachments = GenericRelation(Attachment)
     tags = TaggableManager()
     order = models.PositiveIntegerField(default=0, blank=True, null=True)
 

@@ -3,19 +3,23 @@ from courses.models import Course, CourseEnrollment, CourseCompletion, Lesson, L
 from courses.serializers import CourseSerializer, CourseEnrollmentSerializer, CourseCompletionSerializer, LessonSerializer, LessonProgressSerializer, QuizSerializer, QuizProgressSerializer, QuestionSerializer, ChoiceSerializer
 from courses.utils import DateTimeUtils, UserUtils
 from courses.utils.notification_utils import NotificationUtils
+# from notifications.utils.notification_utils import NotificationUtils
 from courses.helpers.course_helpers import CourseHelpers
 from courses.querying.course_query import CourseQuery
+from courses.settings.course_settings import CourseSettings
+from courses.reports.course_report import CourseReport
 import logging
 
 logger = logging.getLogger(__name__)
 
-class CourseService:
-    """
-    Service class for managing courses, lessons, quizzes, and user progress.
-    """
 
-    def __init__(self):
-        self.notification = NotificationUtils()
+# automatically save course progress and then return the updated course progress when a person logs in
+
+class CourseService:
+    # CourseService: Service class for courses.
+    # Functions:
+    # get_courses, get_course, create_course, update_course, delete_course, enroll_course, complete_course, get_lessons, get_lesson, get_quizzes, get_quiz, submit_quiz, get_questions, get_question, get_choices, get_choice, get_course_enrollments, get_course_completions, get_lesson_progresses, get_quiz_progresses, get_question_choices.
+
 
     @staticmethod
     def get_courses():

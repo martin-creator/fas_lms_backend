@@ -34,3 +34,8 @@ class LinkedInBadge(models.Model):
 
     def __str__(self):
         return f"LinkedIn Badge for {self.certification.name}"
+    
+
+
+
+# https://chatgpt.com/share/e3cba26c-78b7-499a-9f11-12a340f2c9d3
