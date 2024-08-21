@@ -64,6 +64,8 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar',
     'django_rq', 
     'encrypted_model_fields',
+    'python_linkedin',
+    'weasyprint',
     
     # my apps
     'activity',

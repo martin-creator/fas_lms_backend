@@ -1,147 +1,216 @@
 from django.db.models import Count, Q
-from companies.models import Company, CompanyUpdate
-from companies.serializers import CompanySerializer, CompanyUpdateSerializer
+from certifications.models import Certification, LinkedInBadge
+from certifications.serializers import CertificationSerializer, LinkedInBadgeSerializer
 from django.utils import timezone
 
 
-class CompanyQuery:
+class CertificationQuery:
     @staticmethod
-    def get_companies():
+    def get_certifications():
         """
-        Get all companies.
+        Get all certifications.
         """
-        companies = Company.objects.all()
-        serializer = CompanySerializer(companies, many=True)
+        certifications = Certification.objects.all()
+        serializer = CertificationSerializer(certifications, many=True)
         return serializer.data
 
     @staticmethod
-    def get_company(company_id):
+    def get_certification(certification_id):
         """
-        Get a specific company.
+        Get a specific certification.
         """
-        company = Company.objects.get(id=company_id)
-        serializer = CompanySerializer(company)
+        certification = Certification.objects.get(id=certification_id)
+        serializer = CertificationSerializer(certification)
         return serializer.data
 
     @staticmethod
-    def get_company_updates(company_id):
+    def get_certifications_by_user(user_id):
         """
-        Get all updates for a specific company.
+        Get all certifications for a specific user.
         """
-        updates = CompanyUpdate.objects.filter(company_id=company_id)
-        serializer = CompanyUpdateSerializer(updates, many=True)
+        certifications = Certification.objects.filter(user_id=user_id)
+        serializer = CertificationSerializer(certifications, many=True)
         return serializer.data
 
     @staticmethod
-    def get_companies_by_owner(owner_id):
+    def get_certifications_by_category(category_id):
         """
-        Get all companies owned by a specific owner.
+        Get all certifications in a specific category.
         """
-        companies = Company.objects.filter(owner_id=owner_id)
-        serializer = CompanySerializer(companies, many=True)
+        certifications = Certification.objects.filter(categories=category_id)
+        serializer = CertificationSerializer(certifications, many=True)
         return serializer.data
 
     @staticmethod
-    def get_companies_by_employee(employee_id):
+    def get_certifications_by_issuing_organization(issuing_organization):
         """
-        Get all companies where a specific employee works.
+        Get all certifications from a specific issuing organization.
         """
-        companies = Company.objects.filter(employees=employee_id)
-        serializer = CompanySerializer(companies, many=True)
+        certifications = Certification.objects.filter(issuing_organization=issuing_organization)
+        serializer = CertificationSerializer(certifications, many=True)
+        return serializer.data
+
+    @staticmethod
+    def get_certifications_by_issue_date(issue_date):
+        """
+        Get all certifications issued on a specific date.
+        """
+        certifications = Certification.objects.filter(issue_date=issue_date)
+        serializer = CertificationSerializer(certifications, many=True)
+        return serializer.data
+
+    @staticmethod
+    def get_certifications_by_expiration_date(expiration_date):
+        """
+        Get all certifications expiring on a specific date.
+        """
+        certifications = Certification.objects.filter(expiration_date=expiration_date)
+        serializer = CertificationSerializer(certifications, many=True)
+        return serializer.data
+
+    @staticmethod
+    def get_certifications_by_verification_status(verification_status):
+        """
+        Get all certifications with a specific verification status.
+        """
+        certifications = Certification.objects.filter(verification_status=verification_status)
+        serializer = CertificationSerializer(certifications, many=True)
+        return serializer.data
+
+    @staticmethod
+    def get_certifications_by_revoked(revoked):
+        """
+        Get all certifications with a specific revoked status.
+        """
+        certifications = Certification.objects.filter(revoked=revoked)
+        serializer = CertificationSerializer(certifications, many=True)
         return serializer.data
     
+
     @staticmethod
-    def get_companies_by_location(location):
+    def get_certifications_by_name(name):
         """
-        Get all companies in a specific location.
+        Get all certifications with a specific name.
         """
-        companies = Company.objects.filter(location=location)
-        serializer = CompanySerializer(companies, many=True)
+        certifications = Certification.objects.filter(name=name)
+        serializer = CertificationSerializer(certifications, many=True)
         return serializer.data
     
+
     @staticmethod
-    def get_companies_by_industry(industry):
+    def get_certifications_by_credential_id(credential_id):
         """
-        Get all companies in a specific industry.
+        Get all certifications with a specific credential ID.
         """
-        companies = Company.objects.filter(industry=industry)
-        serializer = CompanySerializer(companies, many=True)
+        certifications = Certification.objects.filter(credential_id=credential_id)
+        serializer = CertificationSerializer(certifications, many=True)
         return serializer.data
     
+
     @staticmethod
-    def get_companies_by_size(size):
+    def get_certifications_by_credential_url(credential_url):
         """
-        Get all companies of a specific size.
+        Get all certifications with a specific credential URL.
         """
-        companies = Company.objects.filter(size=size)
-        serializer = CompanySerializer(companies, many=True)
+        certifications = Certification.objects.filter(credential_url=credential_url)
+        serializer = CertificationSerializer(certifications, many=True)
         return serializer.data
     
+
     @staticmethod
-    def get_companies_by_founded(founded):
+    def get_linked_in_badges():
         """
-        Get all companies founded in a specific year.
+        Get all LinkedIn badges.
         """
-        companies = Company.objects.filter(founded=founded)
-        serializer = CompanySerializer(companies, many=True)
+        linked_in_badges = LinkedInBadge.objects.all()
+        serializer = LinkedInBadgeSerializer(linked_in_badges, many=True)
         return serializer.data
     
+
     @staticmethod
-    def get_companies_by_funding(funding):
+    def get_linked_in_badge(linked_in_badge_id):
         """
-        Get all companies that have received a specific amount of funding.
+        Get a specific LinkedIn badge.
         """
-        companies = Company.objects.filter(funding=funding)
-        serializer = CompanySerializer(companies, many=True)
+        linked_in_badge = LinkedInBadge.objects.get(id=linked_in_badge_id)
+        serializer = LinkedInBadgeSerializer(linked_in_badge)
         return serializer.data
     
+
     @staticmethod
-    def get_companies_by_status(status):
+    def get_linked_in_badges_by_certification(certification_id):
         """
-        Get all companies with a specific status.
+        Get all LinkedIn badges for a specific certification.
         """
-        companies = Company.objects.filter(status=status)
-        serializer = CompanySerializer(companies, many=True)
+        linked_in_badges = LinkedInBadge.objects.filter(certification_id=certification_id)
+        serializer = LinkedInBadgeSerializer(linked_in_badges, many=True)
         return serializer.data
     
+
     @staticmethod
-    def delete_company(company_id):
+    def get_linked_in_badges_by_user(user_id):
         """
-        Delete a company.
+        Get all LinkedIn badges for a specific user.
         """
-        company = Company.objects.get(id=company_id)
-        company.delete()
+        linked_in_badges = LinkedInBadge.objects.filter(user_id=user_id)
+        serializer = LinkedInBadgeSerializer(linked_in_badges, many=True)
+        return serializer.data
+
+
+
+    @staticmethod
+    def delete_certification(certification_id):
+        """
+        Delete a certification.
+        """
+        certification = Certification.objects.get(id=certification_id)
+        certification.delete()
 
         return True
     
-    @staticmethod
-    def delete_company_update(update_id):
-        """
-        Delete a company update.
-        """
-        update = CompanyUpdate.objects.get(id=update_id)
-        update.delete()
 
-        return True
-    
     @staticmethod
-    def delete_all_companies():
+    def delete_linked_in_badge(linked_in_badge_id):
         """
-        Delete all companies.
+        Delete a LinkedIn badge.
         """
-        companies = Company.objects.all()
-        companies.delete()
+        linked_in_badge = LinkedInBadge.objects.get(id=linked_in_badge_id)
+        linked_in_badge.delete()
 
         return True
     
 
     @staticmethod
-    def get_company_update(update_id):
+    def delete_all_certifications():
         """
-        Get a specific company update.
+        Delete all certifications.
         """
-        update = CompanyUpdate.objects.get(id=update_id)
-        serializer = CompanyUpdateSerializer(update)
-        return serializer.data
+        certifications = Certification.objects.all()
+        certifications.delete()
+
+        return True
     
 
+    @staticmethod
+    def delete_all_linked_in_badges():
+        """
+        Delete all LinkedIn badges.
+        """
+        linked_in_badges = LinkedInBadge.objects.all()
+        linked_in_badges.delete()
+
+        return True
+    
+
+    @staticmethod
+    def delete_all_certifications_and_linked_in_badges():
+        """
+        Delete all certifications and LinkedIn badges.
+        """
+        certifications = Certification.objects.all()
+        certifications.delete()
+
+        linked_in_badges = LinkedInBadge.objects.all()
+        linked_in_badges.delete()
+
+        return True
