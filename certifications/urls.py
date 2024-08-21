@@ -17,3 +17,12 @@ urlpatterns = [
     # path('events/<int:event_id>/', views.get_event),
     # path('events/create/', views.create_event),
 ]
+
+
+# urlpatterns = [
+#     path('linkedin/login/', LinkedInLoginView.as_view(), name='linkedin_login'),
+#     path('linkedin/callback/', LinkedInCallbackView.as_view(), name='linkedin_callback'),
+#     path('generate-certificate/', GenerateCertificateView.as_view(), name='generate_certificate'),
+#     path('verify-certificate/<str:credential_id>/', VerifyCertificateView.as_view(), name='verify_certificate'),
+#     path('assign-badge/<str:credential_id>/', AssignBadgeView.as_view(), name='assign_badge'),
+# ]

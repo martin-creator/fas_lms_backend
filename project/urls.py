@@ -53,6 +53,7 @@ urlpatterns = [
     path('api/', include('notifications.urls')),
     
     path('api/auth/', include('dj_rest_auth.urls')),
+    path('api/accounts/', include('allauth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
