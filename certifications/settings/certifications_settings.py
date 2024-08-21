@@ -1,21 +1,21 @@
 from django.conf import settings
 
 
-class CompanySettings:
+class CertificationsSettings:
     """
-    CompanySettings: Manages app-specific settings for companies.
+    CertificationsSettings: Manages app-specific settings for certifications.
     """
 
     @staticmethod
-    def get_company_settings():
+    def get_certifications_settings():
         """
-        Get all company settings.
+        Get all certifications settings.
         """
-        return settings.COMPANY_SETTINGS
+        return settings.CERTIFICATIONS_SETTINGS
 
     @staticmethod
-    def update_company_settings(company_settings):
+    def update_certifications_settings(certifications_settings):
         """
-        Update company settings.
+        Update certifications settings.
         """
-        settings.COMPANY_SETTINGS = company_settings
+        settings.CERTIFICATIONS_SETTINGS = certifications_settings
