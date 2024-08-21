@@ -1,19 +1,13 @@
-# views.py
-
-import requests
-from django.conf import settings
-from django.shortcuts import redirect
-from django.views import View
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Certification, Badge  # Import your Certification and Badge models
-from weasyprint import HTML  # Import WeasyPrint for generating certificates
 import os
 import requests
 import json
 from django.conf import settings
 from django.shortcuts import redirect
-
+from django.views import View
+from rest_framework.response import Response
+from rest_framework import status
+from weasyprint import HTML  # Import WeasyPrint for generating certificates
+from .models import Certification, Badge  # Import your Certification and Badge models
 
 class LinkedInLoginView(View):
     def get(self, request):
@@ -45,7 +39,6 @@ class LinkedInCallbackView(View):
             return Response({"user_data": user_data}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Failed to retrieve access token."}, status=status.HTTP_400_BAD_REQUEST)
-        
 
 def get_access_token(auth_code):
     """
@@ -133,32 +126,29 @@ class VerifyCertificateView(View):
         except Certification.DoesNotExist:
             return Response({"status": "invalid"}, status=status.HTTP_404_NOT_FOUND)
 
-# class AssignBadgeView(View):
-#     def post(self, request, credential_id):
-#         """
-#         Assign a badge to a certification based on its credential ID.
-#         """
-#         try:
-#             certification = Certification.objects.get(credential_id=credential_id)
-#             badge_id = request.data.get('badge_id')
-#             badge = Badge.objects.get(id=badge_id)
+class AssignBadgeView(View):
+    def post(self, request, credential_id):
+        """
+        Assign a badge to a certification based on its credential ID.
+        """
+        try:
+            certification = Certification.objects.get(credential_id=credential_id)
+            badge_id = request.data.get('badge_id')
+            badge = Badge.objects.get(id=badge_id)
 
-#             # Assign the badge to the certification
-#             certification.badge = badge
-#             certification.save()
+            # Assign the badge to the certification
+            certification.badge = badge
+            certification.save()
 
-#             # Optional: Update LinkedIn profile with the badge information
-#             update_linkedin_with_badge(certification, badge)
-
-#             return Response({"message": "Badge assigned successfully."}, status=status.HTTP_200_OK)
-#         except Certification.DoesNotExist:
-#             return Response({"error": "Certification not found."}, status=status.HTTP_404_NOT_FOUND)
-#         except Badge.DoesNotExist:
-#             return Response({"error": "Badge not found."}, status=status.HTTP_404_NOT_FOUND)
-
-
-
-
+            # Update LinkedIn profile with the badge information
+            if update_linkedin_with_badge(certification, badge):
+                return Response({"message": "Badge assigned and LinkedIn updated successfully."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "Badge assigned, but failed to update LinkedIn."}, status=status.HTTP_200_OK)
+        except Certification.DoesNotExist:
+            return Response({"error": "Certification not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Badge.DoesNotExist:
+            return Response({"error": "Badge not found."}, status=status.HTTP_404_NOT_FOUND)
 
 def update_linkedin_with_badge(certification, badge):
     """
@@ -242,27 +232,3 @@ def add_badge_to_achievements(user, badge):
         print(f"HTTP error occurred while adding badge to achievements: {http_err}")
     except requests.exceptions.RequestException as req_err:
         print(f"Request error occurred while adding badge to achievements: {req_err}")
-
-class AssignBadgeView(View):
-    def post(self, request, credential_id):
-        """
-        Assign a badge to a certification based on its credential ID.
-        """
-        try:
-            certification = Certification.objects.get(credential_id=credential_id)
-            badge_id = request.data.get('badge_id')
-            badge = Badge.objects.get(id=badge_id)
-
-            # Assign the badge to the certification
-            certification.badge = badge
-            certification.save()
-
-            # Update LinkedIn profile with the badge information
-            if update_linkedin_with_badge(certification, badge):
-                return Response({"message": "Badge assigned and LinkedIn updated successfully."}, status=status.HTTP_200_OK)
-            else:
-                return Response({"message": "Badge assigned, but failed to update LinkedIn."}, status=status.HTTP_200_OK)
-        except Certification.DoesNotExist:
-            return Response({"error": "Certification not found."}, status=status.HTTP_404_NOT_FOUND)
-        except Badge.DoesNotExist:
-            return Response({"error": "Badge not found."}, status=status.HTTP_404_NOT_FOUND)

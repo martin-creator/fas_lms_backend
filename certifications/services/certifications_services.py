@@ -1,12 +1,12 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Count
-from companies.models import Company, CompanyUpdate
-from companies.serializers import CompanySerializer, CompanyUpdateSerializer
-from companies.settings.companies_settings import CompanySettings
-from companies.querying.companies_query import CompanyQuery
-from companies.helpers.companies_helpers import CompanyHelpers
-from companies.utils import UserUtils, DateTimeUtils
-from companies.reports.companies_report import CompanyReport
+from certifications.models import Certification, LinkedInBadge
+from certifications.serializers import CertificationSerializer, LinkedInBadgeSerializer
+from certifications.settings.certifications_settings import CertificationsSettings
+from certifications.querying.certifications_query import CertificationQuery
+from certifications.helpers.certifications_helpers import CertificationHelpers
+from certifications.utils import UserUtils, DateTimeUtils
+from certifications.reports.certifications_report import CertificationsReport
 
 
 class CompanyService:
