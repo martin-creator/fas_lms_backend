@@ -82,6 +82,16 @@ class CertificationService:
         
 
     @staticmethod
+    def get_certifications():
+        """
+        Get all certifications.
+        """
+        certifications = CertificationQuery.get_certifications()
+        return certifications
+    
+
+
+    @staticmethod
     def create_certification(data):
         """
         Create a new certification.
@@ -89,6 +99,17 @@ class CertificationService:
         certification = CertificationHelpers.process_certification_data(data)
         certification.save()
 
+        serializer = CertificationSerializer(certification)
+
+        return serializer.data
+    
+
+    @staticmethod
+    def get_certification_by_id(certification_id):
+        """
+        Get a specific certification.
+        """
+        certification = CertificationQuery.get_certification(certification_id)
         serializer = CertificationSerializer(certification)
 
         return serializer.data
@@ -177,6 +198,45 @@ class CertificationService:
     
 
     @staticmethod
+    def get_all_linkedin_badges():
+        """
+        Get all LinkedIn badges.
+        """
+        linkedin_badges = CertificationQuery.get_linked_in_badges()
+        return linkedin_badges
+    
+
+    
+    @staticmethod
+    def get_linkedin_badge_by_id(badge_id):
+        """
+        Get a specific LinkedIn badge.
+        """
+        linkedin_badge = CertificationQuery.get_linked_in_badge(badge_id)
+        serializer = LinkedInBadgeSerializer(linkedin_badge)
+
+        return serializer.data
+    
+    
+    
+    @staticmethod
+    def get_linkedin_badges_by_certification(certification_id):
+        """
+        Get all LinkedIn badges for a specific certification.
+        """
+        linkedin_badges = CertificationQuery.get_linked_in_badges_by_certification(certification_id)
+        return linkedin_badges
+    
+
+    @staticmethod
+    def get_linkedin_badges_by_user(user_id):
+        """
+        Get all LinkedIn badges for a specific user.
+        """
+        linkedin_badges = CertificationQuery.get_linked_in_badges_by_user(user_id)
+        return linkedin_badges
+
+    @staticmethod
     def update_linkedin_badge(badge_id, data):
         """
         Update a LinkedIn badge.
@@ -188,6 +248,7 @@ class CertificationService:
         serializer = LinkedInBadgeSerializer(linkedin_badge)
 
         return serializer.data
+    
     
 
     @staticmethod
