@@ -7,472 +7,753 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from certifications.models import Certification, LinkedInBadge
 from certifications.serializers import CertificationSerializer, LinkedInBadgeSerializer
-from companies.controllers.companies_controller import CompanyController
+from certifications.controllers.certifications_controller import CertificationController
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
 
 # Create your views here.
 
-company_controller = CompanyController()
+certification_controller = CertificationController()
 
-# class Certification(models.Model):
-#     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='user_certifications', on_delete=models.CASCADE)
-#     name = models.CharField(max_length=255)
-#     attachments = GenericRelation(Attachment)
-#     issuing_organization = models.CharField(max_length=255)
-#     issue_date = models.DateField()
-#     expiration_date = models.DateField(null=True, blank=True)
-#     credential_id = models.CharField(max_length=255, blank=True)
-#     credential_url = models.URLField(blank=True)
-#     description = models.TextField(blank=True)
-#     categories = models.ManyToManyField('activity.Category', related_name='certifications_categories')
-#     certificate_image = models.ImageField(upload_to='certificates/', blank=True)
-#     verification_status = models.BooleanField(default=False)
-#     related_jobs = models.ManyToManyField('jobs.JobListing', related_name='job_certifications', blank=True)
-#     related_courses = models.ManyToManyField('courses.Course', related_name='courses_certifications', blank=True)
-#     related_events = models.ManyToManyField('events.Event', related_name='event_certifications', blank=True)
-#     revoked = models.BooleanField(default=False, blank=True, null=True)
 
-#     def __str__(self):
-#         return f"{self.name} - {self.user.user.username}"
-    
-# class LinkedInBadge(models.Model):
-#     certification = models.OneToOneField(Certification, related_name='linkedin_badge', on_delete=models.CASCADE)
-#     badge_image = models.ImageField(upload_to='linkedin_badges/', blank=True)
-#     badge_url = models.URLField(blank=True)
-#     share_on_linkedin = models.BooleanField(default=False)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
+# linkedin login
+@extend_schema(
+    parameters=[],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='LinkedIn login',
+            description='LinkedIn login',
+            value={}
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='LinkedIn login')}
 
-#     def __str__(self):
-#         return f"LinkedIn Badge for {self.certification.name}"
-    
+)
+@api_view(['GET'])
+def linkedin_login(request):
+    """
+    API endpoint that allows users to be redirected to LinkedIn for authentication.
+    """
+    if request.method == 'GET':
+        return certification_controller.linkedin_login(request)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
 
+# linkedin callback
+@extend_schema(
+    parameters=[],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='LinkedIn callback',
+            description='LinkedIn callback',
+            value={}
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='LinkedIn callback')}
 
-# @extend_schema(
-#     parameters=[],
-#     examples=[
-#         OpenApiExample(
-#             'Example 1',
-#             summary='Get all companies',
-#             description='Get all companies',
-#             value={
-#                 'name': 'name',
-#                 'website': 'website',
-#                 'location': 'location',
-#                 'industry': 'industry',
-#                 'description': 'description',
-#                 'attachments': 'attachments',
-#                 'categories': 'categories',
-#                 'logo': 'logo',
-#                 'founded_date': 'founded_date',
-#                 'employee_count': 'employee_count',
-#                 'revenue': 'revenue',
-#                 'members': 'members',
-#                 'followers': 'followers',
-#                 'services': 'services'
-#             }
-
-#         )
-#     ],
-#     request=CompanySerializer,
-#     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='List of companies')}
-# )
-# @api_view(['GET'])
-# def get_companies(request):
-#     """
-#     API endpoint that allows all companies to be retrieved.
-#     """
-#     if request.method == 'GET':
-#         companies = company_controller.get_all_companies()
-#         return Response(companies, status=status.HTTP_200_OK)
-#     else:
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+)
+@api_view(['GET'])
+def linkedin_callback(request):
+    """
+    API endpoint that allows the authorization code from LinkedIn to be received and exchanged for an access token.
+    """
+    if request.method == 'GET':
+        return certification_controller.linkedin_callback(request)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
-# @extend_schema(
-#     parameters=[
-#         OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
-#     ],
-#     examples=[
-#         OpenApiExample(
-#             'Example 1',
-#             summary='Get a specific company',
-#             description='Get a specific company',
-#             value={
-#                 'name': 'name',
-#                 'website': 'website',
-#                 'location': 'location',
-#                 'industry': 'industry',
-#                 'description': 'description',
-#                 'attachments': 'attachments',
-#                 'categories': 'categories',
-#                 'logo': 'logo',
-#                 'founded_date': 'founded_date',
-#                 'employee_count': 'employee_count',
-#                 'revenue': 'revenue',
-#                 'members': 'members',
-#                 'followers': 'followers',
-#                 'services': 'services'
-#             }
-#         )
-#     ],
-#     request=CompanySerializer,
-#     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Company data')}
-# )
-# @api_view(['GET'])
-# def get_specific_company(request, company_id):
-#     """
-#     API endpoint that allows a specific company to be retrieved.
-#     """
-#     if request.method == 'GET':
-#         company = company_controller.get_company_by_id(company_id)
-#         return Response(company, status=status.HTTP_200_OK)
-#     else:
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-    
+# get all certifications
 
-# @extend_schema(
-#     parameters=[
-#         OpenApiParameter(name='name', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='website', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='location', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='industry', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='founded_date', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='employee_count', type=int, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='revenue', type=int, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='services', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='logo', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='categories', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='members', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='followers', type=str, location=OpenApiParameter.QUERY, required=True),
-#     ],
-#     examples=[
-#         OpenApiExample(
-#             'Example 1',
-#             summary='Create a new company',
-#             description='Create a new company',
-#             value={
-#                 'name': 'name',
-#                 'website': 'website',
-#                 'location': 'location',
-#                 'industry': 'industry',
-#                 'description': 'description',
-#                 'founded_date': 'founded_date',
-#                 'employee_count': 'employee_count',
-#                 'revenue': 'revenue',
-#                 'services': 'services',
-#                 'logo': 'logo',
-#                 'categories': 'categories',
-#                 'members': 'members',
-#                 'followers': 'followers'
-#             }
-#         )
-#     ],
-#     request=CompanySerializer,
-#     responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Company data')}
-
-# )
-# @api_view(['POST'])
-# def create_company(request):
-#     """
-#     API endpoint that allows a new company to be created.
-#     """
-#     if request.method == 'POST':
-#         company = company_controller.create_company(request.data)
-#         return Response(company, status=status.HTTP_201_CREATED)
-#     else:
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+@extend_schema(
+    parameters=[],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get all certifications',
+            description='Get all certifications',
+            value={
+                'user': 'user',
+                'name': 'name',
+                'issuing_organization': 'issuing_organization',
+                'issue_date': 'issue_date',
+                'expiration_date': 'expiration_date',
+                'credential_id': 'credential_id',
+                'credential_url': 'credential_url',
+                'description': 'description',
+                'categories': 'categories',
+                'certificate_image': 'certificate_image',
+                'verification_status': 'verification_status',
+                'related_jobs': 'related_jobs',
+                'related_courses': 'related_courses',
+                'related_events': 'related_events',
+                'revoked': 'revoked'
+            }
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='List of certifications')}
+)
+@api_view(['GET'])
+def get_certifications(request):
+    """
+    API endpoint that allows all certifications to be retrieved.
+    """
+    if request.method == 'GET':
+        certifications = certification_controller.get_all_certifications()
+        return Response(certifications, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
 
-# @extend_schema(
-#     parameters=[
-#         OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
-#         OpenApiParameter(name='name', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='website', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='location', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='industry', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='founded_date', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='employee_count', type=int, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='revenue', type=int, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='services', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='logo', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='categories', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='members', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='followers', type=str, location=OpenApiParameter.QUERY, required=True),
-#     ],
-#     examples=[
-#         OpenApiExample(
-#             'Example 1',
-#             summary='Update a company',
-#             description='Update a company',
-#             value={
-#                 'name': 'name',
-#                 'website': 'website',
-#                 'location': 'location',
-#                 'industry': 'industry',
-#                 'description': 'description',
-#                 'founded_date': 'founded_date',
-#                 'employee_count': 'employee_count',
-#                 'revenue': 'revenue',
-#                 'services': 'services',
-#                 'logo': 'logo',
-#                 'categories': 'categories',
-#                 'members': 'members',
-#                 'followers': 'followers'
-#             }
-#         )
-#     ],
-#     request=CompanySerializer,
-#     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Company data')}
+# get specific certification
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='certification_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get a specific certification',
+            description='Get a specific certification',
+            value={
+                'user': 'user',
+                'name': 'name',
+                'issuing_organization': 'issuing_organization',
+                'issue_date': 'issue_date',
+                'expiration_date': 'expiration_date',
+                'credential_id': 'credential_id',
+                'credential_url': 'credential_url',
+                'description': 'description',
+                'categories': 'categories',
+                'certificate_image': 'certificate_image',
+                'verification_status': 'verification_status',
+                'related_jobs': 'related_jobs',
+                'related_courses': 'related_courses',
+                'related_events': 'related_events',
+                'revoked': 'revoked'
+            }
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Certification data')}
 
-# )
-# @api_view(['PUT','GET'])
-# def update_company(request, company_id):
-#     """
-#     API endpoint that allows a company to be updated.
-#     """
-#     if request.method == 'PUT':
-#         company = company_controller.update_company(company_id, request.data)
-#         return Response(company, status=status.HTTP_200_OK)
-#     elif request.method == 'GET':
-#         company = company_controller.get_company_by_id(company_id)
-#         return Response(company, status=status.HTTP_200_OK)
-#     else:
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+)
+@api_view(['GET'])
+def get_specific_certification(request, certification_id):
+    """
+    API endpoint that allows a specific certification to be retrieved.
+    """
+    if request.method == 'GET':
+        certification = certification_controller.get_certification_by_id(certification_id)
+        return Response(certification, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+# get certifications by user
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='user_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get all certifications for a specific user',
+            description='Get all certifications for a specific user',
+            value={
+                'user': 'user',
+                'name': 'name',
+                'issuing_organization': 'issuing_organization',
+                'issue_date': 'issue_date',
+                'expiration_date': 'expiration_date',
+                'credential_id': 'credential_id',
+                'credential_url': 'credential_url',
+                'description': 'description',
+                'categories': 'categories',
+                'certificate_image': 'certificate_image',
+                'verification_status': 'verification_status',
+                'related_jobs': 'related_jobs',
+                'related_courses': 'related_courses',
+                'related_events': 'related_events',
+                'revoked': 'revoked'
+            }
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='List of certifications')}
+
+)
+@api_view(['GET'])
+def get_certifications_by_user(request):
+    """
+    API endpoint that allows all certifications for a specific user to be retrieved.
+    """
+    if request.method == 'GET':
+        user_id = request.query_params.get('user_id')
+        certifications = certification_controller.get_certifications_by_user(user_id)
+        return Response(certifications, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+# create certification
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='user', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='name', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='issuing_organization', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='issue_date', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='expiration_date', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='credential_id', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='credential_url', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='categories', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='certificate_image', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='verification_status', type=bool, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='related_jobs', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='related_courses', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='related_events', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='revoked', type=bool, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Create a new certification',
+            description='Create a new certification',
+            value={
+                'user': 'user',
+                'name': 'name',
+                'issuing_organization': 'issuing_organization',
+                'issue_date': 'issue_date',
+                'expiration_date': 'expiration_date',
+                'credential_id': 'credential_id',
+                'credential_url': 'credential_url',
+                'description': 'description',
+                'categories': 'categories',
+                'certificate_image': 'certificate_image',
+                'verification_status': 'verification_status',
+                'related_jobs': 'related_jobs',
+                'related_courses': 'related_courses',
+                'related_events': 'related_events',
+                'revoked': 'revoked'
+            }
+        )
+    ],
+    request=CertificationSerializer,
+    responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Certification data')}
+)
+@api_view(['POST'])
+def create_certification(request):
+    """
+    API endpoint that allows a new certification to be created.
+    """
+    if request.method == 'POST':
+        certification = certification_controller.create_certification(request.data)
+        return Response(certification, status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+# update certification
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='certification_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='user', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='name', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='issuing_organization', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='issue_date', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='expiration_date', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='credential_id', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='credential_url', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='description', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='categories', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='certificate_image', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='verification_status', type=bool, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='related_jobs', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='related_courses', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='related_events', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='revoked', type=bool, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update a certification',
+            description='Update a certification',
+            value={
+                'user': 'user',
+                'name': 'name',
+                'issuing_organization': 'issuing_organization',
+                'issue_date': 'issue_date',
+                'expiration_date': 'expiration_date',
+                'credential_id': 'credential_id',
+                'credential_url': 'credential_url',
+                'description': 'description',
+                'categories': 'categories',
+                'certificate_image': 'certificate_image',
+                'verification_status': 'verification_status',
+                'related_jobs': 'related_jobs',
+                'related_courses': 'related_courses',
+                'related_events': 'related_events',
+                'revoked': 'revoked'
+            }
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Certification data')}
+)
+@api_view(['PUT'])
+def update_certification(request, certification_id):
+    """
+    API endpoint that allows a certification to be updated.
+    """
+    if request.method == 'PUT':
+        certification = certification_controller.update_certification(certification_id, request.data)
+        return Response(certification, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+# delete certification
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='certification_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete a certification',
+            description='Delete a certification',
+            value={}
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Certification data')}
+
+)
+@api_view(['DELETE'])
+def delete_certification(request, certification_id):
+    """
+    API endpoint that allows a certification to be deleted.
+    """
+    if request.method == 'DELETE':
+        certification = certification_controller.delete_certification(certification_id)
+        return Response(certification, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+# generate pdf certificate
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='certification_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Generate a PDF certificate',
+            description='Generate a PDF certificate',
+            value={}
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Certification data')}
+
+)
+@api_view(['GET'])
+def generate_pdf_certificate(request, certification_id):
+    """
+    API endpoint that allows a PDF certificate to be generated for a specific certification.
+    """
+    if request.method == 'GET':
+        certificate = certification_controller.generate_pdf_certificate(certification_id)
+        return Response(certificate, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+# verify certificate
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='credential_id', type=str, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Verify a certificate',
+            description='Verify a certificate',
+            value={}
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Certification data')}
+)
+@api_view(['GET'])
+def verify_certificate(request, credential_id):
+    """
+    API endpoint that allows a certificate to be verified using the credential ID.
+    """
+    if request.method == 'GET':
+        certificate = certification_controller.verify_certificate(credential_id)
+        return Response(certificate, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
 
-# @extend_schema(
-#     parameters=[
-#         OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
-#     ],
-#     examples=[
-#         OpenApiExample(
-#             'Example 1',
-#             summary='Delete a company',
-#             description='Delete a company',
-#             value={}
-#         )
-#     ],
-#     request=CompanySerializer,
-#     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Company data')}
+# revoke certificate
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='certification_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Revoke a certification',
+            description='Revoke a certification',
+            value={}
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Certification data')}
 
-# )
-# @api_view(['DELETE'])
-# def delete_company(request, company_id):
-#     """
-#     API endpoint that allows a company to be deleted.
-#     """
-#     if request.method == 'DELETE':
-#         company = company_controller.delete_company(company_id)
-#         return Response(company, status=status.HTTP_200_OK)
-#     else:
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+)
+@api_view(['PUT'])
+def revoke_certificate(request, certification_id):
+    """
+    API endpoint that allows a certification to be revoked.
+    """
+    if request.method == 'PUT':
+        certification = certification_controller.revoke_certificate(certification_id)
+        return Response(certification, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
-# @extend_schema(
-#     parameters=[],
-#     examples=[
-#         OpenApiExample(
-#             'Example 1',
-#             summary='Delete all companies',
-#             description='Delete all companies',
-#             value={}
-#         )
-#     ],
-#     request=CompanySerializer,
-#     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Company data')}
+# get all linkedin badges
+@extend_schema(
+    parameters=[],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get all LinkedIn badges',
+            description='Get all LinkedIn badges',
+            value={
+                'certification': 'certification',
+                'badge_image': 'badge_image',
+                'badge_url': 'badge_url',
+                'share_on_linkedin': 'share_on_linkedin',
+                'created_at': 'created_at',
+                'updated_at': 'updated_at'
+            }
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='List of LinkedIn badges')}
 
-# )
-# @api_view(['DELETE'])
-# def delete_all_companies(request):
-#     """
-#     API endpoint that allows all companies to be deleted.
-#     """
-#     if request.method == 'DELETE':
-#         companies = company_controller.delete_all_companies()
-#         return Response(companies, status=status.HTTP_200_OK)
-#     else:
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+)
+@api_view(['GET'])
+def get_all_linkedin_badges(request):
+    """
+    API endpoint that allows all LinkedIn badges to be retrieved.
+    """
+    if request.method == 'GET':
+        linkedin_badges = certification_controller.get_all_linkedin_badges()
+        return Response(linkedin_badges, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
-# @extend_schema(
-#     parameters=[
-#         OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
-#     ],
-#     examples=[
-#         OpenApiExample(
-#             'Example 1',
-#             summary='Get all updates for a specific company',
-#             description='Get all updates for a specific company',
-#             value={
-#                 'company': 'company',
-#                 'title': 'title',
-#                 'content': 'content',
-#                 'attachments': 'attachments',
-#                 'created_at': 'created_at'
-#             }
-#         )
-#     ],
-#     request=CompanyUpdateSerializer,
-#     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='List of updates')}
-# )
-# @api_view(['GET'])
-# def get_company_updates(request, company_id):
-#     """
-#     API endpoint that allows all updates for a specific company to be retrieved.
-#     """
-#     if request.method == 'GET':
-#         updates = company_controller.get_company_updates(company_id)
-#         return Response(updates, status=status.HTTP_200_OK)
-#     else:
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+# get specific linkedin badge
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='badge_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get a specific LinkedIn badge',
+            description='Get a specific LinkedIn badge',
+            value={
+                'certification': 'certification',
+                'badge_image': 'badge_image',
+                'badge_url': 'badge_url',
+                'share_on_linkedin': 'share_on_linkedin',
+                'created_at': 'created_at',
+                'updated_at': 'updated_at'
+            }
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='LinkedIn badge data')}
 
-
-# @extend_schema(
-#     parameters=[
-#         OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
-#         OpenApiParameter(name='update_id', type=int, location=OpenApiParameter.PATH, required=True),
-#     ],
-#     examples=[
-#         OpenApiExample(
-#             'Example 1',
-#             summary='Get a specific update for a company',
-#             description='Get a specific update for a company',
-#             value={
-#                 'company': 'company',
-#                 'title': 'title',
-#                 'content': 'content',
-#                 'attachments': 'attachments',
-#                 'created_at': 'created_at'
-#             }
-#         )
-#     ],
-#     request=CompanyUpdateSerializer,
-#     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Update data')}
-
-# )
-# @api_view(['GET'])
-# def get_specific_company_update(request, company_id, update_id):
-#     """
-#     API endpoint that allows a specific update for a company to be retrieved.
-#     """
-#     if request.method == 'GET':
-#         update = company_controller.get_company_update_by_id(update_id)
-#         return Response(update, status=status.HTTP_200_OK)
-#     else:
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-# @extend_schema(
-#     parameters=[
-#         OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
-#         OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='content', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='attachments', type=str, location=OpenApiParameter.QUERY, required=True),
-#     ],
-#     examples=[
-#         OpenApiExample(
-#             'Example 1',
-#             summary='Create a new update for a company',
-#             description='Create a new update for a company',
-#             value={
-#                 'company': 'company',
-#                 'title': 'title',
-#                 'content': 'content',
-#                 'attachments': 'attachments',
-#                 'created_at': 'created_at'
-#             }
-#         )
-#     ],
-#     request=CompanyUpdateSerializer,
-#     responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Update data')}
-
-# )
-# @api_view(['POST'])
-# def create_company_update(request, company_id):
-#     """
-#     API endpoint that allows a new update for a company to be created.
-#     """
-#     if request.method == 'POST':
-#         update = company_controller.create_company_update(company_id, request.data)
-#         return Response(update, status=status.HTTP_201_CREATED)
-#     else:
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+)
+@api_view(['GET'])
+def get_specific_linkedin_badge(request, badge_id):
+    """
+    API endpoint that allows a specific LinkedIn badge to be retrieved.
+    """
+    if request.method == 'GET':
+        linkedin_badge = certification_controller.get_linkedin_badge_by_id(badge_id)
+        return Response(linkedin_badge, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
 
-# @extend_schema(
-#     parameters=[
-#         OpenApiParameter(name='company_id', type=int, location=OpenApiParameter.PATH, required=True),
-#         OpenApiParameter(name='update_id', type=int, location=OpenApiParameter.PATH, required=True),
-#         OpenApiParameter(name='title', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='content', type=str, location=OpenApiParameter.QUERY, required=True),
-#         OpenApiParameter(name='attachments', type=str, location=OpenApiParameter.QUERY, required=True),
-#     ],
-#     examples=[
-#         OpenApiExample(
-#             'Example 1',
-#             summary='Update an update for a company',
-#             description='Update an update for a company',
-#             value={
-#                 'company': 'company',
-#                 'title': 'title',
-#                 'content': 'content',
-#                 'attachments': 'attachments',
-#                 'created_at': 'created_at'
-#             }
-#         )
-#     ],
-#     request=CompanyUpdateSerializer,
-#     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Update data')}
+# get linkedin badges by certification
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='certification_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get all LinkedIn badges for a specific certification',
+            description='Get all LinkedIn badges for a specific certification',
+            value={
+                'certification': 'certification',
+                'badge_image': 'badge_image',
+                'badge_url': 'badge_url',
+                'share_on_linkedin': 'share_on_linkedin',
+                'created_at': 'created_at',
+                'updated_at': 'updated_at'
+            }
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='List of LinkedIn badges')}
 
-# )
-# @api_view(['PUT'])
-# def update_company_update(request, company_id, update_id):
-#     """
-#     API endpoint that allows an update for a company to be updated.
-#     """
-#     if request.method == 'PUT':
-#         update = company_controller.update_company_update(company_id, update_id, request.data)
-#         return Response(update, status=status.HTTP_200_OK)
-#     else:
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+)
+@api_view(['GET'])
+def get_linkedin_badges_by_certification(request):
+    """
+    API endpoint that allows all LinkedIn badges for a specific certification to be retrieved.
+    """
+    if request.method == 'GET':
+        certification_id = request.query_params.get('certification_id')
+        linkedin_badges = certification_controller.get_linkedin_badges_by_certification(certification_id)
+        return Response(linkedin_badges, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+# get linkedin badges by user
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='user_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Get all LinkedIn badges for a specific user',
+            description='Get all LinkedIn badges for a specific user',
+            value={
+                'certification': 'certification',
+                'badge_image': 'badge_image',
+                'badge_url': 'badge_url',
+                'share_on_linkedin': 'share_on_linkedin',
+                'created_at': 'created_at',
+                'updated_at': 'updated_at'
+            }
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='List of LinkedIn badges')}
+
+)
+@api_view(['GET'])
+def get_linkedin_badges_by_user(request):
+    """
+    API endpoint that allows all LinkedIn badges for a specific user to be retrieved.
+    """
+    if request.method == 'GET':
+        user_id = request.query_params.get('user_id')
+        linkedin_badges = certification_controller.get_linkedin_badges_by_user(user_id)
+        return Response(linkedin_badges, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+# create linkedin badge
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='certification', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='badge_image', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='badge_url', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='share_on_linkedin', type=bool, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='created_at', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='updated_at', type=str, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Create a new LinkedIn badge',
+            description='Create a new LinkedIn badge',
+            value={
+                'certification': 'certification',
+                'badge_image': 'badge_image',
+                'badge_url': 'badge_url',
+                'share_on_linkedin': 'share_on_linkedin',
+                'created_at': 'created_at',
+                'updated_at': 'updated_at'
+            }
+        )
+    ],
+    request=CertificationSerializer,
+    responses={201: OpenApiResponse(response=OpenApiTypes.OBJECT, description='LinkedIn badge data')}
+
+)
+@api_view(['POST'])
+def create_linkedin_badge(request):
+    """
+    API endpoint that allows a new LinkedIn badge to be created.
+    """
+    if request.method == 'POST':
+        linkedin_badge = certification_controller.create_linkedin_badge(request.data)
+        return Response(linkedin_badge, status=status.HTTP_201_CREATED)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
 
-# @extend_schema(
-#     parameters=[
-#         OpenApiParameter(name='update_id', type=int, location=OpenApiParameter.PATH, required=True),
-#     ],
-#     examples=[
-#         OpenApiExample(
-#             'Example 1',
-#             summary='Delete an update for a company',
-#             description='Delete an update for a company',
-#             value={}
-#         )
-#     ],
-#     request=CompanyUpdateSerializer,
-#     responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='Update data')}
+# update linkedin badge
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='badge_id', type=int, location=OpenApiParameter.PATH, required=True),
+        OpenApiParameter(name='certification', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='badge_image', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='badge_url', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='share_on_linkedin', type=bool, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='created_at', type=str, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='updated_at', type=str, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Update a LinkedIn badge',
+            description='Update a LinkedIn badge',
+            value={
+                'certification': 'certification',
+                'badge_image': 'badge_image',
+                'badge_url': 'badge_url',
+                'share_on_linkedin': 'share_on_linkedin',
+                'created_at': 'created_at',
+                'updated_at': 'updated_at'
+            }
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='LinkedIn badge data')}
 
-# )
-# @api_view(['DELETE'])
-# def delete_company_update(request, update_id):
-#     """
-#     API endpoint that allows an update for a company to be deleted.
-#     """
-#     if request.method == 'DELETE':
-#         update = company_controller.delete_company_update(update_id)
-#         return Response(update, status=status.HTTP_200_OK)
-#     else:
-#         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+)
+@api_view(['PUT'])
+def update_linkedin_badge(request, badge_id):
+    """
+    API endpoint that allows a LinkedIn badge to be updated.
+    """
+    if request.method == 'PUT':
+        linkedin_badge = certification_controller.update_linkedin_badge(badge_id, request.data)
+        return Response(linkedin_badge, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
+# delete linkedin badge
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='badge_id', type=int, location=OpenApiParameter.PATH, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Delete a LinkedIn badge',
+            description='Delete a LinkedIn badge',
+            value={}
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='LinkedIn badge data')}
 
- 
+)
+@api_view(['DELETE'])
+def delete_linkedin_badge(request, badge_id):
+    """
+    API endpoint that allows a LinkedIn badge to be deleted.
+    """
+    if request.method == 'DELETE':
+        linkedin_badge = certification_controller.delete_linkedin_badge(badge_id)
+        return Response(linkedin_badge, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+# post badge to linkedin
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='certification_id', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='badge_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Post a badge to LinkedIn',
+            description='Post a badge to LinkedIn',
+            value={}
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='LinkedIn badge data')}
+
+)
+@api_view(['POST'])
+def post_badge_to_linkedin(request):
+    """
+    API endpoint that allows a badge to be posted to LinkedIn.
+    """
+    if request.method == 'POST':
+        certification_id = request.query_params.get('certification_id')
+        badge_id = request.query_params.get('badge_id')
+        linkedin_badge = certification_controller.post_badge_to_linkedin(certification_id, badge_id)
+        return Response(linkedin_badge, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+# add badge to user linkedin achievements
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='user_id', type=int, location=OpenApiParameter.QUERY, required=True),
+        OpenApiParameter(name='badge_id', type=int, location=OpenApiParameter.QUERY, required=True),
+    ],
+    examples=[
+        OpenApiExample(
+            'Example 1',
+            summary='Add a badge to a user\'s LinkedIn achievements',
+            description='Add a badge to a user\'s LinkedIn achievements',
+            value={}
+        )
+    ],
+    request=CertificationSerializer,
+    responses={200: OpenApiResponse(response=OpenApiTypes.OBJECT, description='LinkedIn badge data')}
+
+)
+@api_view(['POST'])
+def add_badge_to_user_linkedin_achievements(request):
+    """
+    API endpoint that allows a badge to be added to a user's LinkedIn achievements section.
+    """
+    if request.method == 'POST':
+        user_id = request.query_params.get('user_id')
+        badge_id = request.query_params.get('badge_id')
+        linkedin_badge = certification_controller.add_badge_to_user_linkedin_achievements(user_id, badge_id)
+        return Response(linkedin_badge, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
