@@ -1,147 +1,232 @@
 from django.db.models import Count, Q
-from companies.models import Company, CompanyUpdate
-from companies.serializers import CompanySerializer, CompanyUpdateSerializer
+from followers.models import Follower, FollowRequest, FollowNotification
+from followers.serializers import FollowerSerializer, FollowRequestSerializer, FollowNotificationSerializer
 from django.utils import timezone
 
 
-class CompanyQuery:
+class FollowerQuery:
     @staticmethod
-    def get_companies():
+    def get_followers():
         """
-        Get all companies.
+        Get all followers.
         """
-        companies = Company.objects.all()
-        serializer = CompanySerializer(companies, many=True)
+        followers = Follower.objects.all()
+        serializer = FollowerSerializer(followers, many=True)
         return serializer.data
 
     @staticmethod
-    def get_company(company_id):
+    def get_follower(follower_id):
         """
-        Get a specific company.
+        Get a specific follower.
         """
-        company = Company.objects.get(id=company_id)
-        serializer = CompanySerializer(company)
+        follower = Follower.objects.get(id=follower_id)
+        serializer = FollowerSerializer(follower)
         return serializer.data
 
     @staticmethod
-    def get_company_updates(company_id):
+    def get_followers_by_user(user_id):
         """
-        Get all updates for a specific company.
+        Get all followers of a specific user.
         """
-        updates = CompanyUpdate.objects.filter(company_id=company_id)
-        serializer = CompanyUpdateSerializer(updates, many=True)
+        followers = Follower.objects.filter(user_id=user_id)
+        serializer = FollowerSerializer(followers, many=True)
         return serializer.data
 
     @staticmethod
-    def get_companies_by_owner(owner_id):
+    def get_followers_by_company(company_id):
         """
-        Get all companies owned by a specific owner.
+        Get all followers of a specific company.
         """
-        companies = Company.objects.filter(owner_id=owner_id)
-        serializer = CompanySerializer(companies, many=True)
+        followers = Follower.objects.filter(company_id=company_id)
+        serializer = FollowerSerializer(followers, many=True)
         return serializer.data
 
     @staticmethod
-    def get_companies_by_employee(employee_id):
+    def get_followers_by_user_and_company(user_id, company_id):
         """
-        Get all companies where a specific employee works.
+        Get all followers of a specific user for a specific company.
         """
-        companies = Company.objects.filter(employees=employee_id)
-        serializer = CompanySerializer(companies, many=True)
+        followers = Follower.objects.filter(user_id=user_id, company_id=company_id)
+        serializer = FollowerSerializer(followers, many=True)
         return serializer.data
-    
-    @staticmethod
-    def get_companies_by_location(location):
-        """
-        Get all companies in a specific location.
-        """
-        companies = Company.objects.filter(location=location)
-        serializer = CompanySerializer(companies, many=True)
-        return serializer.data
-    
-    @staticmethod
-    def get_companies_by_industry(industry):
-        """
-        Get all companies in a specific industry.
-        """
-        companies = Company.objects.filter(industry=industry)
-        serializer = CompanySerializer(companies, many=True)
-        return serializer.data
-    
-    @staticmethod
-    def get_companies_by_size(size):
-        """
-        Get all companies of a specific size.
-        """
-        companies = Company.objects.filter(size=size)
-        serializer = CompanySerializer(companies, many=True)
-        return serializer.data
-    
-    @staticmethod
-    def get_companies_by_founded(founded):
-        """
-        Get all companies founded in a specific year.
-        """
-        companies = Company.objects.filter(founded=founded)
-        serializer = CompanySerializer(companies, many=True)
-        return serializer.data
-    
-    @staticmethod
-    def get_companies_by_funding(funding):
-        """
-        Get all companies that have received a specific amount of funding.
-        """
-        companies = Company.objects.filter(funding=funding)
-        serializer = CompanySerializer(companies, many=True)
-        return serializer.data
-    
-    @staticmethod
-    def get_companies_by_status(status):
-        """
-        Get all companies with a specific status.
-        """
-        companies = Company.objects.filter(status=status)
-        serializer = CompanySerializer(companies, many=True)
-        return serializer.data
-    
-    @staticmethod
-    def delete_company(company_id):
-        """
-        Delete a company.
-        """
-        company = Company.objects.get(id=company_id)
-        company.delete()
 
-        return True
+    @staticmethod
+    def get_followers_by_status(status):
+        """
+        Get all followers with a specific status.
+        """
+        followers = Follower.objects.filter(status=status)
+        serializer = FollowerSerializer(followers, many=True)
+        return serializer.data
+
+    @staticmethod
+    def get_followers_by_user_and_status(user_id, status):
+        """
+        Get all followers of a specific user with a specific status.
+        """
+        followers = Follower.objects.filter(user_id=user_id, status=status)
+        serializer = FollowerSerializer(followers, many=True)
+        return serializer.data
+
+    @staticmethod
+    def get_followers_by_company_and_status(company_id, status):
+        """
+        Get all followers of a specific company with a specific status.
+        """
+        followers = Follower.objects.filter(company_id=company_id, status=status)
+        serializer = FollowerSerializer(followers, many=True)
+        return serializer.data
+
+    @staticmethod
+    def get_followers_by_user_company_and_status(user_id, company_id, status):
+        """
+        Get all followers of a specific user for a specific company with a specific status.
+        """
+        followers = Follower.objects.filter(user_id=user_id, company_id=company_id, status=status)
+        serializer = FollowerSerializer(followers, many=True)
+        return serializer.data
     
     @staticmethod
-    def delete_company_update(update_id):
+    def get_followers_by_user_company_and_status(user_id, company_id, status):
         """
-        Delete a company update.
+        Get all followers of a specific user for a specific company with a specific status.
         """
-        update = CompanyUpdate.objects.get(id=update_id)
-        update.delete()
-
-        return True
+        followers = Follower.objects.filter(user_id=user_id, company_id=company_id, status=status)
+        serializer = FollowerSerializer(followers, many=True)
+        return serializer.data
     
-    @staticmethod
-    def delete_all_companies():
-        """
-        Delete all companies.
-        """
-        companies = Company.objects.all()
-        companies.delete()
+    # Followrequest
 
-        return True
+    @staticmethod
+    def get_follow_requests():
+        """
+        Get all follow requests.
+        """
+        follow_requests = FollowRequest.objects.all()
+        serializer = FollowRequestSerializer(follow_requests, many=True)
+        return serializer.data
     
 
     @staticmethod
-    def get_company_update(update_id):
+    def get_follow_request(request_id):
         """
-        Get a specific company update.
+        Get a specific follow request.
         """
-        update = CompanyUpdate.objects.get(id=update_id)
-        serializer = CompanyUpdateSerializer(update)
+        follow_request = FollowRequest.objects.get(id=request_id)
+        serializer = FollowRequestSerializer(follow_request)
         return serializer.data
     
+
+    @staticmethod
+    def get_follow_requests_by_user(user_id):
+        """
+        Get all follow requests for a specific user.
+        """
+        follow_requests = FollowRequest.objects.filter(user_id=user_id)
+        serializer = FollowRequestSerializer(follow_requests, many=True)
+        return serializer.data
+    
+    
+    @staticmethod
+    def get_follow_requests_by_company(company_id):
+        """
+        Get all follow requests for a specific company.
+        """
+        follow_requests = FollowRequest.objects.filter(company_id=company_id)
+        serializer = FollowRequestSerializer(follow_requests, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_follow_requests_by_user_and_company(user_id, company_id):
+        """
+        Get all follow requests for a specific user for a specific company.
+        """
+        follow_requests = FollowRequest.objects.filter(user_id=user_id, company_id=company_id)
+        serializer = FollowRequestSerializer(follow_requests, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_follow_requests_by_status(status):
+        """
+        Get all follow requests with a specific status.
+        """
+        follow_requests = FollowRequest.objects.filter(status=status)
+        serializer = FollowRequestSerializer(follow_requests, many=True)
+        return serializer.data
+    
+
+    # FollowNotificationSerializer
+
+    @staticmethod
+    def get_follow_notifications():
+        """
+        Get all follow notifications.
+        """
+        follow_notifications = FollowNotification.objects.all()
+        serializer = FollowNotificationSerializer(follow_notifications, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_follow_notification(notification_id):
+        """
+        Get a specific follow notification.
+        """
+        follow_notification = FollowNotification.objects.get(id=notification_id)
+        serializer = FollowNotificationSerializer(follow_notification)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_follow_notifications_by_user(user_id):
+        """
+        Get all follow notifications for a specific user.
+        """
+        follow_notifications = FollowNotification.objects.filter(user_id=user_id)
+        serializer = FollowNotificationSerializer(follow_notifications, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_follow_notifications_by_company(company_id):
+        """
+        Get all follow notifications for a specific company.
+        """
+        follow_notifications = FollowNotification.objects.filter(company_id=company_id)
+        serializer = FollowNotificationSerializer(follow_notifications, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_follow_notifications_by_user_and_company(user_id, company_id):
+        """
+        Get all follow notifications for a specific user for a specific company.
+        """
+        follow_notifications = FollowNotification.objects.filter(user_id=user_id, company_id=company_id)
+        serializer = FollowNotificationSerializer(follow_notifications, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_follow_notifications_by_status(status):
+        """
+        Get all follow notifications with a specific status.
+        """
+        follow_notifications = FollowNotification.objects.filter(status=status)
+        serializer = FollowNotificationSerializer(follow_notifications, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_follow_notifications_by_user_and_status(user_id, status):
+        """
+        Get all follow notifications for a specific user with a specific status.
+        """
+        follow_notifications = FollowNotification.objects.filter(user_id=user_id, status=status)
+        serializer = FollowNotificationSerializer(follow_notifications, many=True)
+        return serializer.data
+
+
 
