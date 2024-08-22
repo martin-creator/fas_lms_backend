@@ -61,9 +61,11 @@ urlpatterns = [
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
     path('api/course/', include('courses.urls')),
+    path('api/certifications/', include('certifications.urls')),
     path('api/event/', include('events.urls')),
     path('api/company/', include('companies.urls')),
     path('api/group/', include('groups.urls')),
+    
     
     path('django-rq/', include('django_rq.urls')),
     
