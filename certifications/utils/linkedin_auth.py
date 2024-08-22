@@ -7,39 +7,8 @@ from django.views import View
 from rest_framework.response import Response
 from rest_framework import status
 from weasyprint import HTML  # Import WeasyPrint for generating certificates
-from .models import Certification, Badge  # Import your Certification and Badge models
-
-# class LinkedInLoginView(View):
-#     def get(self, request):
-#         """
-#         Redirect users to LinkedIn for authentication.
-#         """
-#         linkedin_auth_url = (
-#             "https://www.linkedin.com/oauth/v2/authorization"
-#             f"?response_type=code"
-#             f"&client_id={settings.LINKEDIN_CLIENT_ID}"
-#             f"&redirect_uri={settings.LINKEDIN_REDIRECT_URI}"
-#             "&scope=r_liteprofile%20r_emailaddress"  # Adjust the scope as needed
-#         )
-#         return redirect(linkedin_auth_url)
-
-# class LinkedInCallbackView(View):
-#     def get(self, request):
-#         """
-#         Receive the authorization code from LinkedIn and exchange it for an access token.
-#         """
-#         auth_code = request.GET.get('code')
-#         if not auth_code:
-#             return Response({"error": "Authorization code not provided."}, status=status.HTTP_400_BAD_REQUEST)
-
-#         access_token = get_access_token(auth_code)
-#         if access_token:
-#             user_data = fetch_user_profile(access_token)
-#             # Here you can create or update the user profile in your database
-#             return Response({"user_data": user_data}, status=status.HTTP_200_OK)
-#         else:
-#             return Response({"error": "Failed to retrieve access token."}, status=status.HTTP_400_BAD_REQUEST)
-
+from certifications.models import Certification, LinkedInBadge
+from certifications.utils import UserUtils, DateTimeUtils
 
 class LinkedInUtils:
     
@@ -92,7 +61,7 @@ class LinkedInUtils:
     
 
     @staticmethod
-    def update_linkedin_with_badge(certification, badge):
+    def update_linkedin_with_badge( access_token, certification, badge):
         """
         Update the user's LinkedIn profile with badge information.
         This function will create a post on the user's LinkedIn feed announcing the earned badge.
@@ -139,12 +108,12 @@ class LinkedInUtils:
         return True  # Successfully updated LinkedIn profile
 
     @staticmethod
-    def add_badge_to_achievements(user_id, badge_id):
+    def add_badge_to_achievements(user, badge,access_token):
         """
         Add the badge to the user's achievements section on LinkedIn.
         """
-        user = Use
-        access_token = user.profile.linkedin_access_token  # Get LinkedIn access token from user profile
+        user = user # Get the user profile
+        access_token = access_token # Get LinkedIn access token from user profile
 
         achievements_url = "https://api.linkedin.com/v2/endorsements"  # Adjust the endpoint as necessary
         headers = {
@@ -156,8 +125,8 @@ class LinkedInUtils:
         achievement_data = {
             "entityUrn": f"urn:li:badge:{badge.id}",  # Unique identifier for the badge
             "issuer": {
-                "name": "Your Organization Name",
-                "url": "https://www.yourorganization.com"
+                "name": "Future African Scientist",
+                "url": "https://www.futureafricanscientist.org/"
             },
             "badges": [{
                 "name": badge.name,
@@ -176,71 +145,5 @@ class LinkedInUtils:
             print(f"HTTP error occurred while adding badge to achievements: {http_err}")
         except requests.exceptions.RequestException as req_err:
             print(f"Request error occurred while adding badge to achievements: {req_err}")
-
-# class GenerateCertificateView(View):
-#     def post(self, request):
-#         """
-#         Generate a certificate and return the certificate ID and URL.
-#         """
-#         user = request.user  # Assuming user is authenticated
-#         data = request.data
-#         certificate_id = f"cert-{user.id}-{data.get('course_name')}"  # Example credential ID
-
-#         # Generate certificate content
-#         certificate_html = f"""
-#         <h1>Certificate of Completion</h1>
-#         <p>This certifies that <strong>{user.username}</strong> has completed the course: <strong>{data.get('course_name')}</strong></p>
-#         """
-
-#         # Generate the PDF using WeasyPrint
-#         certificate_file_path = os.path.join(settings.CERTIFICATE_IMAGE_PATH, f"{certificate_id}.pdf")
-#         HTML(string=certificate_html).write_pdf(certificate_file_path)
-
-#         # Save certificate details to the database
-#         Certification.objects.create(
-#             user=user,
-#             name=data.get('course_name'),
-#             credential_id=certificate_id,
-#             credential_url=certificate_file_path,
-#             issue_date=data.get('issue_date'),
-#             expiration_date=data.get('expiration_date')
-#         )
-
-#         return Response({"credential_id": certificate_id, "credential_url": certificate_file_path}, status=status.HTTP_201_CREATED)
-
-# class VerifyCertificateView(View):
-#     def get(self, request, credential_id):
-#         """
-#         Verify a certificate by its credential ID.
-#         """
-#         try:
-#             certification = Certification.objects.get(credential_id=credential_id)
-#             return Response({"status": "valid", "certification": certification}, status=status.HTTP_200_OK)
-#         except Certification.DoesNotExist:
-#             return Response({"status": "invalid"}, status=status.HTTP_404_NOT_FOUND)
-
-# class AssignBadgeView(View):
-#     def post(self, request, credential_id):
-#         """
-#         Assign a badge to a certification based on its credential ID.
-#         """
-#         try:
-#             certification = Certification.objects.get(credential_id=credential_id)
-#             badge_id = request.data.get('badge_id')
-#             badge = Badge.objects.get(id=badge_id)
-
-#             # Assign the badge to the certification
-#             certification.badge = badge
-#             certification.save()
-
-#             # Update LinkedIn profile with the badge information
-#             if update_linkedin_with_badge(certification, badge):
-#                 return Response({"message": "Badge assigned and LinkedIn updated successfully."}, status=status.HTTP_200_OK)
-#             else:
-#                 return Response({"message": "Badge assigned, but failed to update LinkedIn."}, status=status.HTTP_200_OK)
-#         except Certification.DoesNotExist:
-#             return Response({"error": "Certification not found."}, status=status.HTTP_404_NOT_FOUND)
-#         except Badge.DoesNotExist:
-#             return Response({"error": "Badge not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
