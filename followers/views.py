@@ -15,35 +15,219 @@ from drf_spectacular.types import OpenApiTypes
 
 company_controller = CompanyController()
 
-# class Company(models.Model):
-#     name = models.CharField(max_length=255)
-#     website = models.URLField(blank=True)
-#     location = models.CharField(max_length=255, blank=True)
-#     industry = models.CharField(max_length=255, blank=True)
-#     description = models.TextField(blank=True)
-#     attachments = GenericRelation(Attachment)
-#     categories = models.ManyToManyField(Category, related_name='companies_categories')
-#     logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
-#     founded_date = models.DateField(null=True, blank=True)
-#     employee_count = models.IntegerField(default=0)
-#     revenue = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-#     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='member_companies')
-#     followers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='followed_companies')
-#     services = models.TextField(blank=True)  # New field for listing services provided by the company
+# class Follower(models.Model):
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='user_followers', on_delete=models.CASCADE)
+#     follower = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='user_following', on_delete=models.CASCADE)
+#     followed_at = models.DateTimeField(default=timezone.now)
 
 #     def __str__(self):
-#         return self.name
+#         return f"{self.follower.user.username} follows {self.user.user.username}"
     
-    
-# class CompanyUpdate(models.Model):
-#     company = models.ForeignKey(Company, related_name='company_updates', on_delete=models.CASCADE)
-#     title = models.CharField(max_length=255)
-#     content = models.TextField()
-#     attachments = GenericRelation(Attachment)
+#     @staticmethod
+#     def is_follower(user, follower):
+#         return Follower.objects.filter(user=user, follower=follower).exists()
+
+#     @staticmethod
+#     def get_followers(user):
+#         return Follower.objects.filter(user=user)
+
+# class FollowRequest(models.Model):
+#     from_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='follow_requests_sent', on_delete=models.CASCADE)
+#     to_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='follow_requests_received', on_delete=models.CASCADE)
+#     status = models.CharField(max_length=10, choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending')
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+#     message = models.TextField(blank=True)
+
+#     def __str__(self):
+#         return f"{self.from_user.user.username} wants to follow {self.to_user.user.username}"
+
+#     def accept(self):
+#         self.status = 'accepted'
+#         Follower.objects.create(user=self.to_user, follower=self.from_user)
+#         self.save()
+
+#     def reject(self):
+#         self.status = 'rejected'
+#         self.save()
+
+# class FollowNotification(models.Model):
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='follow_notifications', on_delete=models.CASCADE)
+#     message = models.TextField()
 #     created_at = models.DateTimeField(auto_now_add=True)
 
 #     def __str__(self):
-#         return f"{self.company.name} Update: {self.title}"
+#         return f"Notification for {self.user.user.username}: {self.message}"
+
+
+# class FollowerController:
+        
+#         def __init__(self):
+#             self.follower_query = FollowerQuery()
+#             self.follower_report = FollowerReport()
+#             self.follower_service = FollowerService()
+#             self.user_utils = UserUtils()
+#             self.date_time_utils = DateTimeUtils()
+    
+    
+#         def get_all_followers(self):
+#             """
+#             Get all followers.
+#             """
+#             return self.follower_service.get_followers()
+    
+    
+#         def get_follower_by_id(self, follower_id):
+#             """
+#             Get a specific follower.
+#             """
+#             return self.follower_service.get_follower(follower_id)
+    
+    
+#         def get_followers_by_user(self, user_id):
+#             """
+#             Get all followers of a specific user.
+#             """
+#             return self.follower_service.get_followers_by_user(user_id)
+    
+    
+#         def get_followers_by_company(self, company_id):
+#             """
+#             Get all followers of a specific company.
+#             """
+#             return self.follower_service.get_followers_by_company(company_id)
+    
+    
+#         def get_followers_by_user_and_company(self, user_id, company_id):
+#             """
+#             Get all followers of a specific user for a specific company.
+#             """
+#             return self.follower_service.get_followers_by_user_and_company(user_id, company_id)
+        
+
+#         # Follower Requests
+
+#         def get_all_follow_requests(self):
+#             """
+#             Get all follow requests.
+#             """
+#             return self.follower_service.get_follow_requests()
+        
+
+#         def get_follow_request_by_id(self, request_id):
+#             """
+#             Get a specific follow request.
+#             """
+#             return self.follower_service.get_follow_request(request_id)
+        
+
+#         def get_follow_requests_by_user(self, user_id):
+#             """
+#             Get all follow requests for a user.
+#             """
+#             return self.follower_service.get_follow_requests_by_user(user_id)
+        
+
+#         def get_follow_requests_by_company(self, company_id):
+#             """
+#             Get all follow requests for a company.
+#             """
+#             return self.follower_service.get_follow_requests_by_company(company_id)
+        
+        
+
+#         def get_follow_requests_by_user_and_company(self, user_id, company_id):
+#             """
+#             Get all follow requests for a user for a company.
+#             """
+#             return self.follower_service.get_follow_requests_by_user_and_company(user_id, company_id)
+        
+
+#         def create_follow_request(self, request_data):
+#             """
+#             Create a follow request.
+#             """
+#             return self.follower_service.create_follow_request(request_data)
+        
+
+        
+        
+
+#         def update_follow_request(self, request_id, request_data):
+#             """
+#             Update a follow request.
+#             """
+#             return self.follower_service.update_follow_request(request_id, request_data)
+        
+
+#         def delete_follow_request(self, request_id):
+#             """
+#             Delete a follow request.
+#             """
+#             return self.follower_service.delete_follow_request(request_id)
+        
+
+#         # Follow Notifications
+
+#         def get_all_follow_notifications(self):
+#             """
+#             Get all follow notifications.
+#             """
+#             return self.follower_service.get_follow_notifications()
+        
+
+#         def get_follow_notification_by_id(self, notification_id):
+#             """
+#             Get a specific follow notification.
+#             """
+#             return self.follower_service.get_follow_notification(notification_id)
+        
+
+#         def create_follow_notification(self, notification_data):
+#             """
+#             Create a follow notification.
+#             """
+#             return self.follower_service.create_follow_notification(notification_data)
+        
+
+#         def update_follow_notification(self, notification_id, notification_data):
+#             """
+#             Update a follow notification.
+#             """
+#             return self.follower_service.update_follow_notification(notification_id, notification_data)
+        
+
+#         def delete_follow_notification(self, notification_id):
+#             """
+#             Delete a follow notification.
+#             """
+#             return self.follower_service.delete_follow_notification(notification_id)
+        
+
+#         def delete_all_follow_notifications(self):
+#             """
+#             Delete all follow notifications.
+#             """
+#             return self.follower_service.delete_all_follow_notifications()
+        
+
+#         def get_follow_notifications_by_user(self, user_id):
+#             """
+#             Get all follow notifications for a user.
+#             """
+#             return self.follower_service.get_follow_notifications_by_user(user_id)
+        
+
+#         def get_follow_notifications_by_company(self, company_id):
+#             """
+#             Get all follow notifications for a company.
+#             """
+#             return self.follower_service.get_follow_notifications_by_company(company_id)
+
+
+
+
+
 
 
 @extend_schema(

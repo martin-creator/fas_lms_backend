@@ -78,6 +78,8 @@ class FollowerService:
     
             return serializer.data
         
+
+        
     
         @staticmethod
         def update_follower(follower_id, follower_data):
@@ -191,6 +193,7 @@ class FollowerService:
 
             return serializer.data
         
+        
         @staticmethod
         def update_follow_request(request_id, request_data):
             """
@@ -290,14 +293,11 @@ class FollowerService:
             return True
         
         @staticmethod
-        def get_user_report(user_id):
+        def get_follow_notifications_by_user(user_id):
             """
-            Get a report for a specific user.
+            Get all follow notifications for a specific user.
             """
-            user = UserUtils.get_user(user_id)
-            report = FollowerReport.get_user_report(user)
-
-            return report
-        
+            follow_notifications = FollowerQuery.get_follow_notifications_by_user(user_id)
+            return follow_notifications
 
        
