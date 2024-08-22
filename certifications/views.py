@@ -11,6 +11,7 @@ from certifications.controllers.certifications_controller import CertificationCo
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
 
+
 # Create your views here.
 
 certification_controller = CertificationController()
