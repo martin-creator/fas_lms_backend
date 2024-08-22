@@ -273,7 +273,7 @@ class CertificationService:
             "entityUrn": f"urn:li:badge:{badge.id}",  # Unique identifier for the badge
             "issuer": {
                 "name": "Your Organization Name",
-                "url": "https://www.yourorganization.com"
+                "url": "https://www.futureafricanscientist.org/"
             },
             "badges": [{
                 "name": badge.name,
