@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
-from companies.models import Company, CompanyUpdate
+from followers.models import Follower, FollowRequest, FollowNotification
 # from profiles.models import UserProfile
 from companies.serializers import CompanySerializer, CompanyUpdateSerializer
 from django.contrib.auth import get_user_model
@@ -8,193 +8,201 @@ from datetime import timedelta
 
 User = get_user_model()
 
-
-# class Company(models.Model):
-#     name = models.CharField(max_length=255)
-#     website = models.URLField(blank=True)
-#     location = models.CharField(max_length=255, blank=True)
-#     industry = models.CharField(max_length=255, blank=True)
-#     description = models.TextField(blank=True)
-#     attachments = GenericRelation(Attachment)
-#     categories = models.ManyToManyField(Category, related_name='companies_categories')
-#     logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
-#     founded_date = models.DateField(null=True, blank=True)
-#     employee_count = models.IntegerField(default=0)
-#     revenue = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-#     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='member_companies')
-#     followers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='followed_companies')
-#     services = models.TextField(blank=True)  # New field for listing services provided by the company
+# class Follower(models.Model):
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='user_followers', on_delete=models.CASCADE)
+#     follower = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='user_following', on_delete=models.CASCADE)
+#     followed_at = models.DateTimeField(default=timezone.now)
 
 #     def __str__(self):
-#         return self.name
+#         return f"{self.follower.user.username} follows {self.user.user.username}"
     
-    
-# class CompanyUpdate(models.Model):
-#     company = models.ForeignKey(Company, related_name='company_updates', on_delete=models.CASCADE)
-#     title = models.CharField(max_length=255)
-#     content = models.TextField()
-#     attachments = GenericRelation(Attachment)
+#     @staticmethod
+#     def is_follower(user, follower):
+#         return Follower.objects.filter(user=user, follower=follower).exists()
+
+#     @staticmethod
+#     def get_followers(user):
+#         return Follower.objects.filter(user=user)
+
+# class FollowRequest(models.Model):
+#     from_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='follow_requests_sent', on_delete=models.CASCADE)
+#     to_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='follow_requests_received', on_delete=models.CASCADE)
+#     status = models.CharField(max_length=10, choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending')
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+#     message = models.TextField(blank=True)
+
+#     def __str__(self):
+#         return f"{self.from_user.user.username} wants to follow {self.to_user.user.username}"
+
+#     def accept(self):
+#         self.status = 'accepted'
+#         Follower.objects.create(user=self.to_user, follower=self.from_user)
+#         self.save()
+
+#     def reject(self):
+#         self.status = 'rejected'
+#         self.save()
+
+# class FollowNotification(models.Model):
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='follow_notifications', on_delete=models.CASCADE)
+#     message = models.TextField()
 #     created_at = models.DateTimeField(auto_now_add=True)
 
 #     def __str__(self):
-#         return f"{self.company.name} Update: {self.title}"
+#         return f"Notification for {self.user.user.username}: {self.message}"
 
 
 
-class CompanyHelpers:
-
-    @staticmethod
-    def process_company_data(data):
-        """
-        Process company data before saving it to the database.
-        """
-        name = data.get('name')
-        website = data.get('website')
-        location = data.get('location')
-        industry = data.get('industry')
-        description = data.get('description')
-        founded_date = data.get('founded_date')
-        employee_count = data.get('employee_count')
-        revenue = data.get('revenue')
-        services = data.get('services')
-        logo = data.get('logo')
-        categories = data.get('categories')
-        members = data.get('members')
-        followers = data.get('followers')
-
-        company = Company(
-            name=name,
-            website=website,
-            location=location,
-            industry=industry,
-            description=description,
-            founded_date=founded_date,
-            employee_count=employee_count,
-            revenue=revenue,
-            services=services,
-            logo=logo
-        )
-
-        return company, categories, members, followers
+class FollowerHelpers:
     
-
-    @staticmethod
-    def process_company_data_update(company_id, data):
-        """
-        Process company data before updating it in the database.
-        """
+        @staticmethod
+        def process_follower_data(data):
+            """
+            Process follower data before saving it to the database.
+            """
+            user_id = data.get('user_id')
+            follower_id = data.get('follower_id')
+    
+            if not user_id:
+                raise ValidationError('User ID is required.')
+    
+            if not follower_id:
+                raise ValidationError('Follower ID is required.')
+    
+            user = User.objects.get(id=user_id)
+            follower = User.objects.get(id=follower_id)
+    
+            follower = Follower(
+                user=user,
+                follower=follower
+            )
+    
+            return follower
         
-        company = Company.objects.get(id=company_id)
+    
+        @staticmethod
+        def process_follower_data_update(follower_id, data):
+            """
+            Process follower data before updating it in the database.
+            """
+            user_id = data.get('user_id')
+            follower_id = data.get('follower_id')
+    
+            if not user_id:
+                raise ValidationError('User ID is required.')
+    
+            if not follower_id:
+                raise ValidationError('Follower ID is required.')
+    
+            user = User.objects.get(id=user_id)
+            follower = User.objects.get(id=follower_id)
+    
+            follower = Follower.objects.get(id=follower_id)
+            follower.user = user
+            follower.follower = follower
+    
+            return follower
         
-        name = data.get('name')
-        website = data.get('website')
-        location = data.get('location')
-        industry = data.get('industry')
-        description = data.get('description')
-        founded_date = data.get('founded_date')
-        employee_count = data.get('employee_count')
-        revenue = data.get('revenue')
-        services = data.get('services')
-        logo = data.get('logo')
-        categories = data.get('categories')
-        members = data.get('members')
-        followers = data.get('followers')
-
-        if name is not None:
-            company.name = name
-
-        if website is not None:
-            company.website = website
-
-        if location is not None:
-            company.location = location
-
-        if industry is not None:
-            company.industry = industry
-
-        if description is not None:
-            company.description = description
-
-        if founded_date is not None:
-            company.founded_date = founded_date
-
-        if employee_count is not None:
-            company.employee_count = employee_count
-
-        if revenue is not None:
-            company.revenue = revenue
-
-        if services is not None:
-            company.services = services
-
-        if logo is not None:
-            company.logo = logo
-
-        if categories is not None:
-            company.categories.set(categories)
-
-        if members is not None:
-            company.members.set(members)
-
-        if followers is not None:
-            company.followers.set(followers)
-
-        return company, categories, members, followers
+        
     
     
-
-
-    @staticmethod
-    def process_company_update_data(company_id, data):
-        """
-        Process company update data before saving it to the database.
-        """
-        title = data.get('title')
-        content = data.get('content')
-        attachments = data.get('attachments')
-        company_id = data.get('company_id')
-
-        if not company_id:
-            raise ValidationError('Company ID is required.')
-        
-        company = Company.objects.filter(id=company_id)
-
-        company_update = CompanyUpdate(
-            title=title,
-            content=content,
-            attachments=attachments,
-            company=company
-        )
-
-        return company_update
+        @staticmethod
+        def process_follow_request_data(data):
+            """
+            Process follow request data before saving it to the database.
+            """
+            from_user_id = data.get('from_user_id')
+            to_user_id = data.get('to_user_id')
+            message = data.get('message')
     
-
-    @staticmethod
-    def process_company_update_data_update(update_id, data):
-        """
-        Process company update data before updating it in the database.
-        """
-        title = data.get('title')
-        content = data.get('content')
-        attachments = data.get('attachments')
-        update_id = data.get('update_id')
-
-        if not update_id:
-            raise ValidationError('Update ID is required.')
+            if not from_user_id:
+                raise ValidationError('From User ID is required.')
+    
+            if not to_user_id:
+                raise ValidationError('To User ID is required.')
+    
+            from_user = User.objects.get(id=from_user_id)
+            to_user = User.objects.get(id=to_user_id)
+    
+            follow_request = FollowRequest(
+                from_user=from_user,
+                to_user=to_user,
+                message=message
+            )
+    
+            return follow_request
         
-        company_update = CompanyUpdate.objects.filter(id=update_id)
+    
+        @staticmethod
+        def process_follow_request_data_update(request_id, data):
+            """
+            Process follow request data before updating it in the database.
+            """
+            from_user_id = data.get('from_user_id')
+            to_user_id = data.get('to_user_id')
+            message = data.get('message')
+    
+            if not from_user_id:
+                raise ValidationError('From User ID is required.')
+    
+            if not to_user_id:
+                raise ValidationError('To User ID is required.')
+            
+            from_user = User.objects.get(id=from_user_id)
 
-        if title is not None:
-            company_update.title = title
+            to_user = User.objects.get(id=to_user_id)
 
-        if content is not None:
-            company_update.content = content
+            follow_request = FollowRequest.objects.get(id=request_id)
+            follow_request.from_user = from_user
+            follow_request.to_user = to_user
+            follow_request.message = message
 
-        if attachments is not None:
-            company_update.attachments = attachments
+            return follow_request
+        
 
-        return company_update
+        @staticmethod
+        def process_follow_notification_data(data):
+            """
+            Process follow notification data before saving it to the database.
+            """
+            user_id = data.get('user_id')
+            message = data.get('message')
+    
+            if not user_id:
+                raise ValidationError('User ID is required.')
+    
+            user = User.objects.get(id=user_id)
+    
+            follow_notification = FollowNotification(
+                user=user,
+                message=message
+            )
+    
+            return follow_notification
+        
 
+        @staticmethod
+        def process_follow_notification_data_update(notification_id, data):
+            """
+            Process follow notification data before updating it in the database.
+            """
+            user_id = data.get('user_id')
+            message = data.get('message')
+    
+            if not user_id:
+                raise ValidationError('User ID is required.')
+    
+            user = User.objects.get(id=user_id)
+    
+            follow_notification = FollowNotification.objects.get(id=notification_id)
+            follow_notification.user = user
+            follow_notification.message = message
+    
+            return follow_notification
+        
+
+    
 
 
 
