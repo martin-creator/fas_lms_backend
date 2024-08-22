@@ -45,7 +45,9 @@ urlpatterns = [
 
     path("admin/", admin.site.urls),
     path('p/', include('django_prometheus.urls')),
-    path('', include('app_logs.urls')),
+    
+    path('', include('loggings.urls')),
+    
     re_path(r'^account-confirm-email/(?P<key>[-:\w]+)/$',CustomConfirmEmailView.as_view(),name='account_confirm_email',),
     
     path('api/', include('notifications.urls')),
@@ -56,6 +58,11 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+
+    path('api/course/', include('courses.urls')),
+    path('api/event/', include('events.urls')),
+    path('api/company/', include('companies.urls')),
+    path('api/group/', include('groups.urls')),
     
     path('django-rq/', include('django_rq.urls')),
     
@@ -66,3 +73,4 @@ urlpatterns = [
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += [path('api-auth/', include('rest_framework.urls')),]

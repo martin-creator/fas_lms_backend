@@ -1,354 +1,468 @@
 # notifications/services/notification_service.py
-
+import logging
+import random
 from django.utils import timezone
-from notifications.models import Notification, NotificationType, NotificationTemplate, NotificationSettings, NotificationReadStatus
-from profiles.models import UserProfile
-from notifications.reports.notification_report import (
-    generate_user_notification_report,
-    generate_notification_summary
-)
-from notifications.querying.notification_query import (
-    get_notifications_by_user,
-    search_notifications
-)
-from notifications.utils import (
-    format_notification_content,
-    validate_notification_data,
-    process_notification_data
-)
-from notifications.helpers.notification_helpers import (
-    process_notification_data,
-    validate_notification_permissions,
-    send_push_notification
-)
-# from notifications.settings import (
-#     get_notification_settings,
-#     update_notification_settings
-# )
-from notifications.serializers import (
-    NotificationSerializer,
-    NotificationTypeSerializer,
-    NotificationTemplateSerializer,
-    NotificationSettingsSerializer,
-    NotificationReadStatusSerializer
-)
+from django.utils.translation import activate, gettext as _
+from notifications.utils.notification_utils import NotificationUtils
+
+
+logger = logging.getLogger(__name__)
 
 class NotificationService:
+    """
+    Service for managing notifications within the application.
+    """
 
     @staticmethod
     def send_notification(data):
         """
         Send a notification to a user.
-
+        
         Args:
-        - data (dict): Data for creating the notification.
-
+            data (dict): Data for creating the notification.
+        
         Returns:
-        - Notification: The created Notification object.
+            Notification: The created Notification object.
         """
-        serializer = NotificationSerializer(data=data)
-        if serializer.is_valid():
-            notification = serializer.save()
-            # Send push notification as an example
-            if data.get('notification_type') == 'push':
-                send_push_notification(data['recipient'], data['content'])
-            return notification
-        else:
-            raise ValueError(serializer.errors)
+        return NotificationUtils.send_notification(data)
 
     @staticmethod
-    def mark_notification_as_read(notification_id):
+    def mark_as_read(notification_id):
         """
         Mark a notification as read.
-
+        
         Args:
-        - notification_id (int): ID of the notification to mark as read.
+            notification_id (int): ID of the notification to mark as read.
         """
-        notification = Notification.objects.get(id=notification_id)
-        notification.is_read = True
-        notification.read_at = timezone.now()
-        notification.save()
+        NotificationUtils.mark_notification_as_read(notification_id)
 
     @staticmethod
-    def delete_notification(notification_id):
+    def delete(notification_id):
         """
         Delete a notification.
-
-        Args:
-        - notification_id (int): ID of the notification to delete.
-        """
-        Notification.objects.filter(id=notification_id).delete()
         
+        Args:
+            notification_id (int): ID of the notification to delete.
+        """
+        NotificationUtils.delete_notification(notification_id)
+
     @staticmethod
-    def get_notification(notification_id):
+    def get(notification_id):
         """
         Retrieve a specific notification by its ID.
-
+        
         Args:
-        - notification_id (int): ID of the notification to retrieve.
-
+            notification_id (int): ID of the notification to retrieve.
+        
         Returns:
-        - dict: Serialized data of the notification.
+            dict: Serialized data of the notification.
         """
-        notification = Notification.objects.get(id=notification_id)
-        serializer = NotificationSerializer(notification)
-        return serializer.data
+        return NotificationUtils.get_notification(notification_id)
 
     @staticmethod
-    def update_notification(notification_id, data):
+    def update(notification_id, data):
         """
         Update a notification.
-
+        
         Args:
-        - notification_id (int): ID of the notification to update.
-        - data (dict): Updated data for the notification.
-
+            notification_id (int): ID of the notification to update.
+            data (dict): Updated data for the notification.
+        
         Returns:
-        - dict: Serialized data of the updated notification.
+            dict: Serialized data of the updated notification.
         """
-        notification = Notification.objects.get(id=notification_id)
-        serializer = NotificationSerializer(notification, data=data)
-        if serializer.is_valid():
-            updated_notification = serializer.save()
-            return serializer.data
-        else:
-            raise ValueError(serializer.errors)
+        return NotificationUtils.update_notification(notification_id, data)
 
     @staticmethod
     def get_user_notifications(user_id):
         """
         Get all notifications for a specific user.
-
+        
         Args:
-        - user_id (int): ID of the user to retrieve notifications for.
-
+            user_id (int): ID of the user to retrieve notifications for.
+        
         Returns:
-        - QuerySet: A queryset of notifications for the user.
+            QuerySet: A queryset of notifications for the user.
         """
-        notifications = get_notifications_by_user(user_id)
-        serializer = NotificationSerializer(notifications, many=True)
-        return serializer.data
+        return NotificationUtils.get_user_notifications(user_id)
 
     @staticmethod
     def generate_user_report(user_id):
         """
         Generate a notification report for a specific user.
-
+        
         Args:
-        - user_id (int): ID of the user.
-
+            user_id (int): ID of the user.
+        
         Returns:
-        - dict: The user notification report.
+            dict: The user notification report.
         """
-        return generate_user_notification_report(user_id)
+        return NotificationUtils.generate_user_report(user_id)
 
     @staticmethod
     def generate_summary_report():
         """
         Generate a summary report of notifications.
-
+        
         Returns:
-        - dict: The notification summary report.
+            dict: The notification summary report.
         """
-        return generate_notification_summary()
+        return NotificationUtils.generate_summary_report()
 
     @staticmethod
-    def update_notification_settings(user_id, settings_data):
+    def update_settings(user_id, settings_data):
         """
         Update notification settings for a user.
-
+        
         Args:
-        - user_id (int): ID of the user.
-        - settings_data (dict): Dictionary containing the settings to update.
-
+            user_id (int): ID of the user.
+            settings_data (dict): Data for updating the settings.
+        
         Returns:
-        - dict: The updated settings.
+            dict: Serialized data of the updated settings.
         """
-        settings, created = NotificationSettings.objects.get_or_create(user_id=user_id)
-        serializer = NotificationSettingsSerializer(settings, data=settings_data)
-        if serializer.is_valid():
-            updated_settings = serializer.save()
-            return updated_settings
-        else:
-            raise ValueError(serializer.errors)
+        return NotificationUtils.update_notification_settings(user_id, settings_data)
 
     @staticmethod
-    def get_notification_settings(user_id):
+    def get_settings(user_id):
         """
-        Get notification settings for a user.
+        Retrieve notification settings for a user.
+        
+        Args:
+            user_id (int): ID of the user.
+        
+        Returns:
+            dict: Serialized data of the notification settings.
+        """
+        return NotificationUtils.get_notification_settings(user_id)
 
+    @staticmethod
+    def get_unread_count(user):
+        """
+        Get the count of unread notifications for a user.
+        
         Args:
-        - user_id (int): ID of the user.
+            user (UserProfile): The user to get the unread count for.
+        
+        Returns:
+            dict: The count of unread notifications.
+        """
+        return NotificationUtils.get_unread_notifications_count(user)
 
-        Returns:
-        - dict: The user's notification settings.
-        """
-        settings = NotificationSettings.objects.get(user_id=user_id)
-        serializer = NotificationSettingsSerializer(settings)
-        return serializer.data
-        
     @staticmethod
-    def get_unread_notifications_count(user):
+    def create_template(notification_type, template):
         """
-        Retrieves the count of unread notifications for a user.
-    
+        Create a notification template.
+        
         Args:
-        - user (User): The user for whom to count unread notifications.
-    
-        Returns:
-        - dict: A dictionary containing the count of unread notifications.
-        """
-        count = Notification.objects.filter(recipient=user, is_read=False).count()
-        return {'unread_count': count}
+            notification_type (NotificationType): The type of notification.
+            template (str): The template content.
         
-    @staticmethod
-    def create_notification_template(notification_type, template):
+        Returns:
+            dict: Serialized data of the created template.
         """
-        Creates or updates a notification template for a notification type.
-    
+        return NotificationUtils.create_notification_template(notification_type, template)
+
+    @staticmethod
+    def update_template(template_id, data):
+        """
+        Update a notification template.
+        
         Args:
-        - notification_type (NotificationType): The notification type for which to create/update the template.
-        - template (str): The template content.
-    
+            template_id (int): ID of the template to update.
+            data (dict): Updated data for the template.
+        
         Returns:
-        - dict: Serialized data of the created or updated NotificationTemplate object.
+            dict: Serialized data of the updated template.
         """
-        template_obj, created = NotificationTemplate.objects.get_or_create(notification_type=notification_type)
-        template_obj.template = template
-        template_obj.save()
-        
-        serializer = NotificationTemplateSerializer(template_obj)
-        return serializer.data
-        
+        return NotificationUtils.update_notification_template(template_id, data)
+
     @staticmethod
-    def get_notification_template(notification_type):
+    def get_template(notification_type):
         """
-        Retrieves the notification template for a notification type.
-    
+        Retrieve a notification template by type.
+        
         Args:
-        - notification_type (NotificationType): The notification type for which to retrieve the template.
-    
-        Returns:
-        - dict: Serialized data of the notification template, or None if not found.
-        """
-        try:
-            template = NotificationTemplate.objects.get(notification_type=notification_type)
-            serializer = NotificationTemplateSerializer(template)
-            return serializer.data
-        except NotificationTemplate.DoesNotExist:
-            return None
-            
-    @staticmethod
-    def get_notification_types():
-        """
-        Retrieves all notification types available in the system.
-    
-        Returns:
-        - list: A list of serialized NotificationType objects.
-        """
-        notification_types = NotificationType.objects.all()
-        serializer = NotificationTypeSerializer(notification_types, many=True)
-        return serializer.data
+            notification_type (NotificationType): The type of notification.
         
-    @staticmethod
-    def subscribe_to_notifications(user, notification_types):
+        Returns:
+            dict: Serialized data of the template.
         """
-        Subscribes a user to receive notifications of specific types.
-    
+        return NotificationUtils.get_notification_template(notification_type)
+
+    @staticmethod
+    def get_types():
+        """
+        Retrieve all notification types.
+        
+        Returns:
+            dict: Serialized data of all notification types.
+        """
+        return NotificationUtils.get_notification_types()
+
+    @staticmethod
+    def create_type(data):
+        """
+        Create a notification type.
+        
         Args:
-        - user (User): The user to subscribe.
-        - notification_types (list): A list of NotificationType objects to subscribe to.
-    
-        Returns:
-        - list: A list of serialized NotificationSettings objects.
-        """
-        subscribed_settings = []
-        for notification_type in notification_types:
-            setting, created = NotificationSettings.objects.get_or_create(user=user, notification_type=notification_type, defaults={'is_enabled': True})
-            serializer = NotificationSettingsSerializer(setting)
-            subscribed_settings.append(serializer.data)
-        return subscribed_settings
+            data (dict): Data for the new notification type.
         
+        Returns:
+            dict: Serialized data of the created notification type.
+        """
+        return NotificationUtils.create_notification_type(data)
+
     @staticmethod
-    def unsubscribe_from_notifications(user, notification_types):
+    def update_type(notification_type_id, data):
         """
-        Unsubscribes a user from receiving notifications of specific types.
-    
-        Args:
-        - user (User): The user to unsubscribe.
-        - notification_types (list): A list of NotificationType objects to unsubscribe from.
-    
-        Returns:
-        - list: A list of serialized NotificationSettings objects that were deleted.
-        """
-        settings_to_delete = NotificationSettings.objects.filter(user=user, notification_type__in=notification_types)
-        serialized_settings = NotificationSettingsSerializer(settings_to_delete, many=True).data
-        settings_to_delete.delete()
-        return serialized_settings
+        Update a notification type.
         
+        Args:
+            notification_type_id (int): ID of the notification type to update.
+            data (dict): Updated data for the notification type.
+        
+        Returns:
+            dict: Serialized data of the updated notification type.
+        """
+        return NotificationUtils.update_notification_type(notification_type_id, data)
+
+    @staticmethod
+    def delete_type(notification_type_id):
+        """
+        Delete a notification type.
+        
+        Args:
+            notification_type_id (int): ID of the notification type to delete.
+        """
+        NotificationUtils.delete_notification_type(notification_type_id)
+
+    @staticmethod
+    def subscribe(user, notification_types):
+        """
+        Subscribe a user to specific notification types.
+        
+        Args:
+            user (UserProfile): The user to subscribe.
+            notification_types (list): List of notification types to subscribe to.
+        
+        Returns:
+            list: Serialized data of the subscribed settings.
+        """
+        return NotificationUtils.subscribe_to_notifications(user, notification_types)
+
+    @staticmethod
+    def unsubscribe(user, notification_types):
+        """
+        Unsubscribe a user from specific notification types.
+        
+        Args:
+            user (UserProfile): The user to unsubscribe.
+            notification_types (list): List of notification types to unsubscribe from.
+        
+        Returns:
+            list: Serialized data of the unsubscribed settings.
+        """
+        return NotificationUtils.unsubscribe_from_notifications(user, notification_types)
+
     @staticmethod
     def notify_followers(user_profile, notification_type, content_object=None, content='', url=''):
         """
-        Notifies followers of a user profile about an action.
-    
-        Args:
-        - user_profile (UserProfile): The user profile whose followers are to be notified.
-        - notification_type (NotificationType): The type of notification to create.
-        - content_object (Model): The content object related to the notification.
-        - content (str): The notification content.
-        - url (str): The URL related to the notification.
-    
-        Returns:
-        - list: A list of serialized Notification objects.
-        """
-        followers = user_profile.followers.all()
-        notifications = []
-        for follower in followers:
-            notification_data = {
-                'recipient': follower.id,
-                'notification_type': notification_type.id,
-                'content_object': content_object.id if content_object else None,
-                'content': content,
-                'url': url,
-                'is_read': False
-            }
-            serializer = NotificationSerializer(data=notification_data)
-            if serializer.is_valid():
-                notification = serializer.save()
-                notifications.append(serializer.data)
-            else:
-                raise ValueError(serializer.errors)
-        return notifications
+        Notify all followers of a user.
         
+        Args:
+            user_profile (UserProfile): The user whose followers will be notified.
+            notification_type (NotificationType): The type of notification.
+            content_object (Object, optional): The object related to the notification.
+            content (str, optional): The content of the notification.
+            url (str, optional): The URL associated with the notification.
+        
+        Returns:
+            list: Serialized data of the notifications.
+        """
+        return NotificationUtils.notify_followers(user_profile, notification_type, content_object, content, url)
+
     @staticmethod
     def notify_all_users(notification_type, content_object=None, content='', url=''):
         """
-        Notifies all users about an action.
-    
+        Notify all users.
+        
         Args:
-        - notification_type (NotificationType): The type of notification to create.
-        - content_object (Model): The content object related to the notification.
-        - content (str): The notification content.
-        - url (str): The URL related to the notification.
-    
+            notification_type (NotificationType): The type of notification.
+            content_object (Object, optional): The object related to the notification.
+            content (str, optional): The content of the notification.
+            url (str, optional): The URL associated with the notification.
+        
         Returns:
-        - list: A list of serialized Notification objects.
+            list: Serialized data of the notifications.
         """
-        all_users = UserProfile.objects.all()
-        notifications = []
-        for user in all_users:
-            notification_data = {
-                'recipient': user.id,
-                'notification_type': notification_type.id,
-                'content_object': content_object.id if content_object else None,
-                'content': content,
-                'url': url,
-                'is_read': False
-            }
-            serializer = NotificationSerializer(data=notification_data)
-            if serializer.is_valid():
-                notification = serializer.save()
-                notifications.append(serializer.data)
-            else:
-                raise ValueError(serializer.errors)
-        return notifications
+        return NotificationUtils.notify_all_users(notification_type, content_object, content, url)
+
+    @staticmethod
+    def get_user_preferences(user):
+        """
+        Retrieve notification preferences for a user.
+        
+        Args:
+            user (UserProfile): The user to retrieve preferences for.
+        
+        Returns:
+            dict: Serialized data of the user's preferences.
+        """
+        return NotificationUtils.get_user_preferences(user)
+
+    @staticmethod
+    def update_preferences(user, preferences_data):
+        """
+        Update notification preferences for a user.
+        
+        Args:
+            user (UserProfile): The user to update preferences for.
+            preferences_data (dict): Data for updating the preferences.
+        
+        Returns:
+            dict: Serialized data of the updated preferences.
+        """
+        return NotificationUtils.update_preferences(user, preferences_data)
+
+    @staticmethod
+    def snooze_notifications(user, start_time, end_time):
+        """
+        Snooze notifications for a user.
+        
+        Args:
+            user (UserProfile): The user to snooze notifications for.
+            start_time (datetime): The start time of the snooze period.
+            end_time (datetime): The end time of the snooze period.
+        """
+        NotificationUtils.snooze_notifications(user, start_time, end_time)
+
+    @staticmethod
+    def snooze_notification(notification_id, snooze_until):
+        """
+        Snooze a specific notification.
+        
+        Args:
+            notification_id (int): ID of the notification to snooze.
+            snooze_until (datetime): The time until which to snooze the notification.
+        """
+        NotificationUtils.snooze_notification(notification_id, snooze_until)
+
+    @staticmethod
+    def is_user_snoozed(user):
+        """
+        Check if a user has snoozed notifications.
+
+        Args:
+            user (UserProfile): The user to check.
+
+        Returns:
+            bool: True if the user has active snoozed notifications, False otherwise.
+        """
+        return NotificationUtils.is_user_snoozed(user)
+
+    @staticmethod
+    def get_snoozed_notifications(user):
+        """
+        Retrieve snoozed notifications for a user.
+
+        Args:
+            user (UserProfile): The user to retrieve snoozed notifications for.
+
+        Returns:
+            list: Serialized data of the snoozed notifications.
+        """
+        return NotificationUtils.get_snoozed_notifications(user)
+
+    @staticmethod
+    def log_notification_engagement(notification_id, engagement_type):
+        """
+        Log engagement for a notification.
+
+        Args:
+            notification_id (int): ID of the notification to log engagement for.
+            engagement_type (str): The type of engagement to log.
+        """
+        NotificationUtils.log_notification_engagement(notification_id, engagement_type)
+
+    @staticmethod
+    def record_engagement(notification_id, engagement_type):
+        """
+        Record engagement for a notification.
+
+        Args:
+            notification_id (int): ID of the notification to record engagement for.
+            engagement_type (str): The type of engagement to record.
+
+        Returns:
+            NotificationLog: The created log entry.
+        """
+        return NotificationUtils.record_engagement(notification_id, engagement_type)
+
+    @staticmethod
+    def log_notification_event(notification_id, event_type):
+        """
+        Log an event for a notification.
+
+        Args:
+            notification_id (int): ID of the notification to log event for.
+            event_type (str): The type of event to log.
+
+        Returns:
+            NotificationLog: The created log entry.
+        """
+        return NotificationUtils.log_notification_event(notification_id, event_type)
+
+    @staticmethod
+    def assign_user_to_test(user_id, test_name):
+        """
+        Assign a user to an A/B test group.
+
+        Args:
+            user_id (int): ID of the user to assign.
+            test_name (str): The name of the A/B test.
+
+        Returns:
+            str: The assigned test group ('A' or 'B').
+        """
+        test_group = random.choice(['A', 'B'])
+        # Record user's test group assignment in database or cache
+        return test_group
+
+    @staticmethod
+    def analyze_ab_test_results(test_name):
+        """
+        Analyze results of an A/B test.
+
+        Args:
+            test_name (str): The name of the A/B test.
+
+        Returns:
+            dict: The analysis results.
+        """
+        # Perform analysis of A/B test results and return the findings
+        pass
+
+    @staticmethod
+    def send_test_notification(data):
+        """
+        Send a test notification.
+
+        Args:
+            data (dict): Data for creating the test notification.
+        """
+        data['content'] = _('This is a test notification.')
+        data['html_content'] = '<p>This is a <strong>test</strong> notification.</p>'
+        NotificationUtils.send_notification(data)
+
+    @staticmethod
+    def send_test_multi_notification(data):
+        """
+        Send a test notification to multiple users.
+
+        Args:
+            data (dict): Data for creating the test notification.
+        """
+        data['content'] = _('This is a test notification.')
+        data['html_content'] = '<p>This is a <strong>test</strong> notification.</p>'
+        NotificationUtils.send_notification(data)
