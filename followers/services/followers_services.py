@@ -300,13 +300,4 @@ class FollowerService:
             return report
         
 
-        @staticmethod
-        def get_company_report(company_id):
-            """
-            Get a report for a specific company.
-            """
-            company = CompanyService.get_company(company_id)
-            report = FollowerReport.get_company_report(company)
-
-            return report
-        
+       

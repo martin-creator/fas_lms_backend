@@ -79,3 +79,10 @@ class FollowersSettings:
         Update a specific followers setting for a company user.
         """
         if company_id not in settings.FOLLOWERS_SETTINGS:
+            settings.FOLLOWERS_SETTINGS[company_id] = {}
+
+        if user_id not in settings.FOLLOWERS_SETTINGS[company_id]:
+            settings.FOLLOWERS_SETTINGS[company_id][user_id] = {}
+
+        settings.FOLLOWERS_SETTINGS[company_id][user_id][key] = value
+
