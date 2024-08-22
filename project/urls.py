@@ -53,6 +53,7 @@ urlpatterns = [
     path('api/', include('notifications.urls')),
     
     path('api/auth/', include('dj_rest_auth.urls')),
+    path('api/accounts/', include('allauth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -60,9 +61,11 @@ urlpatterns = [
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
     path('api/course/', include('courses.urls')),
+    path('api/certifications/', include('certifications.urls')),
     path('api/event/', include('events.urls')),
     path('api/company/', include('companies.urls')),
     path('api/group/', include('groups.urls')),
+    
     
     path('django-rq/', include('django_rq.urls')),
     

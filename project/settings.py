@@ -44,9 +44,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # 'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    # 'allauth.socialaccount.providers.linkedin_oauth2',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'django_celery_beat',
@@ -64,6 +66,7 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar',
     'django_rq', 
     'encrypted_model_fields',
+    'weasyprint',
     
     # my apps
     'activity',
@@ -98,13 +101,33 @@ MIDDLEWARE = [
 
 AUTH_USER_MODEL = 'profiles.User'
 
-# FIELD_ENCRYPTION_KEY = os.environ.get('FIELD_ENCRYPTION_KEY', '')
+# # FIELD_ENCRYPTION_KEY = os.environ.get('FIELD_ENCRYPTION_KEY', '')
+
+# SITE_ID = 1  # Required by django-allauth
+
+# # Redirect URLs after login/logout
+# LOGIN_REDIRECT_URL = '/'
+# LOGOUT_REDIRECT_URL = '/'
 
 # Allauth
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
+    
 )
+
+# # LinkedIn OAuth2 settings
+# SOCIALACCOUNT_PROVIDERS = {
+#     'linkedin_oauth2': {
+#         'APP': {
+#             'client_id': '780a1kqo58jw5x',
+#             'secret': 'loASr4gmHgK7iFdj',
+#             'key': ''
+#         },
+#         'SCOPE': ['r_liteprofile', 'r_emailaddress', 'w_member_social'],
+#         'PROFILE_FIELDS': ['id', 'first-name', 'last-name', 'email-address'],
+#     }
+# }
 
 ROOT_URLCONF = "project.urls"
 
@@ -402,3 +425,20 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # Replace this 
 SESSION_COOKIE_AGE = 2592000  # 30 days in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = True
+
+
+
+# LinkedIn OAuth settings
+LINKEDIN_CLIENT_ID = '780a1kqo58jw5x'
+LINKEDIN_CLIENT_SECRET = 'loASr4gmHgK7iFdj',
+# LINKEDIN_REDIRECT_URI = 'http://yourdomain.com/auth/linkedin/callback/'
+LINKEDIN_REDIRECT_URI = 'http://localhost:8000/linkedin/callback/'
+LINKEDIN_STATE = 'random_string_to_prevent_csrf'
+LINKEDIN_SCOPE = ['r_liteprofile', 'r_emailaddress', 'w_member_social'] 
+
+CERTIFICATE_IMAGE_PATH = 'certificates/'
+CERTIFICATE_IMAGE_URL = 'http://localhost:8000/media/certificates/'
+
+
+
+

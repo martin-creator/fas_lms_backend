@@ -34,6 +34,8 @@ class UserProfile(models.Model):
     followers = models.ManyToManyField(Follower, related_name='users_followers', blank=True)
     follow_requests = models.ManyToManyField(FollowRequest, related_name='users_follow_requests', blank=True)
     shares = GenericRelation('activity.Share', related_name='users_shares')
+    linkedin_id = models.CharField(max_length=255, blank=True, null=True)
+    linkedin_access_token = models.CharField(max_length=255, blank=True, null=True)
     
     
     def __str__(self):
