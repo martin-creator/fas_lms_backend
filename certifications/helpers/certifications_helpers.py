@@ -5,6 +5,9 @@ from certifications.models import Certification, LinkedInBadge
 from certifications.serializers import CertificationSerializer, LinkedInBadgeSerializer
 from django.contrib.auth import get_user_model
 from datetime import timedelta
+from django.conf import settings
+from weasyprint import HTML
+import os
 
 User = get_user_model()
 
@@ -178,3 +181,33 @@ class CertificationHelpers:
                 linkedin_badge.share_on_linkedin = share_on_linkedin
     
             return linkedin_badge
+        
+
+        @staticmethod
+        def generate_certificate_html(certification):
+            """
+            Generate HTML content for a certificate.
+            """
+            html = f"""
+            <h1>Certificate of Completion</h1>
+            <p>This certifies that <strong>{certification.user.username}</strong> has completed the course: <strong>{certification.name}</strong></p>
+            """
+    
+            return html
+        
+
+        @staticmethod
+        def generate_certificate_pdf_and_path(html_content, certification):
+            """
+            Generate a PDF certificate from HTML content and return the file path and url.
+            """
+            certificate_id = f"cert-{certification.user.id}-{certification.name}"
+            certificate_file_path = os.path.join(settings.CERTIFICATE_IMAGE_PATH, f"{certificate_id}.pdf")
+            certificate_url = os.path.join(settings.CERTIFICATE_IMAGE_URL, f"{certificate_id}.pdf")
+    
+            # Generate the PDF using WeasyPrint and save it to a variable and file path
+            HTML(string=html_content).write_pdf(certificate_file_path)
+
+    
+            return certificate_file_path, certificate_url, certificate_id
+        
