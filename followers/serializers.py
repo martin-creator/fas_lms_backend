@@ -1,14 +1,20 @@
 from rest_framework import serializers
-from .models import Company, CompanyUpdate
+from .models import Follower, FollowRequest, FollowNotification
 
-class CompanySerializer(serializers.ModelSerializer):
+
+class FollowerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Company
+        model = Follower
         fields = '__all__'
 
 
-class CompanyUpdateSerializer(serializers.ModelSerializer):
+class FollowRequestSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CompanyUpdate
+        model = FollowRequest
         fields = '__all__'
 
+
+class FollowNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FollowNotification
+        fields = '__all__'
