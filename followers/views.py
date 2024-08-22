@@ -5,15 +5,15 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
-from companies.models import Company, CompanyUpdate
-from companies.serializers import CompanySerializer, CompanyUpdateSerializer
-from companies.controllers.companies_controller import CompanyController
+from followers.models import Follower, FollowRequest, FollowNotification
+from followers.serializers import FollowerSerializer, FollowRequestSerializer, FollowNotificationSerializer
+from followers.controllers.followers_controller import FollowerController
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
 
 # Create your views here.
 
-company_controller = CompanyController()
+follower_controller = FollowerController()
 
 # class Follower(models.Model):
 #     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='user_followers', on_delete=models.CASCADE)
