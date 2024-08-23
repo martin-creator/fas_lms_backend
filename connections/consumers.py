@@ -4,6 +4,9 @@ from channels.db import database_sync_to_async
 from .models import ConnectionRequest, Connection, Recommendation
 from profiles.models import UserProfile
 
+
+
+
 class ConnectionConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user = self.scope['user']
@@ -141,4 +144,52 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
             'from_user': event['from_user'],
             'to_user': event['to_user'],
             'content': event['content']
+        }))
+
+
+# Real Time Notification
+class NotificationConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope['user']
+        if self.user.is_authenticated:
+            self.room_group_name = f"user_{self.user.id}_notifications"
+            
+            await self.channel_layer.group_add(
+                self.room_group_name,
+                self.channel_name
+            )
+            
+            await self.accept()
+        else:
+            await self.close()
+
+    async def disconnect(self, close_code):
+        if self.user.is_authenticated:
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        event = data.get('event', None)
+        
+        if event == 'send_notification':
+            await self.send_notification(data)
+
+    async def send_notification(self, data):
+        notification = {
+            'type': 'notification',
+            'message': data.get('message'),
+            'from_user': data.get('from_user'),
+        }
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            notification
+        )
+
+    async def notification(self, event):
+        await self.send(text_data=json.dumps({
+            'message': event['message'],
+            'from_user': event['from_user'],
         }))

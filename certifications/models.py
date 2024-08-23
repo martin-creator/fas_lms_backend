@@ -18,6 +18,24 @@ class Certification(models.Model):
     verification_status = models.BooleanField(default=False)
     related_jobs = models.ManyToManyField('jobs.JobListing', related_name='job_certifications', blank=True)
     related_courses = models.ManyToManyField('courses.Course', related_name='courses_certifications', blank=True)
+    related_events = models.ManyToManyField('events.Event', related_name='event_certifications', blank=True)
+    revoked = models.BooleanField(default=False, blank=True, null=True)
 
     def __str__(self):
         return f"{self.name} - {self.user.user.username}"
+    
+class LinkedInBadge(models.Model):
+    certification = models.OneToOneField(Certification, related_name='linkedin_badge', on_delete=models.CASCADE)
+    badge_image = models.ImageField(upload_to='linkedin_badges/', blank=True)
+    badge_url = models.URLField(blank=True)
+    share_on_linkedin = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"LinkedIn Badge for {self.certification.name}"
+    
+
+
+
+# https://chatgpt.com/share/e3cba26c-78b7-499a-9f11-12a340f2c9d3
