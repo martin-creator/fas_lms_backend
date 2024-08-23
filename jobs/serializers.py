@@ -1,14 +1,20 @@
 from rest_framework import serializers
-from .models import Company, CompanyUpdate
+from .models import JobListing, JobApplication, JobNotification
 
-class CompanySerializer(serializers.ModelSerializer):
+
+class JobListingSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Company
+        model = JobListing
         fields = '__all__'
 
 
-class CompanyUpdateSerializer(serializers.ModelSerializer):
+class JobApplicationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CompanyUpdate
+        model = JobApplication
         fields = '__all__'
 
+
+class JobNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobNotification
+        fields = '__all__'
