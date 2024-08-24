@@ -18,6 +18,7 @@ class Company(models.Model):
     revenue = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='member_companies')
     followers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='followed_companies')
+    services = models.TextField(blank=True)  # New field for listing services provided by the company
 
     def __str__(self):
         return self.name

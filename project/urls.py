@@ -45,19 +45,29 @@ urlpatterns = [
 
     path("admin/", admin.site.urls),
     path('p/', include('django_prometheus.urls')),
-    path('', include('app_logs.urls')),
+    
+    path('', include('loggings.urls')),
+    
     re_path(r'^account-confirm-email/(?P<key>[-:\w]+)/$',CustomConfirmEmailView.as_view(),name='account_confirm_email',),
     
     path('api/', include('notifications.urls')),
     
     path('api/auth/', include('dj_rest_auth.urls')),
+    path('api/accounts/', include('allauth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-    
+
     path('api/course/', include('courses.urls')),
+    path('api/certifications/', include('certifications.urls')),
+    path('api/event/', include('events.urls')),
+    path('api/company/', include('companies.urls')),
+    path('api/group/', include('groups.urls')),
+    path('api/follower/', include('followers.urls')),
+    
+    
     path('django-rq/', include('django_rq.urls')),
     
     # path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

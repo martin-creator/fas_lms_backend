@@ -150,9 +150,6 @@ class CourseQuery:
     
     
 
-
-    
-
     @staticmethod
     def get_courses_by_instructor(instructor):
         """

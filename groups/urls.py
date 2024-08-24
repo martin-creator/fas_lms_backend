@@ -42,7 +42,7 @@ urlpatterns = [
     path('milestones/<int:group_id>/', views.get_group_milestones, name='get_group_milestones'),
     path('milestones/<int:group_id>/create/', views.create_milestone, name='create_group_milestone'),
     path('milestones/<int:group_id>/<int:milestone_id>/', views.get_specific_milestone, name='get_specific_milestone'),
-    
+    path('milestones/<int:group_id>/update/<int:milestone_id>/', views.update_milestone, name='update_group_milestone'),
     path('milestones/<int:group_id>/delete/<int:milestone_id>/', views.delete_milestone, name='delete_group_milestone'),
 
     # path('<int:group_id>/', views.get_group, name='get_group'),
