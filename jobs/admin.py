@@ -51,5 +51,5 @@ class InterviewAdmin(admin.ModelAdmin):
     list_display = ('job_application', 'interview_date', 'location')
     list_filter = ('job_application', 'interview_date',  'location')
     search_fields = ('job_application__applicant__username', 'job_application__job_listing__title')
-    readonly_fields = ('interview_date',  'location')
+    # readonly_fields = ('interview_date',  'location')
     filter_horizontal = ()

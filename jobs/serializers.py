@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import JobListing, JobApplication, JobNotification
+from .models import JobListing, JobApplication, JobNotification, Interview
 
 
 class JobListingSerializer(serializers.ModelSerializer):
@@ -17,4 +17,10 @@ class JobApplicationSerializer(serializers.ModelSerializer):
 class JobNotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobNotification
+        fields = '__all__'
+
+
+class InterviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Interview
         fields = '__all__'

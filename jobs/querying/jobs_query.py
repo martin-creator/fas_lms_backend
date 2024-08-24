@@ -1,6 +1,6 @@
 from django.db.models import Count, Q
-from jobs.models import JobApplication, JobNotification, JobListing
-from jobs.serializers import JobListingSerializer, JobApplicationSerializer, JobNotificationSerializer
+from jobs.models import JobApplication, JobNotification, JobListing, Interview
+from jobs.serializers import JobListingSerializer, JobApplicationSerializer, JobNotificationSerializer, InterviewSerializer
 from django.utils import timezone
 
 
@@ -222,4 +222,67 @@ class JobQuery:
         notifications.delete()
 
         return True
+    
+
+    # interview queries
+    @staticmethod
+    def get_interviews_by_job_application(application_id):
+        """
+        Get all interviews for a specific job application.
+        """
+        interviews = Interview.objects.filter(job_application_id=application_id)
+        serializer = InterviewSerializer(interviews, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_interview(interview_id):
+        """
+        Get a specific interview.
+        """
+        interview = Interview.objects.get(id=interview_id)
+        serializer = InterviewSerializer(interview)
+        return serializer.data
+    
+
+    @staticmethod
+    def delete_interview(interview_id):
+        """
+        Delete an interview.
+        """
+        interview = Interview.objects.get(id=interview_id)
+        interview.delete()
+
+        return True
+    
+
+    @staticmethod
+    def delete_all_interviews():
+        """
+        Delete all interviews.
+        """
+        interviews = Interview.objects.all()
+        interviews.delete()
+
+        return True
+    
+
+    @staticmethod
+    def get_interviews_by_interviewer(interviewer_id):
+        """
+        Get all interviews conducted by a specific interviewer.
+        """
+        interviews = Interview.objects.filter(interviewer_id=interviewer_id)
+        serializer = InterviewSerializer(interviews, many=True)
+        return serializer.data
+    
+
+    @staticmethod
+    def get_interviews_by_location(location):
+        """
+        Get all interviews at a specific location.
+        """
+        interviews = Interview.objects.filter(location=location)
+        serializer = InterviewSerializer(interviews, many=True)
+        return serializer.data
     
