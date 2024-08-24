@@ -927,5 +927,57 @@ def get_interviews_by_job_application(request, application_id):
         return Response(interviews, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+
+# follow simple pattern to create url pattersn for jobs
+# urlpatterns = [
+#     path('', views.get_companies, name='get_companies'),
+#     path('companies/<int:company_id>/', views.get_specific_company, name='get_specific_company'),
+#     path('companies/create/', views.create_company, name='create_company'),
+#     path('companies/update/<int:company_id>/', views.update_company, name='update_company'),
+#     path('companies/delete/<int:company_id>/', views.delete_company, name='delete_company'),
+#     path('companies/delete/all/', views.delete_all_companies, name='delete_all_companies'),
+#     path('companies/updates/<int:company_id>/', views.get_company_updates, name='get_company_updates'),
+#     path('<int:update_id>/', views.get_specific_company_update, name='get_specific_company_update'),
+#     path('companies/updates/create/<int:company_id>/', views.create_company_update, name='create_company_update'),
+#     path('companies/updates/update/<int:company_id>/<int:update_id>/', views.update_company_update, name='update_company_update'),
+#     path('companies/updates/delete/<int:update_id>/', views.delete_company_update, name='delete_company_update'),
+#     # path('events/', views.get_events),
+#     # path('events/<int:event_id>/', views.get_event),
+#     # path('events/create/', views.create_event),
+# ]
+
+# each url should be mapped to a view functions ie. views.get_companies
+urlpatterns = [
+    path('jobs/', get_jobs, name='get_jobs'),
+    path('jobs/<int:job_id>/', get_specific_job, name='get_specific_job'),
+    path('jobs/create/', create_job, name='create_job'),
+    path('jobs/update/<int:job_id>/', update_job, name='update_job'),
+    path('jobs/delete/<int:job_id>/', delete_job, name='delete_job'),
+    path('jobs/applications/<int:job_id>/', get_job_applications, name='get_job_applications'),
+    path('jobs/applications/<int:application_id>/', get_specific_application, name='get_specific_application'),
+    path('jobs/applications/applicant/<int:applicant_id>/', get_applications_by_applicant, name='get_applications_by_applicant'),
+    path('jobs/applications/create/', create_application, name='create_application'),
+    path('jobs/applications/update/<int:application_id>/', update_application, name='update_application'),
+    path('jobs/applications/delete/<int:application_id>/', delete_application, name='delete_application'),
+    path('jobs/notifications/<int:job_id>/', get_job_notifications, name='get_job_notifications'),
+    path('jobs/notifications/<int:notification_id>/', get_specific_notification, name='get_specific_notification'),
+    path('jobs/notifications/user/<int:user_id>/', get_notifications_by_user, name='get_notifications_by_user'),
+    path('jobs/notifications/create/', create_notification, name='create_notification'),
+    path('jobs/notifications/update/<int:notification_id>/', update_notification, name='update_notification'),
+    path('jobs/notifications/delete/<int:notification_id>/', delete_notification, name='delete_notification'),
+    path('jobs/interviews/<int:job_id>/', get_interviews, name='get_interviews'),
+    path('jobs/interviews/<int:interview_id>/', get_specific_interview, name='get_specific_interview'),
+    path('jobs/interviews/create/', create_interview, name='create_interview'),
+    path('jobs/interviews/update/<int:interview_id>/', update_interview, name='update_interview'),
+    path('jobs/interviews/delete/<int:interview_id>/', delete_interview, name='delete_interview'),
+    path('jobs/interviews/delete/all/', delete_all_interviews, name='delete_all_interviews'),
+    path('jobs/reports/applications/<int:job_id>/', generate_job_application_report, name='generate_job_application_report'),
+    path('jobs/reports/summary/', generate_job_summary, name='generate_job_summary'),
+    path('jobs/interviews/job/<int:job_id>/', get_interviews_by_job, name='get_interviews_by_job'),
+    path('jobs/interviews/application/<int:application_id>/', get_interviews_by_job_application, name='get_interviews_by_job_application'),
+]
+
 
 

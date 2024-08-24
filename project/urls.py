@@ -66,6 +66,7 @@ urlpatterns = [
     path('api/company/', include('companies.urls')),
     path('api/group/', include('groups.urls')),
     path('api/follower/', include('followers.urls')),
+    path('api/jobs/', include('jobs.urls')),
     
     
     path('django-rq/', include('django_rq.urls')),
