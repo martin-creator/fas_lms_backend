@@ -2,7 +2,7 @@ from django.contrib import admin
 from django import forms
 from taggit.forms import TagWidget
 from django.contrib.contenttypes.admin import GenericTabularInline
-from .models import JobListing, JobApplication, JobNotification
+from .models import JobListing, JobApplication, JobNotification, Interview
 from activity.models import Attachment
 
 # Inline for Attachments
@@ -43,4 +43,13 @@ class JobNotificationAdmin(admin.ModelAdmin):
     list_filter = ('job_listing', 'created_at', 'read')
     search_fields = ('user__username', 'job_listing__title')
     readonly_fields = ('created_at',)
+    filter_horizontal = ()
+
+
+@admin.register(Interview)
+class InterviewAdmin(admin.ModelAdmin):
+    list_display = ('job_application', 'interview_date', 'location')
+    list_filter = ('job_application', 'interview_date',  'location')
+    search_fields = ('job_application__applicant__username', 'job_application__job_listing__title')
+    # readonly_fields = ('interview_date',  'location')
     filter_horizontal = ()
