@@ -286,3 +286,12 @@ class JobQuery:
         serializer = InterviewSerializer(interviews, many=True)
         return serializer.data
     
+
+    @staticmethod
+    def get_interviews_by_job(job_id):
+        """
+        Get all interviews for a specific job.
+        """
+        interviews = Interview.objects.filter(job_listing_id=job_id)
+        serializer = InterviewSerializer(interviews, many=True)
+        return serializer.data
