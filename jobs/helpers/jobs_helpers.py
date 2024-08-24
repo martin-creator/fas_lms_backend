@@ -1,12 +1,31 @@
 from django.core.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
-from jobs.models import JobListing, JobApplication, JobNotification
+from jobs.models import JobListing, JobApplication, JobNotification, Interview
 # from profiles.models import UserProfile
-from jobs.serializers import JobListingSerializer, JobApplicationSerializer, JobNotificationSerializer
+from jobs.serializers import JobListingSerializer, JobApplicationSerializer, JobNotificationSerializer, InterviewSerializer
 from django.contrib.auth import get_user_model
 from datetime import timedelta
 
 User = get_user_model()
+
+# class Interview(models.Model):
+#     INTERVIEW_TYPES = [
+#         ('phone', 'Phone'),
+#         ('video', 'Video'),
+#         ('in_person', 'In Person'),
+#     ]
+
+#     job_application = models.ForeignKey('JobApplication', related_name='interviews', on_delete=models.CASCADE, db_index=True)
+#     job_listing = models.ForeignKey('JobListing', related_name='listing_interviews', on_delete=models.CASCADE, db_index=True)
+#     interview_date = models.DateTimeField()
+#     interview_type = models.CharField(max_length=50, choices=INTERVIEW_TYPES, default='phone')
+#     interviewer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='conducted_interviews', on_delete=models.CASCADE, db_index=True)
+#     interview_notes = models.TextField(blank=True)
+#     meeting_link = models.URLField(max_length=500, blank=True, null=True)  # For video or phone interviews
+#     location = models.CharField(max_length=255, blank=True, null=True)  # For in-person interviews
+
+#     def __str__(self):
+#         return f'Interview for {self.job_application.applicant.username} - {self.job_listing.title} on {self.interview_date}'
 
 class JobHelpers:
     
@@ -248,4 +267,97 @@ class JobHelpers:
                 job_notification.user = user_id
 
             return job_notification
+        
+
+        @staticmethod
+        def process_interview_data(data):
+            """
+            Process interview data before saving it to the database.
+            """
+            job_application_id = data.get('job_application_id')
+            job_listing_id = data.get('job_listing_id')
+            interview_date = data.get('interview_date')
+            interview_type = data.get('interview_type')
+            interviewer_id = data.get('interviewer_id')
+            interview_notes = data.get('interview_notes')
+            meeting_link = data.get('meeting_link')
+            location = data.get('location')
+
+            if not job_application_id:
+                raise ValidationError('Job Application ID is required.')
+            
+            if not job_listing_id:
+                raise ValidationError('Job Listing ID is required.')
+            
+            if not interview_date:
+                raise ValidationError('Interview Date is required.')
+            
+            if not interview_type:
+                raise ValidationError('Interview Type is required.')
+            
+            if not interviewer_id:
+                raise ValidationError('Interviewer ID is required.')
+            
+            job_application = JobApplication.objects.filter(id=job_application_id)
+            job_listing = JobListing.objects.filter(id=job_listing_id)
+            interviewer = User.objects.filter(id=interviewer_id)
+
+            interview = Interview(
+                job_application=job_application,
+                job_listing=job_listing,
+                interview_date=interview_date,
+                interview_type=interview_type,
+                interviewer=interviewer,
+                interview_notes=interview_notes,
+                meeting_link=meeting_link,
+                location=location
+            )
+
+            return interview
+        
+
+        @staticmethod
+        def process_interview_data_update(interview_id, data):
+            """
+            Process interview data before updating it in the database.
+            """
+            job_application_id = data.get('job_application_id')
+            job_listing_id = data.get('job_listing_id')
+            interview_date = data.get('interview_date')
+            interview_type = data.get('interview_type')
+            interviewer_id = data.get('interviewer_id')
+            interview_notes = data.get('interview_notes')
+            meeting_link = data.get('meeting_link')
+            location = data.get('location')
+
+            if not interview_id:
+                raise ValidationError('Interview ID is required.')
+            
+            interview = Interview.objects.filter(id=interview_id)
+
+            if job_application_id is not None:
+                interview.job_application = job_application_id
+
+            if job_listing_id is not None:
+                interview.job_listing = job_listing_id
+
+            if interview_date is not None:
+                interview.interview_date = interview_date
+
+            if interview_type is not None:
+                interview.interview_type = interview_type
+
+            if interviewer_id is not None:
+                interview.interviewer = interviewer_id
+
+            if interview_notes is not None:
+                interview.interview_notes = interview_notes
+
+            if meeting_link is not None:
+                interview.meeting_link = meeting_link
+
+            if location is not None:
+                interview.location = location
+
+            return interview
         
