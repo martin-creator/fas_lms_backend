@@ -96,3 +96,23 @@ class JobNotification(models.Model):
 
     def __str__(self):
         return f'{self.user.username} received a notification for {self.job_listing.title}'
+    
+
+class Interview(models.Model):
+    INTERVIEW_TYPES = [
+        ('phone', 'Phone'),
+        ('video', 'Video'),
+        ('in_person', 'In Person'),
+    ]
+
+    job_application = models.ForeignKey('JobApplication', related_name='interviews', on_delete=models.CASCADE, db_index=True)
+    job_listing = models.ForeignKey('JobListing', related_name='listing_interviews', on_delete=models.CASCADE, db_index=True)
+    interview_date = models.DateTimeField()
+    interview_type = models.CharField(max_length=50, choices=INTERVIEW_TYPES, default='phone')
+    interviewer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='conducted_interviews', on_delete=models.CASCADE, db_index=True)
+    interview_notes = models.TextField(blank=True)
+    meeting_link = models.URLField(max_length=500, blank=True, null=True)  # For video or phone interviews
+    location = models.CharField(max_length=255, blank=True, null=True)  # For in-person interviews
+
+    def __str__(self):
+        return f'Interview for {self.job_application.applicant.username} - {self.job_listing.title} on {self.interview_date}'
