@@ -4,13 +4,6 @@ from jobs.serializers import JobListingSerializer, JobApplicationSerializer, Job
 from jobs.utils import DateTimeUtils, UserUtils
 from jobs.querying.jobs_query import JobQuery
 
-# Generate reports for jobs.
-# Reports:
-
-# JobReport
-# Functions:
-# generate_job_application_report(job_id)
-# generate_job_summary()
 
 class JobReport:
     @staticmethod
