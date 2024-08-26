@@ -1,12 +1,14 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Count
-from companies.models import Company, CompanyUpdate
-from companies.serializers import CompanySerializer, CompanyUpdateSerializer    
-from companies.settings.companies_settings import CompanySettings
-from companies.querying.companies_query import CompanyQuery
-from companies.utils import UserUtils, DateTimeUtils
-from companies.reports.companies_report import CompanyReport
-from companies.services.companies_services import CompanyService
+from posts.models import Post, Comment
+from posts.serializers import PostSerializer, CommentSerializer
+from posts.querying.posts_querysets import PostQuerySet, CommentQuerySet
+from posts.reports.posts_report import PostReport
+from posts.settings.posts_settings import PostsSettings
+from posts.utils import UserUtils, DateTimeUtils
+from posts.services.posts_services import PostService
+
+
 
 
 class CompanyController:
