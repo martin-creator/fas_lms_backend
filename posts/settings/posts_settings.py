@@ -1,21 +1,21 @@
 from django.conf import settings
 
 
-class CompanySettings:
+class PostsSettings:
     """
-    CompanySettings: Manages app-specific settings for companies.
+    PostsSettings: Manages app-specific settings for posts.
     """
 
     @staticmethod
-    def get_company_settings():
+    def get_posts_settings():
         """
-        Get all company settings.
+        Get all posts settings.
         """
-        return settings.COMPANY_SETTINGS
+        return settings.POSTS_SETTINGS
 
     @staticmethod
-    def update_company_settings(company_settings):
+    def update_posts_settings(posts_settings):
         """
-        Update company settings.
+        Update posts settings.
         """
-        settings.COMPANY_SETTINGS = company_settings
+        settings.POSTS_SETTINGS = posts_settings
