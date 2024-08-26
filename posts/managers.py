@@ -1,5 +1,5 @@
 from django.db import models
-from .querying.querysets import PostQuerySet, CommentQuerySet
+from .querying.post_querysets import PostQuerySet, CommentQuerySet
 from datetime import timezone
 
 class PostManager(models.Manager):
