@@ -1,8 +1,8 @@
 from django.db import models
 from shortuuidfield import ShortUUIDField
-# from posts.models import Post, Comment
-# from jobs.models import JobListing
-# from groups.models import Group
+from posts.models import Post, Comment
+from jobs.models import JobListing
+from groups.models import Group
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
