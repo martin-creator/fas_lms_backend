@@ -1,89 +1,149 @@
 from django.db.models import Count, Q, Sum, Avg, F, ExpressionWrapper, fields
-from activity.models import Category, Attachment, MarketingCampaign, LearningService, Analytics, UserActivity, UserStatistics, Thread
-from activity.serializers import CategorySerializer, AttachmentSerializer, MarketingCampaignSerializer, LearningServiceSerializer, AnalyticsSerializer
-from companies.querying.companies_query import CompanyQuery
+from activity.models import Category, Attachment, MarketingCampaign, LearningService, Analytics, UserActivity, UserStatistics, Thread, Reaction, Share
+from activity.serializers import CategorySerializer, AttachmentSerializer, MarketingCampaignSerializer, LearningServiceSerializer, AnalyticsSerializer, UserActivitySerializer, UserStatisticsSerializer, ThreadSerializer, ReactionSerializer, ShareSerializer
+from activity.querying.activity_query import ActivityQuery
 
 
-class CompanyReport:
+
+class ActivityReport:
+    # Report for all categories
     @staticmethod
-    def get_company_report(company):
+    def get_categories_report():
         """
-        Get a report for a specific company.
+        Get a report for all categories.
         """
-        company_data = CompanySerializer(company).data
-        company_updates = CompanyUpdate.objects.filter(company=company)
-        company_data['updates'] = CompanyUpdateSerializer(company_updates, many=True).data
-
-        # return json data
-
-        json_data = {
-            'company': company_data,
-            'updates': company_data['updates']
-        }
-
-        return json_data
-
-    @staticmethod
-    def get_owner_report(owner):
-        """
-        Get a report for a specific owner.
-        """
-        owner_data = {}
-        owner_data['companies'] = CompanyQuery.get_companies_by_owner(owner).count()
-        owner_data['updates'] = CompanyQuery.get_company_updates_by_owner(owner).count()
-
-        return owner_data
-
-    @staticmethod
-    def get_employees_report():
-        """
-        Get a report for all employees.
-        """
-        employees = Company.objects.all()
-        serializer = CompanySerializer(employees, many=True)
+        categories = Category.objects.all()
+        serializer = CategorySerializer(categories, many=True)
         return serializer.data
     
+    # Report for all attachments
     @staticmethod
-    def get_companies_location_report():
+    def get_attachments_report():
         """
-        Get a location report for all companies.
+        Get a report for all attachments.
         """
-        companies = Company.objects.all()
-        serializer = CompanySerializer(companies, many=True)
+        attachments = Attachment.objects.all()
+        serializer = AttachmentSerializer(attachments, many=True)
         return serializer.data
     
+    # Report for all marketing campaigns
     @staticmethod
-    def get_companies_monthly_report():
+    def get_marketing_campaigns_report():
         """
-        Get a monthly report for all companies.
+        Get a report for all marketing campaigns.
         """
-        companies = Company.objects.all()
-        serializer = CompanySerializer(companies, many=True)
+        marketing_campaigns = MarketingCampaign.objects.all()
+        serializer = MarketingCampaignSerializer(marketing_campaigns, many=True)
         return serializer.data
     
+    # Report for all learning services
     @staticmethod
-    def get_companies_industry_report():
+    def get_learning_services_report():
         """
-        Get an industry report for all companies.
+        Get a report for all learning services.
         """
-        companies = Company.objects.all()
-        serializer = CompanySerializer(companies, many=True)
+        learning_services = LearningService.objects.all()
+        serializer = LearningServiceSerializer(learning_services, many=True)
         return serializer.data
     
+    # Report for all analytics
     @staticmethod
-    def get_companies_employees_report():
+    def get_analytics_report():
         """
-        Get an employees report for all companies.
+        Get a report for all analytics.
         """
-        companies = Company.objects.all()
-        serializer = CompanySerializer(companies, many=True)
+        analytics = Analytics.objects.all()
+        serializer = AnalyticsSerializer(analytics, many=True)
         return serializer.data
     
+    # Report for all user activities
     @staticmethod
-    def get_companies_owners_report():
+    def get_user_activities_report():
         """
-        Get an owners report for all companies.
+        Get a report for all user activities.
         """
-        companies = Company.objects.all()
-        serializer = CompanySerializer(companies, many=True)
+        user_activities = UserActivity.objects.all()
+        serializer = UserActivitySerializer(user_activities, many=True)
         return serializer.data
+    
+    # Report for all user statistics
+    @staticmethod
+    def get_user_statistics_report():
+        """
+        Get a report for all user statistics.
+        """
+        user_statistics = UserStatistics.objects.all()
+        serializer = UserStatisticsSerializer(user_statistics, many=True)
+        return serializer.data
+    
+    # Report for all threads
+    @staticmethod
+    def get_threads_report():
+        """
+        Get a report for all threads.
+        """
+        threads = Thread.objects.all()
+        serializer = ThreadSerializer(threads, many=True)
+        return serializer.data
+    
+    # Report for all reactions
+    @staticmethod
+    def get_reactions_report():
+        """
+        Get a report for all reactions.
+        """
+        reactions = Reaction.objects.all()
+        serializer = ReactionSerializer(reactions, many=True)
+        return serializer.data
+    
+    # Report for all shares
+    @staticmethod
+    def get_shares_report():
+        """
+        Get a report for all shares.
+        """
+        shares = Share.objects.all()
+        serializer = ShareSerializer(shares, many=True)
+        return serializer.data
+    
+    # Report for all reactions by user
+    @staticmethod
+    def get_reactions_by_user_report(user):
+        """
+        Get a report for all reactions by a specific user.
+        """
+        reactions = Reaction.objects.filter(user=user)
+        serializer = ReactionSerializer(reactions, many=True)
+        return serializer.data
+    
+    # Report for all shares by user
+    @staticmethod
+    def get_shares_by_user_report(user):
+        """
+        Get a report for all shares by a specific user.
+        """
+        shares = Share.objects.filter(user=user)
+        serializer = ShareSerializer(shares, many=True)
+        return serializer.data
+    
+    # Report for all reactions by post
+    @staticmethod
+    def get_reactions_by_post_report(post):
+        """
+        Get a report for all reactions by a specific post.
+        """
+        reactions = Reaction.objects.filter(post=post)
+        serializer = ReactionSerializer(reactions, many=True)
+        return serializer.data
+    
+    # Report for all shares by post
+    @staticmethod
+    def get_shares_by_post_report(post):
+        """
+        Get a report for all shares by a specific post.
+        """
+        shares = Share.objects.filter(post=post)
+        serializer = ShareSerializer(shares, many=True)
+        return serializer.data
+    
+
