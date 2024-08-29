@@ -1,5 +1,5 @@
 from django.db.models import Count, Q, Sum, Avg, F, ExpressionWrapper, fields
-from activity.models import Category, Attachment, MarketingCampaign, LearningService, Analytics
+from activity.models import Category, Attachment, MarketingCampaign, LearningService, Analytics, UserActivity, UserStatistics, Thread
 from activity.serializers import CategorySerializer, AttachmentSerializer, MarketingCampaignSerializer, LearningServiceSerializer, AnalyticsSerializer
 from companies.querying.companies_query import CompanyQuery
 

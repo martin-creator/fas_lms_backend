@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Attachment, MarketingCampaign, LearningService, Analytics
+from activity.models import Category, Attachment, MarketingCampaign, LearningService, Analytics, UserActivity, UserStatistics, Thread
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -30,3 +30,25 @@ class AnalyticsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Analytics
         fields = '__all__'
+
+
+class UserActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserActivity
+        fields = '__all__'
+
+
+class UserStatisticsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserStatistics
+        fields = '__all__'
+
+
+
+class ThreadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Thread
+        fields = '__all__'
+
+
+
