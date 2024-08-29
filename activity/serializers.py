@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from activity.models import Category, Attachment, MarketingCampaign, LearningService, Analytics, UserActivity, UserStatistics, Thread
+from activity.models import Category, Attachment, MarketingCampaign, LearningService, Analytics, UserActivity, UserStatistics, Thread, Reaction, Share
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -48,6 +48,18 @@ class UserStatisticsSerializer(serializers.ModelSerializer):
 class ThreadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Thread
+        fields = '__all__'
+
+
+class ReactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reaction
+        fields = '__all__'
+
+
+class ShareSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Share
         fields = '__all__'
 
 

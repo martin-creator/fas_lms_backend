@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
-from activity.models import Category, Attachment, MarketingCampaign, LearningService, Analytics, UserActivity, UserStatistics, Thread
+from activity.models import Category, Attachment, MarketingCampaign, LearningService, Analytics, UserActivity, UserStatistics, Thread, Reaction, Share
 from activity.serializers import CategorySerializer, AttachmentSerializer, MarketingCampaignSerializer, LearningServiceSerializer, AnalyticsSerializer, UserActivitySerializer, UserStatisticsSerializer, ThreadSerializer
 from django.contrib.auth import get_user_model
 from datetime import timedelta
@@ -591,4 +591,105 @@ class ActivityHelpers:
                 thread.last_message_at = last_message_at
     
             return thread, participants
+        
+
+    
+        @staticmethod
+        def process_reaction_data(data):
+            """
+            Process reaction data before saving it to the database.
+            """
+            type = data.get('type')
+            user_id = data.get('user_id')
+            content_type = data.get('content_type')
+            object_id = data.get('object_id')
+    
+            user = User.objects.get(id=user_id)
+    
+            reaction = Reaction(
+                type=type,
+                user=user,
+                content_type=content_type,
+                object_id=object_id
+            )
+    
+            return reaction
+        
+
+        @staticmethod
+        def process_reaction_data_update(reaction_id, data):
+            """
+            Process reaction data before updating it in the database.
+            """
+            reaction = Reaction.objects.get(id=reaction_id)
+            
+            type = data.get('type')
+            user_id = data.get('user_id')
+            content_type = data.get('content_type')
+            object_id = data.get('object_id')
+    
+            if type is not None:
+                reaction.type = type
+    
+            if user_id is not None:
+                user = User.objects.get(id=user_id)
+                reaction.user = user
+    
+            if content_type is not None:
+                reaction.content_type = content_type
+    
+            if object_id is not None:
+                reaction.object_id = object_id
+    
+            return reaction
+        
+
+
+        @staticmethod
+        def process_share_data(data):
+            """
+            Process share data before saving it to the database.
+            """
+            user_id = data.get('user_id')
+            content_type = data.get('content_type')
+            object_id = data.get('object_id')
+            shared_to = data.get('shared_to')
+    
+            user = User.objects.get(id=user_id)
+    
+            share = Share(
+                user=user,
+                content_type=content_type,
+                object_id=object_id
+            )
+    
+            return share, shared_to
+        
+
+        @staticmethod
+        def process_share_data_update(share_id, data):
+            """
+            Process share data before updating it in the database.
+            """
+            share = Share.objects.get(id=share_id)
+            
+            user_id = data.get('user_id')
+            content_type = data.get('content_type')
+            object_id = data.get('object_id')
+            shared_to = data.get('shared_to')
+    
+            if user_id is not None:
+                user = User.objects.get(id=user_id)
+                share.user = user
+    
+            if content_type is not None:
+                share.content_type = content_type
+    
+            if object_id is not None:
+                share.object_id = object_id
+    
+            if shared_to is not None:
+                share.shared_to.set(shared_to)
+    
+            return share, shared_to
         
