@@ -1,5 +1,5 @@
 from django.db import models
-from .querying.querysets import PostQuerySet, CommentQuerySet
+from posts.querying.posts_querysets import PostQuerySet, CommentQuerySet
 from datetime import timezone
 
 class PostManager(models.Manager):
@@ -50,6 +50,10 @@ class PostManager(models.Manager):
 
     def popular_tags(self, limit=20):
         return self.get_queryset().tag_cloud(limit)
+    
+    def batch_delete(self, post_ids):
+        return self.filter(id__in=post_ids).delete()
+    
 
 
 class CommentManager(models.Manager):
