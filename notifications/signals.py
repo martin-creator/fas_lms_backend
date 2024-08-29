@@ -6,7 +6,7 @@ from .models import (
 )
 from profiles.models import UserProfile
 from django.contrib.auth import get_user_model
-from notifications.services import NotificationService
+from notifications.services.notification_service import NotificationService
 from datetime import timedelta, datetime
 from django.utils import timezone
 
