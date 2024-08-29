@@ -1,6 +1,6 @@
 from django.db.models import Count, Q
-from companies.models import Company, CompanyUpdate
-from companies.serializers import CompanySerializer, CompanyUpdateSerializer
+from activity.models import Category, Attachment, MarketingCampaign, LearningService, Analytics, UserActivity, UserStatistics, Thread
+from activity.serializers import CategorySerializer, AttachmentSerializer, MarketingCampaignSerializer, LearningServiceSerializer, AnalyticsSerializer, UserActivitySerializer, UserStatisticsSerializer, ThreadSerializer
 from django.utils import timezone
 
 
