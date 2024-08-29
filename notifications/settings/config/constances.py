@@ -1,3 +1,50 @@
+# notifications/settings/config/constances.py
+
+from django.utils.translation import gettext_lazy as _
+
+
+NOTIFICATION_PRIORITY = [
+    (1, 'Low'),
+    (2, 'Medium'),
+    (3, 'High'),
+    (4, 'Critical'),
+]
+
+DEFAULT_NOTIFICATION_TYPE = [
+    ('job_application', 'Job Application'),
+    ('job_listing', 'Job Listing'),
+    ('message', 'Message'),
+    ('follow', 'Follow'),
+    ('connection', 'Connection'),
+    ('reaction', 'Reaction'),
+    ('post', 'Posts'),
+    ('share', 'Share'),
+    ('tag', 'Tag'),
+    ('comment', 'Comment'),
+    ('endorsement', 'Endorsement'),
+    ('skill', 'Skill'),
+    ('experience', 'Experience'),
+    ('education', 'Education'),
+    ('group', 'Group'),
+]
+
+DEFAULT_LANGUAGE_TYPES = [
+    ('en', _('English')), 
+    ('es', _('Spanish')), 
+    ('fr', _('French')),
+]
+
+SEVERITY_CHOICES = [
+    ('info', _('Info')),
+    ('warning', _('Warning')),
+    ('alert', _('Alert')),
+]
+
+INTERACTION_TYPE = [
+    ('view', 'View'),
+    ('click', 'Click'),
+    ('dismiss', 'Dismiss')
+]
 
 NOTIFICATION_TYPES = {
     'NEW_MESSAGE': 'New Message',
@@ -11,8 +58,11 @@ NOTIFICATION_CHANNELS = {
     'SMS': 'SMS',
     'PUSH': 'Push Notification',
     'IN_APP': 'In-App Notification',
+    
     # Add more channels as needed
 }
+
+
 
 LOGGING_SETTINGS = {
     'LOG_LEVEL': 'DEBUG',
@@ -32,6 +82,7 @@ NOTIFICATION_FREQUENCY = {
     'IMMEDIATE': 'Immediate',
     'HOURLY_DIGEST': 'Hourly Digest',
     'DAILY_DIGEST': 'Daily Digest',
+    'WEEKLY_DIGEST': 'Weekly Digest',
     # Add more frequency options as needed
 }
 

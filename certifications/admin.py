@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Certification, Attachment
+from .models import Certification, Attachment, LinkedInBadge
 from activity.models import Category
 from django.contrib.contenttypes.admin import GenericTabularInline
 
@@ -53,4 +53,37 @@ class CertificationAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return super().get_inline_instances(request, obj)
         return []
+    
+
+# ModelAdmin for LinkedInBadge
+@admin.register(LinkedInBadge)
+class LinkedInBadgeAdmin(admin.ModelAdmin):
+    list_display = ('certification', 'share_on_linkedin', 'created_at', 'updated_at')
+    list_filter = ('share_on_linkedin', 'created_at', 'updated_at')
+    search_fields = ('certification__name', 'certification__user__username')
+
+    fieldsets = (
+        ('Certification Information', {
+            'fields': ('certification', 'badge_image', 'badge_url', 'share_on_linkedin')
+        }),
+    )
+
+    def get_queryset(self, request):
+        """Limit queryset to current user's LinkedInBadges."""
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(certification__user=request.user)
+
+    def get_readonly_fields(self, request, obj=None):
+        """Limit fields that are readonly based on user permissions."""
+        if request.user.is_superuser:
+            return []
+        return ['certification', 'created_at', 'updated_at']
+    
+    def save_model(self, request, obj, form, change):
+        """Override save_model to associate the user with the LinkedInBadge."""
+        if not obj.certification.user_id:
+            obj.certification.user = request.user
+        obj.save()
 
