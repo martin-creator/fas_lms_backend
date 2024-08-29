@@ -6,7 +6,7 @@ from activity.models import Reaction, Share
 
 from django.utils import timezone
 
-from .utils.notification_utils import MessageUtils
+from messaging.utils.message_utils import MessageUtils
 
 @receiver(post_save, sender=Message)
 def send_chat_message_notification(sender, instance, created, **kwargs):

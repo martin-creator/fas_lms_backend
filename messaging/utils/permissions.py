@@ -1,7 +1,7 @@
 import logging
 from django.core.exceptions import PermissionDenied
 from profiles.models import UserProfile
-from chat.models import ChatRoom
+from messaging.models import ChatRoom
 
 logger = logging.getLogger(__name__)
 
