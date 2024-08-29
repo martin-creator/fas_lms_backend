@@ -9,160 +9,141 @@ from companies.utils import UserUtils, DateTimeUtils
 from companies.reports.companies_report import CompanyReport
 
 
-class CompanyService:
+# class ChatRoom(models.Model):
+#     roomId = ShortUUIDField()
+#     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='chat_rooms', db_index=True)
+#     name = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
 
-    @staticmethod
-    def get_companies():
-        """
-        Get all companies.
-        """
-        companies = CompanyQuery.get_companies()
-        return companies
+#     def add_member(self, user):
+#         if user not in self.members.all():
+#             self.members.add(user)
+            
+#     def remove_member(self, user):
+#         if user in self.members.all():
+#             self.members.remove(user)
+
+#     def get_unread_messages_count(self, user):
+#         return self.contained_messages.filter(is_read=False, sender=user).count()
+
+#     def get_last_message(self):
+#         return self.contained_messages.order_by('timestamp').last()
+
+#     def __str__(self):
+#         return self.name if self.name else self.roomId
+
+# class Message(models.Model):
+#     TEXT = 'text'
+#     IMAGE = 'image'
+#     VIDEO = 'video'
+#     AUDIO = 'audio'
+#     FILE = 'file'
+
+#     MESSAGE_TYPE_CHOICES = [
+#         (TEXT, 'Text Message'),
+#         (IMAGE, 'Image Message'),
+#         (VIDEO, 'Video Message'),
+#         (AUDIO, 'Audio Message'),
+#         (FILE, 'File Attachment'),
+#     ]
     
-
-    @staticmethod
-    def get_company(company_id):
-        """
-        Get a specific company.
-        """
-        company = CompanyQuery.get_company(company_id)
-        return company
+#     chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='contained_messages', db_index=True)
+#     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_messages_in_chat', db_index=True)
+#     content = models.TextField()
+#     timestamp = models.DateTimeField(auto_now_add=True)
+#     is_read = models.BooleanField(default=False)
+#     message_type = models.CharField(max_length=20, choices=MESSAGE_TYPE_CHOICES, default=TEXT)
+#     attachments = GenericRelation(Attachment, related_name='attached_to_messages')
+#     parent_message = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='reply_messages')
+#     is_edited = models.BooleanField(default=False)
+#     is_deleted = models.BooleanField(default=False)
+#     reactions = GenericRelation(Reaction, related_name='reacted_to_messages')
+#     shares = GenericRelation(Share, related_name='shared_messages')
     
-    @staticmethod
-    def create_company(company_data):
-        """
-        Create a new company.
-        """
-        company, categories, members, followers = CompanyHelpers.process_company_data(company_data)
-        company.save()
+    
+#     def __str__(self):
+#         return f"{self.sender.username}: {self.get_preview()}"
 
-        if categories:
-            company.categories.set(categories)
+#     def mark_as_read(self):
+#         self.is_read = True
+#         self.save(update_fields=['is_read'])
+
+#     def edit_message(self, new_content):
+#         self.content = new_content
+#         self.is_edited = True
+#         self.save(update_fields=['content', 'is_edited'])
         
-        if members:
-            company.members.set(members)
+#     def delete_message(self):
+#         self.is_deleted = True
+#         self.content = 'This message was deleted'
+#         self.save(update_fields=['is_deleted', 'content'])
 
-        if followers:
-            company.followers.set(followers)
-
-        serializer = CompanySerializer(company)
-
-        return serializer.data
+#     def get_reply_chain(self):
+#         replies = []
+#         current = self
+#         while current:
+#             replies.append(current)
+#             current = current.parent_message
+#         return replies
     
+#     def has_attachments(self):
+#         return self.attachments.exists()
 
-    @staticmethod
-    def update_company(company_id, company_data):
-        """
-        Update a company.
-        """
-        company, categories, members, followers =  CompanyHelpers.process_company_data_update(company_id, company_data)
-        company.save()
-
-        if categories:
-            company.categories.set(categories)
-        
-        if members:
-            company.members.set(members)
-
-        if followers:
-            company.followers.set(followers)
-
-        serializer = CompanySerializer(company)
-
-        return serializer.data
+#     def get_preview(self):
+#         """Provides a preview of the message content based on type."""
+#         if self.message_type == self.TEXT:
+#             return self.content[:20] if self.content else "No preview"
+#         elif self.message_type in [self.IMAGE, self.VIDEO, self.AUDIO, self.FILE]:
+#             return f"{self.message_type.capitalize()} message"
+#         return "Unknown message type"
     
+#     def get_reactions_summary(self):
+#         summary = {}
+#         for choice in dict(Reaction.REACTION_CHOICES).keys():
+#             summary[choice] = self.reactions.filter(type=choice).count()
+#         return summary
 
-    @staticmethod
-    def delete_company(company_id):
-        """
-        Delete a company.
-        """
-        company = CompanyQuery.get_company(company_id)
-        company.delete()
-
-        return True
+#     def get_content(self):
+#         """Returns the content based on message type."""
+#         if self.message_type == self.TEXT:
+#             return self.content
+#         elif self.message_type == self.IMAGE:
+#             return self.attachments.filter(attachment_type=Attachment.PHOTO).first().file.url if self.attachments.filter(attachment_type=Attachment.PHOTO).exists() else None
+#         elif self.message_type == self.VIDEO:
+#             return self.attachments.filter(attachment_type=Attachment.VIDEO).first().file.url if self.attachments.filter(attachment_type=Attachment.VIDEO).exists() else None
+#         elif self.message_type == self.AUDIO:
+#             return self.attachments.filter(attachment_type=Attachment.AUDIO).first().file.url if self.attachments.filter(attachment_type=Attachment.AUDIO).exists() else None
+#         elif self.message_type == self.FILE:
+#             return self.attachments.filter(attachment_type=Attachment.DOCUMENT).first().file.url if self.attachments.filter(attachment_type=Attachment.DOCUMENT).exists() else None
+#         return None
     
+# class ChatRoomNotification(models.Model):
+#     chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='notifications_for_chat', db_index=True)
+#     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='notifications_in_chat_rooms', db_index=True)
+#     message = models.TextField()
+#     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+#     read = models.BooleanField(default=False)
 
-    @staticmethod
-    def delete_all_companies():
-        """
-        Delete all companies.
-        """
-        companies = CompanyQuery.get_companies()
-        companies.delete()
-
-        return True
+#     def __str__(self):
+#         return f'{self.user_profile.user.username} received a notification for {self.chat_room.name}'
     
+#     def mark_as_read(self):
+#         self.read = True
+#         self.save(update_fields=['read'])
 
-    @staticmethod
-    def get_company_updates(company_id):
-        """
-        Get all updates for a specific company.
-        """
-        updates = CompanyQuery.get_company_updates(company_id)
-        
-        return updates
-    
+#     @classmethod
+#     def create_notification(cls, chat_room, user_profile, message):
+#         return cls.objects.create(chat_room=chat_room, user_profile=user_profile, message=message)
 
-    @staticmethod
-    def get_company_update_by_id(update_id):
-        """
-        Get a specific update for a company.
-        """
-        update = CompanyQuery.get_company_update(update_id)
-        return update
-    
-
-
-    @staticmethod
-    def create_company_update(company_id, update_data):
-        """
-        Create a new update for a company.
-        """
-        company_update = CompanyHelpers.process_company_update_data(company_id, update_data)
-        company_update.save()
-
-        serializer = CompanyUpdateSerializer(company_update)
-
-        return serializer.data
-    
-
-    @staticmethod
-    def update_company_update(company_id, update_id, update_data):
-        """
-        Update an update for a company.
-        """
-        company_update = CompanyHelpers.process_company_update_data_update(update_id, update_data)
-        company_update.save()
-
-        serializer = CompanyUpdateSerializer(company_update)
-
-        return serializer.data
-    
-
-    @staticmethod
-    def delete_company_update(update_id):
-        """
-        Delete an update for a company.
-        """
-        company_update = CompanyQuery.get_company_update(update_id)
-        company_update.delete()
-
-        return True
-    
+#     @classmethod
+#     def get_unread_notifications(cls, chat_room, user_profile):
+#         return cls.objects.filter(chat_room=chat_room, user_profile=user_profile, read=False)
 
 
 
-# class EventService:
 
-#     @staticmethod
-#     def get_events():
-#         """
-#         Get all events.
-#         """
-#         events = EventQuery.get_events()
-#         return events
-    
+
+
 
 #     @staticmethod
 #     def get_event(event_id):
