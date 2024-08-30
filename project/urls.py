@@ -71,6 +71,7 @@ urlpatterns = [
     path('api/activity/', include('activity.urls')),
     path('api/connections/', include('connections.urls')),
     path('api/messaging/', include('messaging.urls')),
+    path('api/profile/', include('profiles.urls')),
     
     
     path('django-rq/', include('django_rq.urls')),

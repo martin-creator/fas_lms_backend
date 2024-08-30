@@ -2,11 +2,11 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericRelation
-# from jobs.models import JobApplication, JobListing
+from jobs.models import JobApplication, JobListing
 from followers.models import Follower, FollowRequest, FollowNotification
-# from notifications.models import Notification
+from notifications.models import Notification
 from shortuuidfield import ShortUUIDField
-# from messaging.models import Reaction, Share
+from messaging.models import Reaction, Share
 
 class User(AbstractUser):
     userId = ShortUUIDField()
@@ -95,6 +95,15 @@ class UserProfile(models.Model):
             end_date=end_date,
             is_current=is_current
         )
+    
+    def add_skill(self, name, proficiency):
+        return Skill.objects.create(name=name, proficiency=proficiency)
+    
+    def add_achievement(self, title, description, date_achieved):
+        return Achievement.objects.create(user=self, title=title, description=description, date_achieved=date_achieved)
+    
+    def add_portfolio(self, project_name, description, project_url):
+        return Portfolio.objects.create(user=self, project_name=project_name, description=description, project_url=project_url)
 
 class Experience(models.Model):
     user = models.ForeignKey(UserProfile, related_name='user_experiences', on_delete=models.CASCADE, db_index=True)
