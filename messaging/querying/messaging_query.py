@@ -193,3 +193,51 @@ class MessagingQuery:
             notifications = ChatRoomNotification.objects.filter(user_id=user_id, chat_id=chat_id, read=read)
             serializer = ChatRoomNotificationSerializer(notifications, many=True)
             return serializer.data
+        
+
+        @staticmethod
+        def get_chat_room_notification(notification_id):
+            """
+            Get a specific chat room notification.
+            """
+            notification = ChatRoomNotification.objects.get(id=notification_id)
+            serializer = ChatRoomNotificationSerializer(notification)
+            return serializer.data
+        
+
+        @staticmethod
+        def get_chat_room_messages(chat_id):
+            """
+            Get all messages in a specific chat room.
+            """
+            messages = Message.objects.filter(chat_id=chat_id)
+            serializer = MessageSerializer(messages, many=True)
+            return serializer.data
+        
+
+        @staticmethod
+        def get_chat_room_members(chat_id):
+            """
+            Get all members in a specific chat room.
+            """
+            chat_room = ChatRoom.objects.get(id=chat_id)
+            serializer = ChatRoomSerializer(chat_room)
+            return serializer.data['members']
+        
+
+        @staticmethod
+        def get_chat_room_messages_count(chat_id):
+            """
+            Get the number of messages in a specific chat room.
+            """
+            count = Message.objects.filter(chat_id=chat_id).count()
+            return count
+        
+
+        @staticmethod
+        def get_chat_room_unread_messages_count(chat_id):
+            """
+            Get the number of unread messages in a specific chat room.
+            """
+            count = Message.objects.filter(chat_id=chat_id, read=False).count()
+            return count

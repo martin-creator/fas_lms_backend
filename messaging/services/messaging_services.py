@@ -1,12 +1,12 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Count
-from companies.models import Company, CompanyUpdate
-from companies.serializers import CompanySerializer, CompanyUpdateSerializer
-from companies.settings.companies_settings import CompanySettings
-from companies.querying.companies_query import CompanyQuery
-from companies.helpers.companies_helpers import CompanyHelpers
-from companies.utils import UserUtils, DateTimeUtils
-from companies.reports.companies_report import CompanyReport
+from messaging.models import Message, ChatRoom, ChatRoomNotification
+from messaging.serializers import MessageSerializer, ChatRoomSerializer, ChatRoomNotificationSerializer
+from messaging.settings.messaging_settings import MessagingSettings
+from messaging.querying.messaging_query import MessagingQuery
+from messaging.helpers.messaging_helpers import MessagingHelpers
+from messaging.reports.messaging_report import MessagingReport
+
 
 
 # class ChatRoom(models.Model):
@@ -141,196 +141,348 @@ from companies.reports.companies_report import CompanyReport
 
 
 
+# Generate CRUD services for all the models in the messaging app.
+# Include all the class methods for each model into the services
 
 
-
-
-#     @staticmethod
-#     def get_event(event_id):
-#         """
-#         Get a specific event.
-#         """
-#         event = EventQuery.get_event(event_id)
-#         return event
-
-#     @staticmethod
-#     def create_event(event_data):
-#         """
-#         Create a new event.
-#         """
-
-#         event, event_tags = EventQuery.process_event_data(event_data)
-#         event.save()
-
-#         if event_tags:
-#             event.tags.set(event_tags)
-
-#         serializer = EventSerializer(event)
-
-#         return serializer.data
+class MessagingService:
+    # Message services
+    @staticmethod
+    def get_messages():
+        """
+        Get all messages.
+        """
+        messages = MessagingQuery.get_messages()
+        return messages
+    
+    @staticmethod
+    def get_message(message_id):
+        """
+        Get a specific message.
+        """
+        message = MessagingQuery.get_message(message_id)
+        return message
     
 
-#     @staticmethod
-#     def update_event(event_id, event_data):
-#         """
-#         Update an event.
-#         """
+    @staticmethod
+    def create_message(message_data):
+        """
+        Create a new message.
+        """
+        message = MessagingHelpers.process_message_data(message_data)
+        message.save()
 
-#         # event = EventQuery.get_event(event_id)
-#         event, event_tags = EventQuery.process_event_update_data(event_id, event_data)
-#         event.save()
+        serializer = MessageSerializer(message)
 
-#         if event_tags:
-#             event.tags.set(event_tags)
-
-#         serializer = EventSerializer(event)
-
-#         return serializer.data
+        return serializer.data
     
 
-#     @staticmethod
-#     def delete_event(event_id):
-#         """
-#         Delete an event.
-#         """
-#         event = EventQuery.get_event(event_id)
-#         event.delete()
+    @staticmethod
+    def update_message(message_id, message_data):
+        """
+        Update a message.
+        """
+        message = MessagingHelpers.process_message_data_update(message_id, message_data)
+        message.save()
 
-#         return True
-    
-    
-#     @staticmethod
-#     def delete_all_events():
-#         """
-#         Delete all events.
-#         """
-#         events = EventQuery.get_events()
-#         events.delete()
+        serializer = MessageSerializer(message)
 
-#         return True
+        return serializer.data
     
 
-#     @staticmethod
-#     def get_event_report(event_id):
-#         """
-#         Get a report for a specific event.
-#         """
-#         event = EventQuery.get_event(event_id)
-#         report = EventReport.get_event_report(event)
+    @staticmethod
+    def delete_message(message_id):
+        """
+        Delete a message.
+        """
+        message = MessagingQuery.get_message(message_id)
+        message.delete()
 
-#         return report
+        return True
     
 
-#     @staticmethod
-#     def get_attendee_report(attendee_id):
-#         """
-#         Get a report for a specific attendee.
-#         """
-#         attendee = UserUtils.get_current_user(attendee_id)
-#         report = EventReport.get_attendee_report(attendee)
-
-#         return report
+    @staticmethod
+    def get_messages_by_chat(chat_id):
+        """
+        Get all messages in a specific chat.
+        """
+        messages = MessagingQuery.get_messages_by_chat(chat_id)
+        return messages
     
-#     @staticmethod
-#     def register_for_event(event_id, attendee_id):
-#         """
-#         Register for an event.
-#         """
-#         event = EventQuery.get_event(event_id)
-#         attendee = UserUtils.get_current_user(attendee_id)
+    @staticmethod
+    def get_messages_by_sender(sender_id):
+        """
+        Get all messages sent by a specific user.
+        """
+        messages = MessagingQuery.get_messages_by_sender(sender_id)
+        return messages
+    
+    @staticmethod
+    def mark_message_as_read(message_id):
+        """
+        Mark a message as read.
+        """
+        message = MessagingQuery.get_message(message_id)
+        message.mark_as_read()
 
-#         registration = EventRegistration(event=event, attendee=attendee)
-#         registration.save()
-
-#         return True
-
-
-#     @staticmethod
-#     def unregister_from_event(event_id, attendee_id):
-#         """
-#         Unregister from an event.
-#         """
-#         registration = EventQuery.get_event_registration(event_id, attendee_id)
-#         registration.delete()
-
-#         return True
+        return True
     
 
-#     @staticmethod
-#     def provide_event_feedback(event_id, attendee_id, feedback_data):
-#         """
-#         Provide feedback for an event.
-#         """
-#         event = EventQuery.get_event(event_id)
-#         attendee = UserUtils.get_current_user(attendee_id)
+    @staticmethod
+    def edit_message(message_id, new_content):
+        """
+        Edit a message.
+        """
+        message = MessagingQuery.get_message(message_id)
+        message.edit_message(new_content)
 
-#         feedback = EventFeedback(event=event, attendee=attendee, **feedback_data)
-#         feedback.save()
-
-#         return True
-
+        return True
     
-#     @staticmethod
-#     def get_events_by_organizer(organizer_id):
-#         """
-#         Get all events organized by a specific organizer.
-#         """
-#         events = EventQuery.get_events_by_organizer(organizer_id)
-#         return events
+    @staticmethod
+    def delete_message(message_id):
+        """
+        Delete a message.
+        """
+        message = MessagingQuery.get_message(message_id)
+        message.delete_message()
+
+        return True
     
 
-#     @staticmethod
-#     def get_events_by_attendee(attendee_id):
-#         """
-#         Get all events attended by a specific attendee.
-#         """
-#         events = EventQuery.get_events_by_attendee(attendee_id)
-#         return events
+    @staticmethod
+    def get_reply_chain(message_id):
+        """
+        Get the reply chain for a specific message.
+        """
+        message = MessagingQuery.get_message(message_id)
+        replies = message.get_reply_chain()
+
+        return replies
     
 
-#     @staticmethod   
-#     def get_event_attendees(event_id):
-#         """
-#         Get all attendees for an event.
-#         """
-#         attendees = EventQuery.get_event_attendees(event_id)
-#         return attendees
+    @staticmethod
+    def get_preview(message_id):
+        """
+        Get a preview of a message.
+        """
+        message = MessagingQuery.get_message(message_id)
+        preview = message.get_preview()
 
-
-#     @staticmethod
-#     def get_event_registrations(event_id):
-#         """
-#         Get all registrations for a specific event.
-#         """
-#         registrations = EventQuery.get_event_registrations(event_id)
-#         return registrations
+        return preview
     
 
-#     @staticmethod
-#     def get_event_feedbacks(event_id):
-#         """
-#         Get all feedbacks for a specific event.
-#         """
-#         feedbacks = EventQuery.get_event_feedbacks(event_id)
-#         return feedbacks
+    @staticmethod
+    def get_reactions_summary(message_id):
+        """
+        Get a summary of reactions for a specific message.
+        """
+        message = MessagingQuery.get_message(message_id)
+        summary = message.get_reactions_summary()
+
+        return summary
     
 
-#     @staticmethod
-#     def get_events_monthly_report():
-#         """
-#         Get a monthly report for all events.
-#         """
-#         report = EventReport.get_events_monthly_report()
-#         return report
-    
+    @staticmethod
+    def get_content(message_id):
+        """
+        Get the content of a message.
+        """
+        message = MessagingQuery.get_message(message_id)
+        content = message.get_content()
 
-    
-    
-    
-
-    
-
+        return content
     
 
 
-        
+    # ChatRoom services
+    @staticmethod
+    def get_chat_rooms():
+        """
+        Get all chat rooms.
+        """
+        chat_rooms = MessagingQuery.get_chat_rooms()
+        return chat_rooms
+    
+
+    @staticmethod
+    def get_chat_room(chat_id):
+        """
+        Get a specific chat room.
+        """
+        chat_room = MessagingQuery.get_chat_room(chat_id)
+        return chat_room
+    
+
+    @staticmethod
+    def create_chat_room(chat_room_data):
+        """
+        Create a new chat room.
+        """
+        chat_room = MessagingHelpers.process_chat_room_data(chat_room_data)
+        chat_room.save()
+
+        serializer = ChatRoomSerializer(chat_room)
+
+        return serializer.data
+    
+
+    @staticmethod
+    def update_chat_room(chat_id, chat_room_data):
+        """
+        Update a chat room.
+        """
+        chat_room = MessagingHelpers.process_chat_room_data_update(chat_id, chat_room_data)
+        chat_room.save()
+
+        serializer = ChatRoomSerializer(chat_room)
+
+        return serializer.data
+    
+
+    @staticmethod
+    def delete_chat_room(chat_id):
+        """
+        Delete a chat room.
+        """
+        chat_room = MessagingQuery.get_chat_room(chat_id)
+        chat_room.delete()
+
+        return True
+    
+
+    @staticmethod
+    def add_member_to_chat_room(chat_id, user_id):
+        """
+        Add a member to a chat room.
+        """
+        chat_room = MessagingQuery.get_chat_room(chat_id)
+        user = MessagingQuery.get_user(user_id)
+
+        chat_room.add_member(user)
+
+        return True
+    
+
+    @staticmethod
+    def remove_member_from_chat_room(chat_id, user_id):
+        """
+        Remove a member from a chat room.
+        """
+        chat_room = MessagingQuery.get_chat_room(chat_id)
+        user = MessagingQuery.get_user(user_id)
+
+        chat_room.remove_member(user)
+
+        return True
+    
+
+    @staticmethod
+    def get_unread_messages_count(chat_id, user_id):
+        """
+        Get the count of unread messages for a user in a chat room.
+        """
+        chat_room = MessagingQuery.get_chat_room(chat_id)
+        user = MessagingQuery.get_user(user_id)
+
+        count = chat_room.get_unread_messages_count(user)
+
+        return count
+    
+
+    @staticmethod
+    def get_last_message(chat_id):
+        """
+        Get the last message in a chat room.
+        """
+        chat_room = MessagingQuery.get_chat_room(chat_id)
+        last_message = chat_room.get_last_message()
+
+        return last_message
+    
+
+    @staticmethod
+    def get_chat_room_notifications(chat_id, user_id):
+        """
+        Get all notifications for a user in a chat room.
+        """
+        chat_room = MessagingQuery.get_chat_room(chat_id)
+        user = MessagingQuery.get_user(user_id)
+
+        notifications = MessagingQuery.get_chat_room_notifications(chat_room, user)
+
+        return notifications
+    
+
+    @staticmethod
+    def mark_chat_room_notification_as_read(notification_id):
+        """
+        Mark a chat room notification as read.
+        """
+        notification = MessagingQuery.get_chat_room_notification(notification_id)
+        notification.mark_as_read()
+
+        return True
+    
+
+    @staticmethod
+    def create_chat_room_notification(chat_id, user_id, message):
+        """
+        Create a new notification for a user in a chat room.
+        """
+        chat_room = MessagingQuery.get_chat_room(chat_id)
+        user = MessagingQuery.get_user(user_id)
+
+        notification = ChatRoomNotification.create_notification(chat_room, user, message)
+
+        return True
+    
+
+    @staticmethod
+    def get_unread_notifications(chat_id, user_id):
+        """
+        Get all unread notifications for a user in a chat room.
+        """
+        chat_room = MessagingQuery.get_chat_room(chat_id)
+        user = MessagingQuery.get_user(user_id)
+
+        notifications = ChatRoomNotification.get_unread_notifications(chat_room, user)
+
+        return notifications
+    
+
+    @staticmethod
+    def get_chat_room_messages(chat_id):
+        """
+        Get all messages in a chat room.
+        """
+        messages = MessagingQuery.get_chat_room_messages(chat_id)
+        return messages
+    
+
+    @staticmethod
+    def get_chat_room_members(chat_id):
+        """
+        Get all members in a chat room.
+        """
+        members = MessagingQuery.get_chat_room_members(chat_id)
+        return members
+    
+
+    @staticmethod
+    def get_chat_room_messages_count(chat_id):
+        """
+        Get the count of messages in a chat room.
+        """
+        count = MessagingQuery.get_chat_room_messages_count(chat_id)
+        return count
+    
+
+    @staticmethod
+    def get_chat_room_unread_messages_count(chat_id):
+        """
+        Get the count of unread messages in a chat room.
+        """
+        count = MessagingQuery.get_chat_room_unread_messages_count(chat_id)
+        return count
+    
+    
