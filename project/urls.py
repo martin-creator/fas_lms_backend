@@ -70,6 +70,7 @@ urlpatterns = [
     path('api/posts/', include('posts.urls')),
     path('api/activity/', include('activity.urls')),
     path('api/connections/', include('connections.urls')),
+    path('api/messaging/', include('messaging.urls')),
     
     
     path('django-rq/', include('django_rq.urls')),
