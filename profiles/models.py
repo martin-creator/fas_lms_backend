@@ -95,6 +95,15 @@ class UserProfile(models.Model):
             end_date=end_date,
             is_current=is_current
         )
+    
+    def add_skill(self, name, proficiency):
+        return Skill.objects.create(name=name, proficiency=proficiency)
+    
+    def add_achievement(self, title, description, date_achieved):
+        return Achievement.objects.create(user=self, title=title, description=description, date_achieved=date_achieved)
+    
+    def add_portfolio(self, project_name, description, project_url):
+        return Portfolio.objects.create(user=self, project_name=project_name, description=description, project_url=project_url)
 
 class Experience(models.Model):
     user = models.ForeignKey(UserProfile, related_name='user_experiences', on_delete=models.CASCADE, db_index=True)
