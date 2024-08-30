@@ -7,7 +7,6 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
 from activity.models import Attachment, Reaction, Share
-from profiles.models import UserProfile
 from django.conf import settings
 
 class ChatRoom(models.Model):
@@ -119,8 +118,14 @@ class Message(models.Model):
         return None
     
 class ChatRoomNotification(models.Model):
+    # Move the import here to avoid circular dependency
+    def __init__(self, *args, **kwargs):
+        from profiles.models import UserProfile
+        self.user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='notifications_in_chat_rooms', db_index=True)
+        super().__init__(*args, **kwargs)
+
     chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='notifications_for_chat', db_index=True)
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='notifications_in_chat_rooms', db_index=True)
+    # user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='notifications_in_chat_rooms', db_index=True)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     read = models.BooleanField(default=False)

@@ -1,6 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Count
-from profiles.models import User, UserProfile, Expe
 from profiles.models import UserProfile, Follower, FollowRequest, Skill, Experience, Education, Endorsement, Achievement, Portfolio
 from profiles.serializers import UserProfileSerializer, SkillSerializer, ExperienceSerializer, EducationSerializer, EndorsementSerializer, AchievementSerializer, PortfolioSerializer
 from profiles.settings.profiles_settings import ProfilesSettings
