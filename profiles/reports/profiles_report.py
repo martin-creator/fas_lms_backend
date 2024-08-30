@@ -4,7 +4,7 @@ from profiles.serializers import UserSerializer, UserProfileSerializer, SkillSer
 from profiles.querying.profiles_query import ProfileQuery
 
 
-class ProfileReport:
+class ProfilesReport:
     @staticmethod
     def get_profile_report(profile):
         """
