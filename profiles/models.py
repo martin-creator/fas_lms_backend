@@ -2,11 +2,11 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericRelation
-# from jobs.models import JobApplication, JobListing
+from jobs.models import JobApplication, JobListing
 from followers.models import Follower, FollowRequest, FollowNotification
-# from notifications.models import Notification
+from notifications.models import Notification
 from shortuuidfield import ShortUUIDField
-# from messaging.models import Reaction, Share
+from messaging.models import Reaction, Share
 
 class User(AbstractUser):
     userId = ShortUUIDField()
