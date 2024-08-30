@@ -22,6 +22,15 @@ class ProfileQuery:
         user = User.objects.get(id=user_id)
         serializer = UserSerializer(user)
         return serializer.data
+    
+    @staticmethod
+    def get_profiles():
+        """
+        Get all user profiles.
+        """
+        profiles = UserProfile.objects.all()
+        serializer = UserProfileSerializer(profiles, many=True)
+        return serializer.data
 
     @staticmethod
     def get_user_profile(profile_id):
