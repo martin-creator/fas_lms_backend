@@ -9,7 +9,7 @@ services:
     plan: free
     name: fas_lms_backend
     runtime: python3.12
-    buildCommand: "./build.sh"
+    buildCommand: "pip install -r requirements.txt"
     startCommand: "python manage.py runserver "    #envVars:
       # - key: DATABASE_URL
       #   fromDatabase:
