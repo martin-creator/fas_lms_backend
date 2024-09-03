@@ -3,7 +3,20 @@ from django.dispatch import receiver
 from .models import Message, ChatRoom
 from notifications.models import Notification
 from activity.models import Reaction, Share
+
 from django.utils import timezone
+from messaging.utils.message_utils import MessageUtils
+# from .utils.notification_utils import MessageUtils
+
+
+@receiver(post_save, sender=Message)
+def send_chat_message_notification(sender, instance, created, **kwargs):
+    if created:
+        chat = instance.chat
+        message = instance
+        sender_user = instance.sender
+        for member in chat.members.exclude(id=sender_user.id):
+            MessageUtils.send_message_notification(chat, member, message)
 
 # Signal to send notifications when a new message is sent
 @receiver(post_save, sender=Message)

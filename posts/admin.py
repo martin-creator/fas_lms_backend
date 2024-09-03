@@ -16,7 +16,7 @@ class AttachmentInline(GenericTabularInline):
 # Inline for replies (child comments)
 class ReplyInline(admin.TabularInline):  # or admin.StackedInline if you prefer
     model = Comment
-    fk_name = 'parent_comment'
+    # fk_name = 'parent_comment'  # Set the foreign key to the parent comment
     fields = ('author', 'content', 'visibility', 'created_at')  # Adjust fields as necessary
     readonly_fields = ('created_at',)
     extra = 1
@@ -27,14 +27,21 @@ class ReplyInline(admin.TabularInline):  # or admin.StackedInline if you prefer
         formset.parent_obj = obj  # Store the parent comment object in the formset
         return formset
 
+    # def get_queryset(self, request):
+    #     # Override get_queryset to filter only direct replies to the current comment
+    #     queryset = super().get_queryset(request)
+    #     parent_obj = getattr(self.formset, 'parent_obj', None)
+    #     if parent_obj:
+    #         return queryset.filter(parent_comment=parent_obj)
+    #     else:
+    #         return queryset.none()
+
     def get_queryset(self, request):
-        # Override get_queryset to filter only direct replies to the current comment
-        queryset = super().get_queryset(request)
         parent_obj = getattr(self.formset, 'parent_obj', None)
         if parent_obj:
-            return queryset.filter(parent_comment=parent_obj)
+            return super().get_queryset(request).filter(parent_comment=parent_obj)
         else:
-            return queryset.none()
+            return super().get_queryset(request).none()
 
 # Custom Admin Form for Post
 class PostAdminForm(forms.ModelForm):
@@ -78,6 +85,7 @@ class PostAdmin(admin.ModelAdmin):
         }),
     )
     # No need for ReactionInline
+    inlines = [AttachmentInline, ReplyInline]  # Include ReplyInline here
 
     def total_reactions(self, obj):
         # Count reactions directly from the GenericRelation

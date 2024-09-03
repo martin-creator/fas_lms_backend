@@ -5,8 +5,6 @@ from .models import ConnectionRequest, Connection, Recommendation
 from profiles.models import UserProfile
 
 
-
-
 class ConnectionConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user = self.scope['user']
