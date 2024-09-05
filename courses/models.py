@@ -6,8 +6,8 @@ from datetime import timedelta
 # from certifications.models import Certification
 
 from activity.models import Attachment
-
 from django.contrib.contenttypes.fields import GenericRelation
+
 
 class Course(models.Model):
     """
@@ -32,7 +32,7 @@ class Course(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     attachments = GenericRelation(Attachment)
-    categories = models.ManyToManyField('activity.Category', related_name='courses_categories')
+    categories = GenericRelation('activity.Category', related_name='courses_categories')
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='instructed_courses', on_delete=models.CASCADE, null=True, blank=True)
     students = models.ManyToManyField(
     settings.AUTH_USER_MODEL, 
@@ -40,9 +40,9 @@ class Course(models.Model):
     related_name='course_students',  # Updated related_name
     blank=True, 
     null=True)
-    shares = models.ManyToManyField('activity.Share', related_name='course_shares', blank=True)
-    comments = models.ManyToManyField('posts.Comment', related_name='course_comments', blank=True)
-    reactions = models.ManyToManyField('activity.Reaction', related_name='course_reactions', blank=True)
+    shares = GenericRelation('activity.Share', related_name='course_shares', blank=True)
+    comments = GenericRelation('posts.Comment', related_name='course_comments', blank=True)
+    reactions = GenericRelation('activity.Reaction', related_name='course_reactions', blank=True)
     tags = TaggableManager()
     # video_url = models.URLField(blank=True, null=True)
     image = models.ImageField(upload_to='courses/', blank=True, null=True)

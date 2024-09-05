@@ -2,11 +2,11 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericRelation
-# from jobs.models import JobApplication, JobListing
+from jobs.models import JobApplication, JobListing
 from followers.models import Follower, FollowRequest, FollowNotification
-# from notifications.models import Notification
+from notifications.models import Notification
 from shortuuidfield import ShortUUIDField
-# from messaging.models import Reaction, Share
+from messaging.models import Reaction, Share
 
 class User(AbstractUser):
     userId = ShortUUIDField()
@@ -95,6 +95,15 @@ class UserProfile(models.Model):
             end_date=end_date,
             is_current=is_current
         )
+    
+    def add_skill(self, name, proficiency):
+        return Skill.objects.create(name=name, proficiency=proficiency)
+    
+    def add_achievement(self, title, description, date_achieved):
+        return Achievement.objects.create(user=self, title=title, description=description, date_achieved=date_achieved)
+    
+    def add_portfolio(self, project_name, description, project_url):
+        return Portfolio.objects.create(user=self, project_name=project_name, description=description, project_url=project_url)
 
 class Experience(models.Model):
     user = models.ForeignKey(UserProfile, related_name='user_experiences', on_delete=models.CASCADE, db_index=True)
@@ -126,7 +135,7 @@ class Skill(models.Model):
     name = models.CharField(max_length=100)
     users = models.ManyToManyField(UserProfile, related_name='user_skills', db_index=True)
     proficiency = models.CharField(max_length=50)
-    shares = models.ManyToManyField('activity.Share', related_name='skill_shares', blank=True)
+    shares = GenericRelation('activity.Share', related_name='skill_shares', blank=True)
     endorsements = models.ManyToManyField('Endorsement', related_name='endorsement_skills', blank=True, db_index=True)
     job_applications = models.ManyToManyField('jobs.JobApplication', related_name='skill_job_applications', blank=True)
     job_listings = models.ManyToManyField('jobs.JobListing', related_name='skill_job_listings', blank=True)
@@ -141,7 +150,7 @@ class Endorsement(models.Model):
     skill = models.ForeignKey(Skill, related_name='skills_endorsements', on_delete=models.CASCADE, db_index=True)
     endorsed_by = models.ForeignKey(UserProfile, related_name='given_endorsements', on_delete=models.CASCADE, db_index=True)
     endorsed_user = models.ForeignKey(UserProfile, related_name='received_endorsements', on_delete=models.CASCADE, db_index=True)
-    shares = models.ManyToManyField('activity.Share', related_name='endorsement_shares', blank=True)
+    shares = GenericRelation('activity.Share', related_name='endorsement_shares', blank=True)
 
     def __str__(self):
         return f'{self.endorsed_by.user.username} endorsed {self.endorsed_user.user.username} for {self.skill.name}'
