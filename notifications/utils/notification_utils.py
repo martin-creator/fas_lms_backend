@@ -78,17 +78,30 @@ class NotificationUtils:
 
 
                 # Trigger external integrations if applicable
-                NotificationUtils._trigger_external_integrations(data, user)
+                # NotificationUtils._trigger_external_integrations(data, user)
 
                 # Increment metrics for sent notifications
                 increment_notifications_sent()
 
                 return notification
             else:
-                raise ValueError(serializer.errors)
+                raise ValueError("Invalid data: " + str(serializer.errors))
+        except UserProfile.DoesNotExist:
+            logger.error("UserProfile not found.")
+            increment_notifications_failed()
+            raise
+        except PermissionDenied as e:
+            logger.error(f"Permission denied: {e}")
+            increment_notifications_failed()
+            raise
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            increment_notifications_failed()
+            raise
         except Exception as e:
             logger.error(f"Error sending notification: {e}")
             increment_notifications_failed()
+            # raisenotifications_failed()
             raise
     
     @staticmethod
