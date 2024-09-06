@@ -3,35 +3,7 @@
 from django.apps import apps
 from django.db.models import Count
 
-# old generate_user_notification_report was not utilizing the 'content' field instead 'message' field
-# hence error was thrown during endpoint execution
 
-# def generate_user_notification_report(user_id):
-#     """
-#     Generate a detailed notification report for a specific user.
-
-#     Args:
-#     - user_id (int): ID of the user.
-
-#     Returns:
-#     - dict: A dictionary containing the notification report for the user.
-#     """
-#     Notification = apps.get_model('notifications', 'Notification')
-
-#     notifications = Notification.objects.filter(recipient_id=user_id).order_by('-timestamp')
-#     unread_count = notifications.filter(read=False).count()
-#     read_count = notifications.filter(read=True).count()
-#     total_count = notifications.count()
-
-
-#     report = {
-#         'user_id': user_id,
-#         'total_notifications': total_count,
-#         'unread_notifications': unread_count,
-#         'read_notifications': read_count,
-#         'notifications': list(notifications.values('id', 'message', 'read', 'timestamp'))
-#     }
-#     return report
 def generate_user_notification_report(user_id):
     """
     Generate a detailed notification report for a specific user.
