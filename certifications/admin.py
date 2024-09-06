@@ -9,6 +9,13 @@ class AttachmentInline(GenericTabularInline):
     extra = 1
 
 
+@admin.action(description='Revoke selected certifications')
+def revoke_certifications(modeladmin, request, queryset):
+    for cert in queryset:
+        cert.revoke(reason="Revoked by admin")
+        # Send notification
+        from services.utils.notification import send_notification
+        send_notification(cert.user, f"Your certification '{cert.name}' has been revoked.")
 
 # ModelAdmin for Certification
 @admin.register(Certification)
@@ -16,6 +23,8 @@ class CertificationAdmin(admin.ModelAdmin):
     list_display = ('name', 'user', 'issue_date', 'expiration_date', 'verification_status')
     list_filter = ('issue_date', 'expiration_date', 'verification_status', 'categories')
     search_fields = ('name', 'user__username', 'issuing_organization', 'description')
+    actions = [revoke_certifications]
+
 
     fieldsets = (
         ('Certification Information', {
@@ -86,4 +95,5 @@ class LinkedInBadgeAdmin(admin.ModelAdmin):
         if not obj.certification.user_id:
             obj.certification.user = request.user
         obj.save()
+
 

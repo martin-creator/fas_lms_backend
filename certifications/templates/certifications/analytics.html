@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Certification Analytics</h1>
+    <canvas id="certificationChart" width="400" height="200"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+var ctx = document.getElementById('certificationChart').getContext('2d');
+var certificationChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ labels|safe }},
+        datasets: [{
+            label: 'Number of Certifications',
+            data: {{ data|safe }},
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

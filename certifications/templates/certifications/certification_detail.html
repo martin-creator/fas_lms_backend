@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{{ certification.name }}</h1>
+    <p>{{ certification.description }}</p>
+    <h2>Learning Paths</h2>
+    <ul>
+        {% for learning_path in certification.learning_paths.all %}
+            <li>{{ learning_path.name }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Related Courses</h2>
+    <ul>
+        {% for course in certification.related_courses.all %}
+            <li>{{ course.name }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

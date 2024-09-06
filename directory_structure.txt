@@ -1,0 +1,426 @@
+├── .git
+│   ├── FETCH_HEAD
+│   ├── HEAD
+│   ├── config
+│   ├── description
+│   ├── hooks
+│   │   ├── applypatch-msg.sample
+│   │   ├── commit-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── post-update.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-commit.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── pre-push.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-receive.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   ├── push-to-checkout.sample
+│   │   └── update.sample
+│   ├── index
+│   ├── info
+│   │   └── exclude
+│   ├── logs
+│   │   ├── HEAD
+│   │   └── refs
+│   │       ├── heads
+│   │       │   ├── master
+│   │       │   └── services
+│   │       └── remotes
+│   │           └── origin
+│   │               └── HEAD
+│   ├── objects
+│   │   ├── info
+│   │   └── pack
+│   │       ├── pack-d2310e94d03596d510d2f5812a744e2e9cdffc3f.idx
+│   │       └── pack-d2310e94d03596d510d2f5812a744e2e9cdffc3f.pack
+│   ├── packed-refs
+│   └── refs
+│       ├── heads
+│       │   ├── master
+│       │   └── services
+│       ├── remotes
+│       │   └── origin
+│       │       └── HEAD
+│       └── tags
+├── CONTRIBUTING.md
+├── LICENSE
+├── README.md
+├── activity
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   ├── consumers.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   └── signals.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── consumers.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── 0003_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       ├── 0002_initial.cpython-312.pyc
+│   │       ├── 0003_initial.cpython-312.pyc
+│   │       ├── 0004_delete_tag_share_activity_sh_user_id_9497e8_idx_and_more.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── routing.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── certifications
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   └── signals.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── 0003_initial.py
+│   │   ├── 0004_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       ├── 0002_initial.cpython-312.pyc
+│   │       ├── 0003_initial.cpython-312.pyc
+│   │       ├── 0004_initial.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── companies
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   └── signals.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       ├── 0002_initial.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── connections
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   ├── consumers.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   └── signals.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── consumers.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       ├── 0002_initial.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── routing.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── courses
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   └── signals.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── 0003_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       ├── 0002_alter_course_tags_alter_coursecompletion_tags.cpython-312.pyc
+│   │       ├── 0002_initial.cpython-312.pyc
+│   │       ├── 0003_initial.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── serializers.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── db.sqlite3
+├── dir_structure.py
+├── events
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   └── signals.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       ├── 0002_initial.cpython-312.pyc
+│   │       ├── 0002_remove_event_category_event_tags.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── followers
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   └── signals.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       ├── 0002_initial.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── generate_directory_structure.py
+├── groups
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   └── signals.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       ├── 0002_initial.cpython-312.pyc
+│   │       ├── 0003_alter_group_tags.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── jobs
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   └── signals.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       ├── 0002_initial.cpython-312.pyc
+│   │       ├── 0003_alter_joblisting_tags.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── manage.py
+├── messaging
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   ├── consumers.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   └── signals.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── consumers.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       ├── 0002_initial.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── routing.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── myapp_models.png
+├── notifications
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   ├── consumers.cpython-312.pyc
+│   │   ├── forms.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   ├── services.cpython-312.pyc
+│   │   └── signals.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── consumers.py
+│   ├── forms.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── 0003_alter_notification_recipient.py
+│   │   ├── 0004_alter_notificationtype_type_name.py
+│   │   ├── 0005_alter_notification_object_id.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       ├── 0002_initial.cpython-312.pyc
+│   │       ├── 0003_alter_notification_recipient.cpython-312.pyc
+│   │       ├── 0004_alter_notificationtype_type_name.cpython-312.pyc
+│   │       ├── 0005_alter_notification_object_id.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── routing.py
+│   ├── services.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── posts
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   └── models.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       ├── 0002_initial.cpython-312.pyc
+│   │       ├── 0003_alter_comment_content_alter_post_content_and_more.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── profiles
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── admin.cpython-312.pyc
+│   │   ├── apps.cpython-312.pyc
+│   │   ├── consumers.cpython-312.pyc
+│   │   ├── models.cpython-312.pyc
+│   │   ├── signals.cpython-312.pyc
+│   │   └── views.cpython-312.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── consumers.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-312.pyc
+│   │       └── __init__.cpython-312.pyc
+│   ├── models.py
+│   ├── routing.py
+│   ├── serializers.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+├── project
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── asgi.cpython-312.pyc
+│   │   ├── routing.cpython-312.pyc
+│   │   ├── settings.cpython-312.pyc
+│   │   ├── urls.cpython-312.pyc
+│   │   └── wsgi.cpython-312.pyc
+│   ├── asgi.py
+│   ├── routing.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── requirements.txt
+├── services
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── integrations
+│   │   ├── __init__.py
+│   │   ├── certification.py
+│   │   ├── forum.py
+│   │   ├── grading.py
+│   │   └── payment.py
+│   ├── migrations
+│   │   └── __init__.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── utils
+│   │   ├── __init__.py
+│   │   ├── notifications.py
+│   │   └── storage.py
+│   └── views.py
+├── settings
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations
+│   │   └── __init__.py
+│   ├── models.py
+│   ├── services.py
+│   ├── signals.py
+│   ├── tests.py
+│   └── views.py
+└── templates
+    └── account
+        └── email_confirm.html
