@@ -140,7 +140,7 @@ class AuthService:
             raise AuthException("Invalid token.")
         except Exception as e:
             logger.error(f"Error retrieving user by token: {e}")
-            raise AuthException("Failed to retrieve user by token."))
+            raise AuthException("Failed to retrieve user by token.")
 
     @staticmethod
     def get_user_profile(user):

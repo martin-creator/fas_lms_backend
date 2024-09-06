@@ -119,7 +119,7 @@ class StorageHandler:
         s3 = session.resource('s3')
         try:
             s3.Bucket(bucket_name).put_object(Key=file_path, Body=file)
-                        return f"s3://{bucket_name}/{file_path}"
+            return f"s3://{bucket_name}/{file_path}"
         except Exception as e:
             logger.error(f"Error uploading file to S3: {e}")
             raise StorageException("Failed to upload file to S3.")
