@@ -7,6 +7,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
 from activity.models import Attachment, Reaction, Share
+from .managers import ChatRoomManager, MessageManager, ChatRoomNotificationManager
 from django.conf import settings
 
 class ChatRoom(models.Model):
@@ -15,16 +16,18 @@ class ChatRoom(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = ChatRoomManager()
+
     def add_member(self, user):
         if user not in self.members.all():
             self.members.add(user)
-            
+
     def remove_member(self, user):
         if user in self.members.all():
             self.members.remove(user)
 
     def get_unread_messages_count(self, user):
-        return self.contained_messages.filter(is_read=False, sender=user).count()
+        return self.contained_messages.unread(user).count()
 
     def get_last_message(self):
         return self.contained_messages.order_by('timestamp').last()
@@ -60,6 +63,7 @@ class Message(models.Model):
     reactions = GenericRelation(Reaction, related_name='reacted_to_messages')
     shares = GenericRelation(Share, related_name='shared_messages')
     
+    objects = MessageManager()
     
     def __str__(self):
         return f"{self.sender.username}: {self.get_preview()}"
@@ -130,6 +134,8 @@ class ChatRoomNotification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     read = models.BooleanField(default=False)
 
+    objects = ChatRoomNotificationManager()
+    
     def __str__(self):
         return f'{self.user_profile.user.username} received a notification for {self.chat_room.name}'
     
