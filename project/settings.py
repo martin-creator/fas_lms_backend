@@ -439,6 +439,26 @@ LINKEDIN_SCOPE = ['r_liteprofile', 'r_emailaddress', 'w_member_social']
 CERTIFICATE_IMAGE_PATH = 'certificates/'
 CERTIFICATE_IMAGE_URL = 'http://localhost:8000/media/certificates/'
 
+# django-allauth settings
+# ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+# ACCOUNT_AUTHENTICATION_METHOD = 'email'
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_UNIQUE_EMAIL = True
+# LOGIN_REDIRECT_URL = 'home'  # Replace 'home' with your actual home URL
+
+# Email configuration (for development, use console backend)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'webmaster@example.com'
+SERVER_EMAIL = 'webmaster@example.com'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'your_smtp_host'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your_smtp_user'
+EMAIL_HOST_PASSWORD = 'your_smtp_password'
+DEFAULT_FROM_EMAIL = 'your_default_from_email'
 
 
 
