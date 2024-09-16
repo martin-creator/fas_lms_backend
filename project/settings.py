@@ -432,9 +432,10 @@ SESSION_SAVE_EVERY_REQUEST = True
 LINKEDIN_CLIENT_ID = '780a1kqo58jw5x'
 LINKEDIN_CLIENT_SECRET = 'loASr4gmHgK7iFdj',
 # LINKEDIN_REDIRECT_URI = 'http://yourdomain.com/auth/linkedin/callback/'
-LINKEDIN_REDIRECT_URI = 'http://localhost:8000/linkedin/callback/'
+LINKEDIN_REDIRECT_URI = 'http://localhost:8000/api/certifications/linkedin/callback'
 LINKEDIN_STATE = 'random_string_to_prevent_csrf'
-LINKEDIN_SCOPE = ['r_liteprofile', 'r_emailaddress', 'w_member_social'] 
+# LINKEDIN_SCOPE = ['r_liteprofile', 'r_emailaddress', 'w_member_social'] 
+LINKEDIN_SCOPE = ['openid', 'profile', "email", "w_member_social"] 
 
 CERTIFICATE_IMAGE_PATH = 'certificates/'
 CERTIFICATE_IMAGE_URL = 'http://localhost:8000/media/certificates/'
