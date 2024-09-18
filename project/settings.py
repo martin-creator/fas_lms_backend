@@ -246,6 +246,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000',
     'http://localhost:8080',
     'http://localhost:8081',
+    'http://localhost:5173'
 ]
 
 
@@ -265,7 +266,7 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # For development purposes, you can also use:
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
 
 SITE_ID = 1
