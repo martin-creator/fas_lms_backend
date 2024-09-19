@@ -114,7 +114,7 @@ class EndorsementAdmin(admin.ModelAdmin):
     list_display = ('skill', 'endorsed_by', 'endorsed_user', 'created_at_display')
     list_filter = ('skill', 'endorsed_by', 'endorsed_user')
     search_fields = ('skill__name', 'endorsed_by__user__username', 'endorsed_user__user__username')
-    filter_horizontal = ('shares',)
+    # filter_horizontal = ('shares',)
     actions = ['export_to_csv']
 
     def export_to_csv(self, request, queryset):

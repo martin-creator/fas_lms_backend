@@ -9,6 +9,7 @@ from taggit.managers import TaggableManager
 from django.urls import reverse
 from . managers import PostManager, CommentManager
 from datetime import timezone
+from django.utils.text import slugify
 
 class Post(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_index=True)

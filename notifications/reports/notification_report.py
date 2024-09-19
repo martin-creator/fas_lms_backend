@@ -3,6 +3,7 @@
 from django.apps import apps
 from django.db.models import Count
 
+
 def generate_user_notification_report(user_id):
     """
     Generate a detailed notification report for a specific user.
@@ -13,21 +14,26 @@ def generate_user_notification_report(user_id):
     Returns:
     - dict: A dictionary containing the notification report for the user.
     """
-    Notification = apps.get_model('notifications', 'Notification')
-    
-    notifications = Notification.objects.filter(recipient_id=user_id).order_by('-timestamp')
-    unread_count = notifications.filter(read=False).count()
-    read_count = notifications.filter(read=True).count()
+    Notification = apps.get_model("notifications", "Notification")
+
+    notifications = Notification.objects.filter(recipient_id=user_id).order_by(
+        "-timestamp"
+    )
+    unread_count = notifications.filter(is_read=False).count()
+    read_count = notifications.filter(is_read=True).count()
     total_count = notifications.count()
-    
+
     report = {
-        'user_id': user_id,
-        'total_notifications': total_count,
-        'unread_notifications': unread_count,
-        'read_notifications': read_count,
-        'notifications': list(notifications.values('id', 'message', 'read', 'timestamp'))
+        "user_id": user_id,
+        "total_notifications": total_count,
+        "unread_notifications": unread_count,
+        "read_notifications": read_count,
+        "notifications": list(
+            notifications.values("id", "content", "is_read", "timestamp")
+        ),  # Change 'message' to 'content'
     }
     return report
+
 
 def generate_notification_summary():
     """
@@ -36,18 +42,22 @@ def generate_notification_summary():
     Returns:
     - dict: A dictionary containing the summary of notifications.
     """
-    Notification = apps.get_model('notifications', 'Notification')
-    
+    Notification = apps.get_model("notifications", "Notification")
+
     total_notifications = Notification.objects.count()
     unread_notifications = Notification.objects.filter(read=False).count()
     read_notifications = Notification.objects.filter(read=True).count()
-    
-    notifications_by_type = Notification.objects.values('notification_type').annotate(count=Count('id')).order_by('-count')
-    
+
+    notifications_by_type = (
+        Notification.objects.values("notification_type")
+        .annotate(count=Count("id"))
+        .order_by("-count")
+    )
+
     summary = {
-        'total_notifications': total_notifications,
-        'unread_notifications': unread_notifications,
-        'read_notifications': read_notifications,
-        'notifications_by_type': list(notifications_by_type)
+        "total_notifications": total_notifications,
+        "unread_notifications": unread_notifications,
+        "read_notifications": read_notifications,
+        "notifications_by_type": list(notifications_by_type),
     }
     return summary

@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from taggit.managers import TaggableManager
+from django.utils import timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -141,7 +142,7 @@ class UserActivity(models.Model):
     activity_type = models.CharField(max_length=50)
     timestamp = models.DateTimeField(auto_now_add=True)
     details = models.TextField()
-    categories = models.ManyToManyField(Category, related_name='user_activity_categories')
+    categories = GenericRelation(Category, related_name='user_activity_categories')
     
     @classmethod
     def log_activity(cls, user, activity_type, details, categories=None):
@@ -178,7 +179,7 @@ class MarketingCampaign(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     target_audience = models.TextField()
-    categories = models.ManyToManyField(Category, related_name='marketing_categories')
+    categories = GenericRelation(Category, related_name='marketing_categories')
     attachments = GenericRelation(Attachment)
     
     def is_active(self):
@@ -195,7 +196,7 @@ class MarketingCampaign(models.Model):
 class LearningService(models.Model):
     service_name = models.CharField(max_length=100)
     description = models.TextField()
-    categories = models.ManyToManyField(Category, related_name='learning_service_categories')
+    categories = GenericRelation(Category, related_name='learning_service_categories')
     resources = models.URLField()
     attachments = GenericRelation(Attachment)
 
@@ -213,7 +214,7 @@ class Analytics(models.Model):
     activity_type = models.CharField(max_length=50)
     engagement_rate = models.FloatField(default=0.0)
     trending_topics = models.TextField()
-    categories = models.ManyToManyField(Category, related_name='analytics_categories')
+    categories = GenericRelation(Category, related_name='analytics_categories')
     
     def update_engagement_rate(self, new_rate):
         self.engagement_rate = (self.engagement_rate + new_rate) / 2

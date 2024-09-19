@@ -246,6 +246,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000',
     'http://localhost:8080',
     'http://localhost:8081',
+    'http://localhost:5173'
 ]
 
 
@@ -265,7 +266,7 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # For development purposes, you can also use:
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
 
 SITE_ID = 1
@@ -432,13 +433,34 @@ SESSION_SAVE_EVERY_REQUEST = True
 LINKEDIN_CLIENT_ID = '780a1kqo58jw5x'
 LINKEDIN_CLIENT_SECRET = 'loASr4gmHgK7iFdj',
 # LINKEDIN_REDIRECT_URI = 'http://yourdomain.com/auth/linkedin/callback/'
-LINKEDIN_REDIRECT_URI = 'http://localhost:8000/linkedin/callback/'
+LINKEDIN_REDIRECT_URI = 'http://localhost:8000/api/certifications/linkedin/callback'
 LINKEDIN_STATE = 'random_string_to_prevent_csrf'
-LINKEDIN_SCOPE = ['r_liteprofile', 'r_emailaddress', 'w_member_social'] 
+# LINKEDIN_SCOPE = ['r_liteprofile', 'r_emailaddress', 'w_member_social'] 
+LINKEDIN_SCOPE = ['openid', 'profile', "email", "w_member_social"] 
 
 CERTIFICATE_IMAGE_PATH = 'certificates/'
 CERTIFICATE_IMAGE_URL = 'http://localhost:8000/media/certificates/'
 
+# django-allauth settings
+# ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+# ACCOUNT_AUTHENTICATION_METHOD = 'email'
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_UNIQUE_EMAIL = True
+# LOGIN_REDIRECT_URL = 'home'  # Replace 'home' with your actual home URL
+
+# Email configuration (for development, use console backend)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'webmaster@example.com'
+SERVER_EMAIL = 'webmaster@example.com'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'your_smtp_host'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your_smtp_user'
+EMAIL_HOST_PASSWORD = 'your_smtp_password'
+DEFAULT_FROM_EMAIL = 'your_default_from_email'
 
 
 
