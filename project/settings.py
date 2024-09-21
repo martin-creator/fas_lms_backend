@@ -248,7 +248,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:8081',
     'http://localhost:5173',
 'http://localhost:5174',
-    'https://fas-lms-backend.onrender.com
+    'https://fas-lms-backend.onrender.com',
 ]
 
 
