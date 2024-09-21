@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-*n#-ls9^j#y=3j^j@56gvuo0f2v!-&)61jjrifq^7pspy6ov)1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*']
 
 CORS_ALLOWED_ORIGINS = ['*']
 
@@ -241,28 +241,29 @@ JWT_AUTH = {
 }
 
 # CORS
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000', 
-    'http://localhost:8000',
-    'http://localhost:8080',
-    'http://localhost:8081',
-    'http://localhost:5173'
-]
+#CORS_ALLOWED_ORIGINS = [
+  #  'http://localhost:3000', 
+    #'http://localhost:8000',
+    #'http://localhost:8080',
+    #'http://localhost:8081',
+    #'http://localhost:5173'
+#]
 
 
 
-CORS_ALLOW_METHODS = [
-    'GET',
-    'POST',
-    'PUT',
-    'PATCH',
-    'DELETE',
-    'OPTIONS',
-]
+#CORS_ALLOW_METHODS = [
+   # 'GET',
+    #'POST',
+    #'PUT',
+    #'PATCH',
+    #'DELETE',
+    #'OPTIONS',
+#]
 
 CORS_ALLOW_HEADERS = [
-    'Content-Type',
-    'Authorization',  # If using authentication
+    #'Content-Type',
+    #'Authorization',  # If using authentication
+    '*'
 ]
 
 # For development purposes, you can also use:
