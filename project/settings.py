@@ -260,11 +260,11 @@ JWT_AUTH = {
     #'OPTIONS',
 #]
 
-CORS_ALLOW_HEADERS = [
+#CORS_ALLOW_HEADERS = [
     #'Content-Type',
     #'Authorization',  # If using authentication
-    '*'
-]
+    #'*'
+#]
 
 # For development purposes, you can also use:
 # CORS_ALLOW_ALL_ORIGINS = True
