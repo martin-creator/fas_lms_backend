@@ -29,6 +29,7 @@ class LinkedInUtils:
 
         try:
             response = requests.post(token_url, data=payload)
+            print(response)
             response.raise_for_status()
             return response.json().get("access_token")
         except requests.exceptions.HTTPError as http_err:
