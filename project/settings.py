@@ -28,9 +28,42 @@ SECRET_KEY = "django-insecure-*n#-ls9^j#y=3j^j@56gvuo0f2v!-&)61jjrifq^7pspy6ov)1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*']
 
-# CORS_ALLOWED_ORIGINS = ['*']
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000', 
+    'http://localhost:8000',
+    'http://localhost:8080',
+    'http://localhost:8081',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://fas-lms-backend.onrender.com',
+    'https://cors-test.codehappy.dev',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+   'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+#CORS_ALLOWED_ORIGINS = ['*']
 
 
 # Application definition
@@ -87,6 +120,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django_prometheus.middleware.PrometheusBeforeMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Only include once, at the top
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -95,7 +129,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
     'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
@@ -240,32 +273,10 @@ JWT_AUTH = {
     'JWT_RESPONSE_PAYLOAD_HANDLER': 'project.utils.my_jwt_response_handler'
 }
 
-# CORS
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000', 
-    'http://localhost:8000',
-    'http://localhost:8080',
-    'http://localhost:8081',
-]
 
-
-
-CORS_ALLOW_METHODS = [
-    'GET',
-    'POST',
-    'PUT',
-    'PATCH',
-    'DELETE',
-    'OPTIONS',
-]
-
-CORS_ALLOW_HEADERS = [
-    'Content-Type',
-    'Authorization',  # If using authentication
-]
 
 # For development purposes, you can also use:
-CORS_ALLOW_ALL_ORIGINS = True
+#CORS_ALLOW_ALL_ORIGINS = True
 
 
 SITE_ID = 1
@@ -432,13 +443,34 @@ SESSION_SAVE_EVERY_REQUEST = True
 LINKEDIN_CLIENT_ID = '780a1kqo58jw5x'
 LINKEDIN_CLIENT_SECRET = 'loASr4gmHgK7iFdj',
 # LINKEDIN_REDIRECT_URI = 'http://yourdomain.com/auth/linkedin/callback/'
-LINKEDIN_REDIRECT_URI = 'http://localhost:8000/linkedin/callback/'
+LINKEDIN_REDIRECT_URI = 'http://localhost:8000/api/certifications/linkedin/callback'
 LINKEDIN_STATE = 'random_string_to_prevent_csrf'
-LINKEDIN_SCOPE = ['r_liteprofile', 'r_emailaddress', 'w_member_social'] 
+# LINKEDIN_SCOPE = ['r_liteprofile', 'r_emailaddress', 'w_member_social'] 
+LINKEDIN_SCOPE = ['openid', 'profile', "email", "w_member_social"] 
 
 CERTIFICATE_IMAGE_PATH = 'certificates/'
 CERTIFICATE_IMAGE_URL = 'http://localhost:8000/media/certificates/'
 
+# django-allauth settings
+# ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+# ACCOUNT_AUTHENTICATION_METHOD = 'email'
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_UNIQUE_EMAIL = True
+# LOGIN_REDIRECT_URL = 'home'  # Replace 'home' with your actual home URL
+
+# Email configuration (for development, use console backend)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'webmaster@example.com'
+SERVER_EMAIL = 'webmaster@example.com'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'your_smtp_host'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your_smtp_user'
+EMAIL_HOST_PASSWORD = 'your_smtp_password'
+DEFAULT_FROM_EMAIL = 'your_default_from_email'
 
 
 

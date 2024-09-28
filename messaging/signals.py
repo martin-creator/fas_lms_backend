@@ -1,118 +1,101 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from .models import Message, ChatRoom
+from .models import Message, ChatRoom, ChatRoomNotification
 from notifications.models import Notification
 from activity.models import Reaction, Share
-
+from messaging.utils.notification_utils import MessageNotificationUtils
 from django.utils import timezone
 from messaging.utils.message_utils import MessageUtils
-# from .utils.notification_utils import MessageUtils
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 
 
 @receiver(post_save, sender=Message)
-def send_chat_message_notification(sender, instance, created, **kwargs):
+def handle_message_updates(sender, instance, created, **kwargs):
+    """
+    Handles all notifications and updates when a new message is created.
+    """
     if created:
-        chat = instance.chat
-        message = instance
+        chat_room = instance.chat_room
         sender_user = instance.sender
-        for member in chat.members.exclude(id=sender_user.id):
-            MessageUtils.send_message_notification(chat, member, message)
-
-# Signal to send notifications when a new message is sent
-@receiver(post_save, sender=Message)
-def send_message_notification(sender, instance, created, **kwargs):
-    if created:
-        chat_room = instance.chat
-        recipients = chat_room.members.exclude(id=instance.sender.id)
-        sender = instance.sender
-        notification_message = f"You have a new message from {sender.username}."
-        for recipient in recipients:
-            Notification.objects.create(
-                recipient=recipient,
-                content=notification_message,
-                notification_type_id=1,
-                url=f"/chat/{chat_room.id}/",
-                timestamp=timezone.now()
+        message = instance
+        
+        # Notify all members of the chat room except the sender
+        for member in chat_room.members.exclude(id=sender_user.id):
+            notification_message = f"New message from {sender_user.username} in {chat_room.name or 'a chat room'}"
+            ChatRoomNotification.create_notification(
+                chat_room=chat_room,
+                user_profile=member.profile,
+                message=notification_message
             )
-
-# Signal to send notifications when a user is mentioned in a message
-@receiver(post_save, sender=Message)
-def send_mention_notification(sender, instance, created, **kwargs):
-    if created:
+        
+        # Notify mentioned users
         mentioned_users = instance.mentioned_users.all()
-        sender = instance.sender
-        notification_message = f"You were mentioned in a message by {sender.username}."
+        mention_message = f"You were mentioned in a message by {sender_user.username}."
         for user in mentioned_users:
-            Notification.objects.create(
-                recipient=user,
-                content=notification_message,
-                notification_type_id=1,
-                url=f"/chat/{instance.chat.id}/",
-                timestamp=timezone.now()
+            ChatRoomNotification.create_notification(
+                chat_room=chat_room,
+                user_profile=user.profile,
+                message=mention_message
             )
 
-# Signal to update chat room details when a new message is sent
-@receiver(post_save, sender=Message)
-def update_chat_room(sender, instance, created, **kwargs):
-    if created:
-        chat_room = instance.chat
-        chat_room.last_message = instance
+        # Update the chat room with the last message
+        chat_room.last_message = message
         chat_room.save()
 
-# Signal to send notifications when a new chat room is created
-@receiver(post_save, sender=ChatRoom)
-def send_chat_room_notification(sender, instance, created, **kwargs):
-    if created:
-        members = instance.members.all()
-        notification_message = f"You have been added to a new chat room."
-        for member in members:
-            Notification.objects.create(
-                recipient=member,
-                content=notification_message,
-                notification_type_id=1, 
-                url=f"/chat/{instance.id}/",
-                timestamp=timezone.now()
-            )
+        # Log the message creation
+        logger.info(f'Message created in chat {chat_room.id} by user {sender_user.id}')
 
-# Signal to update message count when a message is deleted
 @receiver(post_delete, sender=Message)
 def update_message_count(sender, instance, **kwargs):
-    chat_room = instance.chat
+    """
+    Updates the message count in the chat room when a message is deleted.
+    """
+    chat_room = instance.chat_room
     chat_room.message_count -= 1
     chat_room.save()
 
-# Signal to send notifications when a message is reacted to
-# @receiver(post_save, sender=Reaction)
-# def send_reaction_notification(sender, instance, created, **kwargs):
-#     if created:
-#         reacted_message = instance.message
-#         if reacted_message is not None:
-#             chat_room = reacted_message.chat
-#             recipients = chat_room.members.exclude(id=instance.user.id)
-#             sender = instance.user
-#             notification_message = f"{sender.username} reacted to your message."
-#             for recipient in recipients:
-#                 Notification.objects.create(
-#                     recipient=recipient,
-#                     content=notification_message,
-#                     notification_type_id=1, 
-#                     url=f"/chat/{chat_room.id}/", 
-#                     timestamp=timezone.now()
-#                 )
-#         else:
-#             print("Reacted message is None")
+@receiver(post_save, sender=Reaction)
+def send_reaction_notification(sender, instance, created, **kwargs):
+    """
+    Sends a notification when a reaction is created.
+    """
+    if created:
+        reacted_message = instance.content_object
+        if reacted_message:
+            chat_room = reacted_message.chat_room
+            recipients = chat_room.members.exclude(id=instance.user.id)
+            sender = instance.user
+            notification_message = f"{sender.username} reacted to your message."
+            for recipient in recipients:
+                ChatRoomNotification.create_notification(
+                    chat_room=chat_room,
+                    user_profile=recipient.profile,
+                    message=notification_message
+                )
+        else:
+            logger.warning("Reacted message is None")
 
-# Signal to update reaction count when a new reaction is added
-# @receiver(post_save, sender=Reaction)
-# def update_reaction_count(sender, instance, created, **kwargs):
-#     if created:
-#         reacted_message = instance.message
-#         print("Reacted message:", reacted_message)
-#         if reacted_message is not None:
-#             if hasattr(reacted_message, 'reaction_count'):
-#                 reacted_message.reaction_count += 1
-#                 reacted_message.save()
-#             else:
-#                 print("Reacted message does not have a reaction_count attribute")
-#         else:
-#             print("Reacted message is None")
+@receiver(post_save, sender=Share)
+def send_share_notification(sender, instance, created, **kwargs):
+    """
+    Sends a notification when content is shared.
+    """
+    if created:
+        shared_content = instance.content_object
+        if shared_content:
+            chat_room = shared_content.chat_room
+            recipients = instance.shared_to.all()
+            sender = instance.user
+            notification_message = f"{sender.username} shared content with you."
+            for recipient in recipients:
+                ChatRoomNotification.create_notification(
+                    chat_room=chat_room,
+                    user_profile=recipient.profile,
+                    message=notification_message
+                )
+        else:
+            logger.warning("Shared content is None")
