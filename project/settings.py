@@ -30,6 +30,38 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000', 
+    'http://localhost:8000',
+    'http://localhost:8080',
+    'http://localhost:8081',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://fas-lms-backend.onrender.com',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+   'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 #CORS_ALLOWED_ORIGINS = ['*']
 
 
@@ -87,6 +119,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django_prometheus.middleware.PrometheusBeforeMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Only include once, at the top
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -95,7 +128,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
     'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
@@ -240,33 +272,7 @@ JWT_AUTH = {
     'JWT_RESPONSE_PAYLOAD_HANDLER': 'project.utils.my_jwt_response_handler'
 }
 
-# CORS
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000', 
-    'http://localhost:8000',
-    'http://localhost:8080',
-    'http://localhost:8081',
-    'http://localhost:5173',
-'http://localhost:5174',
-    'https://fas-lms-backend.onrender.com',
-]
 
-
-
-CORS_ALLOW_METHODS = [
-   'GET',
-    'POST',
-    'PUT',
-    'PATCH',
-    'DELETE',
-    'OPTIONS',
-]
-
-#CORS_ALLOW_HEADERS = [
-    #'Content-Type',
-    #'Authorization',  # If using authentication
-    #'*'
-#]
 
 # For development purposes, you can also use:
 #CORS_ALLOW_ALL_ORIGINS = True
