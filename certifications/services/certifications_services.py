@@ -58,7 +58,7 @@ class CertificationService:
             f"?response_type=code"
             f"&client_id={settings.LINKEDIN_CLIENT_ID}"
             f"&redirect_uri={settings.LINKEDIN_REDIRECT_URI}"
-            "&scope=r_liteprofile%20r_emailaddress"  # Adjust the scope as needed
+            "&scope=openid%20profile%20email"  # Adjust the scope as needed
         )
         
         return redirect(linkedin_auth_url)
@@ -72,9 +72,12 @@ class CertificationService:
         auth_code = request.GET.get('code')
         if not auth_code:
             return Response({"error": "Authorization code not provided."}, status=status.HTTP_400_BAD_REQUEST)
-
+        
         access_token = LinkedInUtils.get_access_token(auth_code)
         if access_token:
+            print("auth_code", auth_code, "\n")
+            print("access_token", access_token ,"\n")
+            
             user_data = LinkedInUtils.fetch_user_profile(access_token)
             # Here you can create or update the user profile in your database
             return Response({"user_data": user_data}, status=status.HTTP_200_OK)
