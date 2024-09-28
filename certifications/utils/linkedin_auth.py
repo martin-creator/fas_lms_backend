@@ -25,7 +25,6 @@ class LinkedInUtils:
             "redirect_uri": settings.LINKEDIN_REDIRECT_URI,
             "client_id": settings.LINKEDIN_CLIENT_ID,
             "client_secret": settings.LINKEDIN_CLIENT_SECRET,
-            "scope": settings.LINKEDIN_SCOPE,
         }
 
         try:
@@ -45,7 +44,10 @@ class LinkedInUtils:
         """
         Fetch the user's profile data from LinkedIn using the access token.
         """
-        user_profile_url = "https://api.linkedin.com/v2/me"
+        user_profile_url = "https://api.linkedin.com/v2/userinfo"
+
+        print(f"Bearer {access_token}")
+        
         headers = {"Authorization": f"Bearer {access_token}"}
 
         try:

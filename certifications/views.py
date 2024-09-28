@@ -470,6 +470,8 @@ def get_all_linkedin_badges(request):
         return Response(linkedin_badges, status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
     
 
 # get specific linkedin badge
